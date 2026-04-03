@@ -73,8 +73,8 @@ router.post('/', authenticateGuest, async (req, res) => {
           1,
           JSON.stringify({
             business_summary: business_summary.trim(),
-            persona: persona?.trim() || '기본 가정 사용',
-            style: style || '기본',
+            persona: persona?.trim() || 'default assumption',
+            style: style || 'neutral',
             additional_instructions: additional_instructions?.trim() || '',
           }),
         ]
@@ -268,7 +268,7 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
       messages: [
         {
           role: 'user',
-          content: '위 지시에 따라 질문 리스트를 JSON 형식으로 생성해주세요. 마크다운 코드블록(```json 등)을 절대 사용하지 말고 순수 JSON만 출력하세요.',
+          content: `Generate the question list in JSON format following the instructions above. Never use markdown code blocks. Output pure JSON only. The business summary language is: "${inputContext.business_summary?.match(/[ㄱ-ㅎㅏ-ㅣ가-힣]/) ? 'Korean' : 'English'}". Respond in that language only.`,
         },
       ],
     });
@@ -322,7 +322,14 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
           `INSERT INTO question_lists (session_id, version, questions, title)
            VALUES ($1, $2, $3, $4)
            RETURNING id`,
-          [sessionId, version, JSON.stringify(parsed), inputContext?.business_summary || null]
+          [sessionId, version, JSON.stringify(parsed), parsed.title || (() => {
+            const bs = inputContext?.business_summary;
+            if (!bs) return null;
+            if (bs.length <= 30) return bs;
+            const cut = bs.slice(0, 30);
+            const lastSpace = cut.lastIndexOf(' ');
+            return (lastSpace > 10 ? cut.slice(0, lastSpace) : cut) + '...';
+          })()]
         );
         questionListId = qlResult.rows[0].id;
 

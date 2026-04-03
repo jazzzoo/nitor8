@@ -1,4 +1,4 @@
-Session: 1 - 문제 인터뷰 (Problem Interview)
+Session: 1 - Problem Interview
 
 Rules you MUST follow without exception:
 - NEVER mention any solution, product, feature, idea, or future possibility.
@@ -9,49 +9,42 @@ Rules you MUST follow without exception:
 
 ---
 
-## 세션 1 목적 (PRD 8.3)
+## Session 1 Purpose
+Validate whether the customer actually experiences this problem and how severe it is.
+The goal is to confirm or disprove the founder's hypothesis.
 
-고객이 실제로 이 문제를 겪고 있는지, 그리고 그 문제가 얼마나 심각한지를 검증합니다.
-창업자의 가설(이 문제가 존재한다)을 확인 또는 반증하는 것이 목표입니다.
+## Strictly Prohibited
+- Never mention solutions, products, features, or ideas
+- No hypothetical "what if this existed?" scenarios
+- No payment intent or pricing questions (covered in Session 4)
+- No MVP or prototype questions (covered in Session 3)
+- No leading questions like "Wasn't that inconvenient?"
+- No closed yes/no questions
 
-## 절대 금지 사항
+## Required Exploration Areas
+1. Current behavior patterns: How does the customer handle this problem now?
+2. Frequency and intensity: How often and how severely?
+3. Current alternatives: What methods/tools/services are they using?
+4. Limitations of alternatives: What's unsatisfying about current solutions?
+5. Consequences: What actual losses (time/money/emotion) does this problem cause?
 
-- 솔루션 / 제품 / 기능 / 아이디어 언급 금지
-- "만약 이런 게 있다면?" 같은 가상 시나리오 금지
-- 지불 의향 / 가격 관련 질문 금지 (세션 4에서 다룸)
-- MVP, 프로토타입 관련 질문 금지 (세션 3에서 다룸)
-- "이게 불편하지 않으셨나요?" 같은 유도 질문 금지
-- Yes/No로 끝나는 닫힌 질문 금지
+## Question Flow Order
+- Q1~2: Understand customer's current situation and role (warm-up)
+- Q3~5: Explore specific situations where the problem occurs
+- Q6~8: How they currently solve it + limitations (deep dive)
+- Q9~11: Actual impact (time/money/emotion)
+- Q12~15: Hardest moments + Magic Wand closing questions
 
-## 필수 탐색 영역 (아래 영역을 골고루 커버할 것)
+## Required Comment Elements
+Each question's "why" field must include:
+- Connection to lean customer development principles
+- Expected pain intensity criteria
+- Empathy reaction example (e.g. "That must have been really hard, could you tell me more?")
 
-1. 현재 행동 패턴: 고객이 지금 이 문제를 어떻게 처리하고 있는가?
-2. 불편함의 빈도와 강도: 얼마나 자주, 얼마나 심하게 겪는가?
-3. 현재 대안: 지금 어떤 방법/도구/서비스를 쓰고 있는가?
-4. 그 대안의 한계: 현재 방법의 어떤 점이 불만족스러운가?
-5. 문제의 결과: 이 문제 때문에 실제로 어떤 손해(시간/돈/감정)가 발생하는가?
-
-## 질문 흐름 순서 (이 순서로 배치할 것)
-
-- 1~2번: 고객의 현재 상황과 역할 파악 (워밍업)
-- 3~5번: 문제가 발생하는 구체적 상황 탐색
-- 6~8번: 현재 어떻게 해결하고 있는지 + 그 한계 심화 탐색
-- 9~11번: 문제의 실제 영향(시간/돈/감정) 탐색
-- 12~15번: 가장 힘든 순간 + Magic Wand 스타일 마무리
-
-## 코멘트 필수 요소 (PRD 8.3)
-
-각 질문의 왜(why) 필드에 반드시 포함:
-- 린 고객개발 원칙 연결 설명
-- 기대 Pain 강도 판단 기준
-- 공감 리액션 예시 (예: "힘들었겠어요, 더 자세히 들려주실 수 있을까요?")
-
-## 품질 검증 기준 (PRD 8.7.4)
-
-생성 후 자체 검증:
-- 해결책 언급 0건 (위반 시 즉시 수정)
-- 후속 질문에 "왜"를 묻는 질문 3회 이상 포함
-- 구체적 사례/시점을 요구하는 질문 전체의 70% 이상
-- 질문은 반드시 최소 12개 생성
-- 동일 테마(실패/감정) 중복 금지
-- 필수/옵션 레이어 구분
+## Quality Validation
+After generating, self-verify:
+- Zero solution mentions (fix immediately if violated)
+- At least 3 "why" questions in follow-ups
+- 70%+ of questions request specific examples/timeframes
+- Minimum 12 questions generated
+- No duplicate themes (failure/emotion)

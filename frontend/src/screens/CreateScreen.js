@@ -25,7 +25,7 @@ import { colors, gradientColors, spacing, radius, textStyles } from '../theme';
 import { ChevronsLeft, ChevronsRight } from 'lucide-react-native';
 
 const STYLE_OPTIONS = ['Neutral', 'Deep', 'Soft'];
-const STYLE_MAP = { 'Neutral': '기본', 'Deep': '깊게', 'Soft': '부드럽게' };
+const STYLE_MAP = { 'Neutral': 'neutral', 'Deep': 'deep', 'Soft': 'soft'  };
 const MAX_SUMMARY = 1000;
 const MOBILE_BP = 700;
 
@@ -144,6 +144,17 @@ export default function CreateScreen({ navigation }) {
   const [extraInstr, setExtraInstr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [leftVisible, setLeftVisible] = useState(true);
+  const panelWidth = useRef(new Animated.Value(400)).current;
+
+  const toggleLeft = () => {
+    const toValue = leftVisible ? 40 : 400;
+    Animated.timing(panelWidth, {
+      toValue,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+    setLeftVisible((v) => !v);
+  };
   const [mode, setMode] = useState('input'); // 'input' | 'generating' | 'questions'
   const rightScrollRef = useRef(null);
 
@@ -242,7 +253,7 @@ export default function CreateScreen({ navigation }) {
 
             // UI 전환
             setIsGenerating(false);
-            setNavTitle(businessSummary.trim().slice(0, 24));
+            setNavTitle(list.title || businessSummary.trim().slice(0, 24));
             resetGeneration();
 
             // 카드 애니메이션이 보일 수 있도록 잠깐 대기
@@ -297,10 +308,10 @@ export default function CreateScreen({ navigation }) {
         )}
         {/* ══ 왼쪽: 입력 폼 ══════════════════════════════════ */}
         {(isDesktop || mode === 'input') && (
-          <View style={[
+          <Animated.View style={[
             styles.leftPanel,
             isDesktop && {
-              width: leftVisible ? 400 : 40,
+              width: panelWidth,
               overflow: 'hidden',
               borderRightWidth: 1,
               borderRightColor: colors.border,
@@ -310,7 +321,7 @@ export default function CreateScreen({ navigation }) {
             {isDesktop && (
               <TouchableOpacity
                 style={styles.toggleBtn}
-                onPress={() => setLeftVisible((v) => !v)}
+                onPress={toggleLeft}
                 activeOpacity={0.8}
               >
                 {leftVisible
@@ -421,7 +432,7 @@ export default function CreateScreen({ navigation }) {
                 />
               </ScrollView>
             )}
-          </View>
+          </Animated.View>
         )}
 
         {/* ══ 오른쪽: 생성 결과 패널 ════════════════════════ */}

@@ -57,11 +57,11 @@ ${inputContext.business_summary}
 </business_summary>
 
 <persona>
-${inputContext.persona || '타겟 고객 미지정'}
+${inputContext.persona || 'default assumption'}
 </persona>
 
 <style>
-${inputContext.style || '기본'}
+${inputContext.style || 'neutral'}
 </style>
 
 ${inputContext.additional_instructions ? `
@@ -134,7 +134,7 @@ function parseJSON(rawText) {
 // ------------------------------------------------
 async function generateQuestions(sessionType, inputContext, dynamicInstructions = '') {
   const systemPrompt  = assemblePrompt(sessionType, inputContext, dynamicInstructions);
-  const userMessage   = '위 지침에 따라 인터뷰 질문을 생성해주세요. JSON만 출력하세요.';
+  const userMessage = 'Generate interview questions following the instructions above. Output JSON only.';
 
   // 1차 시도: Primary 모델 (Haiku)
   try {

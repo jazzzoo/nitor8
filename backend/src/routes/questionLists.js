@@ -32,8 +32,8 @@ router.get('/:id', authenticateGuest, async (req, res) => {
     try {
         const result = await withRLS(req.guestId, async (client) => {
             return client.query(
-                `SELECT ql.id, ql.version, ql.questions, ql.created_at,
-                s.session_type, s.input_context
+                `SELECT ql.id, ql.version, ql.questions, ql.created_at, ql.title,
+    s.session_type, s.input_context
          FROM question_lists ql
          JOIN sessions s ON ql.session_id = s.id
          JOIN projects p ON s.project_id = p.id
@@ -67,6 +67,7 @@ router.get('/:id', authenticateGuest, async (req, res) => {
                 version: row.version,
                 session_type: row.session_type,
                 created_at: row.created_at,
+                title: row.title,
                 questions: normalized,
             },
         });

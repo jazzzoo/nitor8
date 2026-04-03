@@ -93,7 +93,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
         {/* 헤더 */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>
+            <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
               {cached?.title || businessSummary || 'Session 1'}
             </Text>
             <Text style={styles.meta}>

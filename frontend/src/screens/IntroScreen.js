@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 
 import GradientButton from '../components/GradientButton';
-import useStore       from '../store/useStore';
+import useStore from '../store/useStore';
 import { colors, gradientColors, spacing, radius, textStyles } from '../theme';
 
 // ── 무한 스크롤 텍스트 6개 ─────────────────────────────────────
@@ -27,7 +27,7 @@ const HINTS = [
 ];
 
 const ITEM_HEIGHT = 38;  // 한 줄 높이 (px)
-const CYCLE_MS    = 2600; // 한 항목당 표시 시간
+const CYCLE_MS = 2600; // 한 항목당 표시 시간
 
 // CSS keyframes 웹 주입 — 한 번만
 if (typeof document !== 'undefined') {
@@ -61,10 +61,10 @@ function MarqueeText() {
     const total = HINTS.length * ITEM_HEIGHT;
     const anim = Animated.loop(
       Animated.timing(translateY, {
-        toValue:         -total,
-        duration:        CYCLE_MS * HINTS.length,
+        toValue: -total,
+        duration: CYCLE_MS * HINTS.length,
         useNativeDriver: true,
-        easing:          (t) => t,
+        easing: (t) => t,
       })
     );
     anim.start();
@@ -80,10 +80,10 @@ function MarqueeText() {
         <div className="sally-marquee-track">
           {tripled.map((hint, i) => (
             <div key={i} style={{
-              height:      ITEM_HEIGHT,
-              display:     'flex',
-              alignItems:  'center',
-              gap:         8,
+              height: ITEM_HEIGHT,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}>
               <span style={{ fontSize: 14, color: '#E0B7C6' }}>✦</span>
               <span style={{ fontSize: 17, color: '#49546B' }}>{hint}</span>
@@ -111,22 +111,22 @@ function MarqueeText() {
 
 const marquee = StyleSheet.create({
   clip: {
-    height:   ITEM_HEIGHT,
+    height: ITEM_HEIGHT,
     overflow: 'hidden',
   },
   row: {
-    height:        ITEM_HEIGHT,
+    height: ITEM_HEIGHT,
     flexDirection: 'row',
-    alignItems:    'center',
-    gap:           8,
+    alignItems: 'center',
+    gap: 8,
   },
   bullet: { fontSize: 14, color: '#E0B7C6' },
-  text:   { fontSize: 17, color: '#49546B' },
+  text: { fontSize: 17, color: '#49546B' },
 });
 
 // ── 메인 컴포넌트 ────────────────────────────────────────────
 export default function IntroScreen({ navigation }) {
-  const { width }  = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const setNavTitle = useStore((s) => s.setNavTitle);
 
   useFocusEffect(
@@ -155,8 +155,8 @@ export default function IntroScreen({ navigation }) {
 
           {/* 헤드라인 */}
           <Text style={styles.headline}>
-           Prepare your Lean Customer{'\n'}
-            <Text style={styles.headlineAccent}>Development Interview in 10 min</Text>
+            Prepare Your{'\n'}
+            <Text style={styles.headlineAccent}>Customer Interview{'\n'}in 10 Minutes</Text>
           </Text>
 
           {/* 서브 카피 */}
@@ -188,14 +188,14 @@ export default function IntroScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
 
   hero: {
     alignItems: 'center',
-    maxWidth:   520,
-    width:      '100%',
-    gap:        spacing.lg,
+    maxWidth: 520,
+    width: '100%',
+    gap: spacing.lg,
   },
 
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
@@ -207,53 +207,53 @@ const styles = StyleSheet.create({
   appName: { fontSize: 36, fontWeight: '700', color: colors.textSecondary, letterSpacing: -0.8 },
 
   headline: {
-    fontSize:     36,
-    fontWeight:   '700',
-    color:        colors.textSecondary,
-    textAlign:    'center',
-    lineHeight:   46,
+    fontSize: 36,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 46,
     letterSpacing: -0.6,
   },
   headlineAccent: { color: colors.primaryEnd },
 
   subCopy: {
-    fontSize:   15,
-    color:      colors.textSecondary,
-    textAlign:  'center',
+    fontSize: 15,
+    color: colors.textSecondary,
+    textAlign: 'center',
     lineHeight: 24,
   },
 
   // 프롬프트 박스
   promptBox: {
-    width:           '100%',
+    width: '100%',
     backgroundColor: colors.surface,
-    borderRadius:    radius.lg,
-    borderWidth:     1,
-    borderColor:     colors.border,
-    padding:         spacing.md,
-    gap:             spacing.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    gap: spacing.sm,
     // neumorphic inset
-    shadowColor:     '#C5D1E0',
-    shadowOffset:    { width: -3, height: -3 },
-    shadowOpacity:   0.6,
-    shadowRadius:    6,
+    shadowColor: '#C5D1E0',
+    shadowOffset: { width: -3, height: -3 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
   },
   promptHeader: {
     flexDirection: 'row',
-    alignItems:    'center',
-    gap:           spacing.xs,
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   promptDot: {
     width: 8, height: 8, borderRadius: 4,
     backgroundColor: colors.primaryMid,
   },
   promptLabel: {
-    fontSize:   11,
+    fontSize: 11,
     fontWeight: '600',
-    color:      colors.textSecondary,
+    color: colors.textSecondary,
     letterSpacing: 0.3,
   },
 
   ctaWrapper: { width: 240 },
-  noAccount:  { fontSize: 14, color: colors.textDisabled },
+  noAccount: { fontSize: 14, color: colors.textDisabled },
 });
