@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 // 미들웨어
 // ─────────────────────────────────────────
 app.use(cors({
-  origin: '*',
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: '*',
   exposedHeaders: ['Content-Type', 'Cache-Control'],
