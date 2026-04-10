@@ -9,7 +9,7 @@ import { getGuestId } from '../store/guestStorage';
 
 // ── 설정 ─────────────────────────────────────────────────────
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-const TIMEOUT_MS = 30_000;
+const TIMEOUT_MS = 120_000;
 
 // ── 공통 헤더 빌더 ────────────────────────────────────────────
 async function buildHeaders(extra = {}) {

@@ -37,7 +37,17 @@ export default function ModalDialog({
       <View style={styles.wrapper}>
         <View style={styles.box}>
           <Text style={styles.title}>{title}</Text>
-          {message && <Text style={styles.message}>{message}</Text>}
+          {message && (
+            Array.isArray(message) ? (
+              <View style={{ paddingVertical: spacing.xl }}>
+                {message.map((line, i) => (
+                  <Text key={i} style={[styles.message, { marginVertical: 0 }]}>{line}</Text>
+                ))}
+              </View>
+            ) : (
+              <Text style={[styles.message, { paddingVertical: spacing.xl }]}>{message}</Text>
+            )
+          )}
 
           {mode === 'input' && (
             <TextInput
@@ -99,6 +109,7 @@ const styles = StyleSheet.create({
     ...textStyles.bodyS,
     color: colors.textSecondary,
     lineHeight: 22,
+    marginVertical: spacing.xl,
   },
   input: {
     ...textStyles.caption,
@@ -112,20 +123,19 @@ const styles = StyleSheet.create({
   },
   btnRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.lg,
     justifyContent: 'flex-end',
   },
   cancelBtn: {
     paddingVertical: 10,
     paddingHorizontal: spacing.md,
     borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
   },
   cancelText: {
-    ...textStyles.caption,
-    color: colors.textSecondary,
+    fontSize: 12,
+    color: colors.textDisabled,
     fontWeight: '600',
   },
   confirmBtn: {
@@ -135,8 +145,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryEnd,
   },
   confirmText: {
-    ...textStyles.caption,
+    fontSize: 12,
     color: '#fff',
     fontWeight: '600',
+    textAlign: 'center',
   },
 });

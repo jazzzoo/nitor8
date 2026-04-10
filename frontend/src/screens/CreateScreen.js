@@ -25,7 +25,7 @@ import { colors, gradientColors, spacing, radius, textStyles } from '../theme';
 import { ChevronsLeft, ChevronsRight } from 'lucide-react-native';
 
 const STYLE_OPTIONS = ['Neutral', 'Deep', 'Soft'];
-const STYLE_MAP = { 'Neutral': 'neutral', 'Deep': 'deep', 'Soft': 'soft'  };
+const STYLE_MAP = { 'Neutral': 'neutral', 'Deep': 'deep', 'Soft': 'soft' };
 const MAX_SUMMARY = 1000;
 const MOBILE_BP = 700;
 
@@ -145,6 +145,8 @@ export default function CreateScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
   const [leftVisible, setLeftVisible] = useState(true);
   const panelWidth = useRef(new Animated.Value(400)).current;
+  const streamingChunkRef = useRef('');
+  const [streamingDisplay, setStreamingDisplay] = useState('');
 
   const toggleLeft = () => {
     const toValue = leftVisible ? 40 : 400;
@@ -216,15 +218,27 @@ export default function CreateScreen({ navigation }) {
       console.log('[DEBUG] streamGenerateQuestions 호출 시작');
 
       const close = await streamGenerateQuestions(session.id, {
-
-        // token: 타이핑 미리보기만
+        onChunk: (text) => {
+          streamingChunkRef.current += text;
+          // 100ms마다만 UI 업데이트 (throttle)
+          if (!streamingChunkRef._timer) {
+            streamingChunkRef._timer = setTimeout(() => {
+              setStreamingDisplay(streamingChunkRef.current);
+              streamingChunkRef._timer = null;
+            }, 100);
+          }
+        },
         onIcebreaker: (item) => {
-          console.log('[DEBUG] icebreaker 수신:', item.text?.slice(0, 20));
           appendGeneratedItem(item);
+          streamingChunkRef.current = '';
+          setStreamingDisplay('');
+          setTimeout(() => rightScrollRef.current?.scrollToEnd({ animated: true }), 150);
         },
         onQuestion: (item) => {
-          console.log('[DEBUG] question 수신:', item.number);
           appendGeneratedItem(item);
+          streamingChunkRef.current = '';
+          setStreamingDisplay('');
+          setTimeout(() => rightScrollRef.current?.scrollToEnd({ animated: true }), 150);
         },
 
         // complete: question_list_id 받아서 REST로 질문 배열 가져오기
@@ -464,18 +478,30 @@ export default function CreateScreen({ navigation }) {
                 <Text style={styles.genTitle}>Generating Questions</Text>
                 <Text style={styles.genSub}>Writing based on Lean Customer Development framework</Text>
 
-                {/* 생성된 카드들 */}
+                {/* 완성된 카드들 — 위에서부터 쌓임 */}
                 {generatedItems.map((item, idx) => (
                   <AnimatedCard key={idx} item={item} index={idx} />
                 ))}
 
-                {/* 생성 중 인디케이터 — 항상 맨 아래 */}
-                <NeuCard style={[styles.streamCard, {
-                  borderLeftWidth: 3,
-                  borderLeftColor: colors.primary,
-                }]}>
-                  <DotIndicator />
-                </NeuCard>
+                {/* 현재 생성 중인 항목 미리보기 */}
+                {isGenerating && (
+                  <NeuCard style={[styles.streamCard, {
+                    borderLeftWidth: 3,
+                    borderLeftColor: colors.primaryMid,
+                    opacity: 0.7,
+                  }]}>
+                    <DotIndicator />
+                    {streamingDisplay ? (
+                      <Text style={{ ...textStyles.bodyS, color: colors.textPrimary, lineHeight: 22, marginTop: 8 }}>
+                        {streamingDisplay
+                          .replace(/[{}"\\[\]]/g, '')
+                          .replace(/\s+/g, ' ')
+                          .slice(-150)
+                          .trim()}
+                      </Text>
+                    ) : null}
+                  </NeuCard>
+                )}
 
                 {/* 취소 */}
                 <TouchableOpacity

@@ -14,6 +14,7 @@ import NeuCard from './NeuCard';
 import SlidePanel from './SlidePanel';
 import EditPanel from './EditPanel';
 import GradientButton from './GradientButton';
+import ModalDialog from './ModalDialog';
 import useStore from '../store/useStore';
 import { questionListsApi } from '../api/client';
 import { colors, spacing, radius, textStyles, shadows } from '../theme';
@@ -30,6 +31,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
   const [expanded, setExpanded] = useState(null);
   const [regenInput, setRegenInput] = useState('');
   const [isRegening, setIsRegening] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const toggle = useCallback(
     (id) => setExpanded((prev) => (prev === id ? null : id)),
@@ -64,6 +66,10 @@ export default function QuestionsPanel({ scrollRef, style }) {
       .join('\n\n');
     Clipboard.setString(txt);
     Alert.alert('Copied', 'opied to clipboard.');
+  }
+
+  function handleExportPress() {
+    setShowFeedbackModal(true);
   }
 
   async function handleExport() {
@@ -105,7 +111,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
             <TouchableOpacity style={styles.iconBtn} onPress={handleCopy} title="클립보드에 복사">
               <Copy size={20} color={colors.textSecondary} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn} onPress={handleExport} title="공유하기">
+            <TouchableOpacity style={styles.iconBtn} onPress={handleExportPress} title="공유하기">
               <Share2 size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -191,10 +197,31 @@ export default function QuestionsPanel({ scrollRef, style }) {
         {/* 하단 내보내기 (패널 모드에서는 scroll 내부에) */}
         <GradientButton
           label="Finalize → Export"
-          onPress={handleExport}
+          onPress={handleExportPress}
           style={{ marginTop: spacing.md }}
         />
       </Pressable>
+
+      <ModalDialog
+        visible={showFeedbackModal}
+        title="Before you export..."
+        message={["We'd love your feedback!", "It takes just 2 minutes,", "and helps us improve Sally.ai."]}
+        mode="confirm"
+        confirmLabel="✦ Share Feedback"
+        cancelLabel="Skip & Export"
+        confirmColor={colors.primaryEnd}
+        onConfirm={() => {
+          if (typeof window !== 'undefined') {
+            window.open('https://docs.google.com/forms/d/e/1FAIpQLScl0kueIdfqU4HbRpZluQNBnpUcvaARvuQXYVWqQRkyLfTIKA/viewform?usp=header', '_blank');
+          }
+          setShowFeedbackModal(false);
+          handleExport();
+        }}
+        onCancel={() => {
+          setShowFeedbackModal(false);
+          handleExport();
+        }}
+      />
     </ScrollView>
   );
 }
