@@ -88,23 +88,16 @@ export default function QuestionsPanel({ scrollRef, style }) {
     await Share.share({ message: md });
   }
 
-  // 링크 조회(있으면 재사용) 또는 신규 생성
+  // 응답자 1명 = 링크 1개, 항상 새로 생성
   async function handleFinalizePress() {
     if (!listId) return;
     setIsLoadingLink(true);
     try {
-      const res = await interviewSessionsApi.list(listId);
-      let url;
-      if (res.data.length > 0) {
-        url = res.data[0].url;
-      } else {
-        const created = await interviewSessionsApi.create(listId);
-        url = created.data.url;
-      }
-      setShareLink(url);
+      const created = await interviewSessionsApi.create(listId);
+      setShareLink(created.data.url);
       setShowLinkModal(true);
     } catch (err) {
-      Alert.alert('Error', err.message || 'Failed to get interview link.');
+      Alert.alert('Error', err.message || 'Failed to create interview link.');
     } finally {
       setIsLoadingLink(false);
     }

@@ -75,7 +75,17 @@ export default function App() {
   const navRef   = useNavigationContainerRef();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 640;
-  const [currentRoute, setCurrentRoute] = React.useState('Intro');
+  const [currentRoute, setCurrentRoute] = React.useState(() => {
+    // 직접 URL 접근 시 onStateChange가 초기 렌더에서 발화하지 않으므로
+    // window.location.pathname으로 초기값 결정
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path.startsWith('/interview/')) return 'Interview';
+      if (path.startsWith('/create'))    return 'Create';
+      if (path.startsWith('/questions')) return 'Questions';
+    }
+    return 'Intro';
+  });
 
   useEffect(() => { initAuth(); }, []);
 
