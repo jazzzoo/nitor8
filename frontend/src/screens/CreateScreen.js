@@ -268,9 +268,8 @@ export default function CreateScreen({ navigation }) {
             // UI 전환
             setIsGenerating(false);
             setNavTitle(list.title || businessSummary.trim().slice(0, 24));
-            resetGeneration();
 
-            // 카드 애니메이션이 보일 수 있도록 잠깐 대기
+            // 카드 애니메이션이 보일 수 있도록 잠깐 대기 (resetGeneration() 전에 계산)
             await new Promise((resolve) => setTimeout(resolve, generatedItems.length * 120 + 500));
 
             if (isDesktop) {
@@ -278,6 +277,7 @@ export default function CreateScreen({ navigation }) {
             } else {
               navigation.navigate('Questions');
             }
+            resetGeneration();
           } catch (fetchErr) {
             console.error('[DEBUG] 질문 리스트 GET 실패:', fetchErr.message);
             setIsGenerating(false);
