@@ -20,11 +20,11 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const SECTION_ORDER = ['icebreaker', 'context', 'problems', 'alternatives', 'wtp'];
 
 const SECTION_CONFIG = {
-  icebreaker:   { minTurns: 2, maxFollowups: 0 },
-  context:      { minTurns: 2, maxFollowups: 1 },
-  problems:     { minTurns: 3, maxFollowups: 2 },
-  alternatives: { minTurns: 2, maxFollowups: 1 },
-  wtp:          { minTurns: 2, maxFollowups: 2 },
+  icebreaker:   { minTurns: 2, maxFollowups: 0, hard_max_turns: 6  },
+  context:      { minTurns: 2, maxFollowups: 1, hard_max_turns: 8  },
+  problems:     { minTurns: 3, maxFollowups: 2, hard_max_turns: 12 },
+  alternatives: { minTurns: 2, maxFollowups: 1, hard_max_turns: 8  },
+  wtp:          { minTurns: 2, maxFollowups: 2, hard_max_turns: 10 },
 };
 
 const SECTION_GOALS = {
@@ -159,6 +159,28 @@ function buildSystemPrompt({ section, businessContext, keyTopics, completedSecti
       ? keyTopics.map((q, i) => `  ${i + 1}. ${q.text || String(q)}`).join('\n')
       : '  (No specific topics — use your judgment based on the business context.)';
 
+  const SECTION_COMPLETION_CRITERIA = {
+    icebreaker: `Set section_complete_candidate=true when:
+- You have asked at least 2 questions AND received answers
+- The respondent has described their role or situation
+- The conversation feels naturally warmed up
+Do NOT keep this section going unnecessarily. If the above conditions are mostly met, set true.`,
+    context: `Set section_complete_candidate=true when:
+- You understand their current workflow or situation
+- You know what tools or methods they currently use
+- At least 2 substantive answers received`,
+    problems: `Set section_complete_candidate=true when:
+- At least 2-3 specific pain points identified
+- You have some sense of frequency or impact
+- Further questions would be repetitive`,
+    alternatives: `Set section_complete_candidate=true when:
+- You know what solutions they currently use
+- You have some sense of their dissatisfaction`,
+    wtp: `Set section_complete_candidate=true when:
+- You have explored willingness to pay
+- You have some sense of budget or conditions`,
+  };
+
   return `[ROLE]
 You are Sally, an expert customer development interviewer working on behalf of a non-native English founder.
 The respondent is a potential customer. Listen carefully and ask one thoughtful question at a time.
@@ -187,6 +209,19 @@ ${prevText}
 
 [CURRENT STATE]
 Follow-ups used on current question: ${followupCount}/${maxFollowups}
+
+[SECTION COMPLETION CRITERIA]
+${SECTION_COMPLETION_CRITERIA[section] || 'Set section_complete_candidate=true when the section goals are sufficiently met.'}
+
+IMPORTANT: Do not always return section_complete_candidate=false.
+If the section goals are mostly met, return true. It is better to move forward than to repeat questions.
+
+[FOLLOW-UP CRITERIA]
+Set needs_followup=true ONLY when:
+- Answer is very short (under 10 words)
+- Answer is too vague to understand their situation
+- A critical detail is completely missing
+Otherwise set needs_followup=false.
 
 [OUTPUT — RESPOND WITH JSON ONLY, NO OTHER TEXT]
 {
@@ -268,13 +303,30 @@ function makeServerDecision(state, claudeResult, wordCount) {
   const forceFollowup = wordCount < 15;
   const canFollowup = (state.followup_count || 0) < config.maxFollowups;
 
+  // hard_max_turns 초과 시 Claude 판단 무시하고 강제 전환
+  const hardForce = candidateTurnCount >= config.hard_max_turns;
+
+  if (hardForce) {
+    console.log(`[Interview] hard_max_turns(${config.hard_max_turns}) reached in section=${section}, forcing transition`);
+    const currentIdx = SECTION_ORDER.indexOf(section);
+    const nextSection = SECTION_ORDER[currentIdx + 1];
+    return nextSection
+      ? { action: 'transition', nextSection }
+      : { action: 'wrap_up' };
+  }
+
   // 1순위: followup (짧은 답변 강제 or Claude 판단)
   if ((forceFollowup || claudeResult.needs_followup) && canFollowup) {
     return { action: 'followup' };
   }
 
-  // 2순위: 섹션 전환 (min_turns 충족 + Claude 완료 신호)
-  if (candidateTurnCount >= config.minTurns && claudeResult.section_complete_candidate) {
+  // 2순위: 섹션 전환 (min_turns 충족 + Claude 완료 신호 OR maxFollowups 소진)
+  const softTransition =
+    candidateTurnCount >= config.minTurns &&
+    (state.followup_count >= config.maxFollowups || !claudeResult.needs_followup) &&
+    claudeResult.section_complete_candidate;
+
+  if (softTransition) {
     const currentIdx = SECTION_ORDER.indexOf(section);
     const nextSection = SECTION_ORDER[currentIdx + 1];
     return nextSection
