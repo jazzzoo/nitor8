@@ -73,19 +73,16 @@ function DotIndicator() {
   );
 }
 
-function AnimatedCard({ item, index }) {
+function AnimatedCard({ item }) {
   const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.sequence([
-      Animated.delay(index * 120),
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: false, // Expo Web은 false
-      }),
-    ]).start();
-  }, [index, anim]);
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: false, // Expo Web은 false
+    }).start();
+  }, [anim]);
 
   const isIce = item.type === 'icebreaker';
 
@@ -148,7 +145,7 @@ export default function CreateScreen({ navigation }) {
   const streamingChunkRef = useRef('');
   const [streamingDisplay, setStreamingDisplay] = useState('');
 
-  // ── 카드 큐 (300ms 간격 순차 표시) ──────────────────────────
+  // ── 카드 큐 (500ms 간격 순차 표시) ──────────────────────────
   const itemQueueRef = useRef([]);
   const queueTimerRef = useRef(null);
   const afterQueueRef = useRef(null);  // 큐 소진 후 실행할 콜백
@@ -169,7 +166,7 @@ export default function CreateScreen({ navigation }) {
     const item = itemQueueRef.current.shift();
     appendGeneratedItem(item);
     setTimeout(() => rightScrollRef.current?.scrollToEnd({ animated: true }), 50);
-    queueTimerRef.current = setTimeout(() => processQueueRef.current(), 300);
+    queueTimerRef.current = setTimeout(() => processQueueRef.current(), 500);
   };
 
   function enqueueItem(item) {
@@ -178,7 +175,7 @@ export default function CreateScreen({ navigation }) {
     itemQueueRef.current.push(item);
     enqueuedCountRef.current += 1;
     if (!queueTimerRef.current) {
-      queueTimerRef.current = setTimeout(() => processQueueRef.current(), 300);
+      queueTimerRef.current = setTimeout(() => processQueueRef.current(), 500);
     }
   }
 
@@ -284,9 +281,8 @@ export default function CreateScreen({ navigation }) {
         onComplete: (data) => {
           console.log('[DEBUG] complete 이벤트:', data);
 
-          const totalEnqueued = enqueuedCountRef.current;
-
           afterQueueRef.current = async () => {
+            // 이 시점: 큐가 비어있음 = 마지막 카드 표시 후 500ms 경과
             const listId = data.question_list_id;
             if (!listId) {
               console.error('[DEBUG] question_list_id 없음');
@@ -306,8 +302,9 @@ export default function CreateScreen({ navigation }) {
               setHistoryRefresh(Date.now());
               setNavTitle(list.title || businessSummary.trim().slice(0, 24));
 
-              // 모든 카드 애니메이션 완료 대기 후 thinking 박스 제거
-              await new Promise((resolve) => setTimeout(resolve, totalEnqueued * 120 + 500));
+              // 카드 fade-in(300ms) 완료 여유 시간 + REST API 레이턴시로 이미 충분히 대기됨.
+              // 추가 300ms로 [Sally thinking...] 자연스러운 소멸 시간 확보.
+              await new Promise((resolve) => setTimeout(resolve, 300));
 
               setIsGenerating(false);
 
@@ -527,7 +524,7 @@ export default function CreateScreen({ navigation }) {
 
                 {/* 완성된 카드들 — 위에서부터 쌓임 */}
                 {generatedItems.map((item, idx) => (
-                  <AnimatedCard key={idx} item={item} index={idx} />
+                  <AnimatedCard key={idx} item={item} />
                 ))}
 
                 {/* 현재 생성 중인 항목 미리보기 */}
