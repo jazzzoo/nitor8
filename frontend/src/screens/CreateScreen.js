@@ -62,9 +62,6 @@ function DotIndicator() {
           }}
         />
       ))}
-      <Text style={{ fontSize: 14, color: colors.textSecondary, marginLeft: 6 }}>
-        Sally is thinking...
-      </Text>
     </View>
   );
 }
@@ -527,8 +524,8 @@ export default function CreateScreen({ navigation }) {
                   <NeuCard style={[styles.streamCard, styles.thinkingCard]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
                       <DotIndicator />
+                      <Text style={styles.statusText}>{statusMessage}</Text>
                     </View>
-                    <Text style={styles.statusText}>{statusMessage}</Text>
                   </NeuCard>
                 )}
 
@@ -624,7 +621,6 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginTop: 8,
     lineHeight: 20,
   },
 
