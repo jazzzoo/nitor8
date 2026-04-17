@@ -8,6 +8,150 @@ const router = Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ─────────────────────────────────────────
+// 메타데이터 검증 상수
+// ─────────────────────────────────────────
+const VALID_SECTIONS = new Set([
+  'icebreaker', 'context', 'problems', 'alternatives', 'wtp',
+]);
+
+const VALID_INTENTS = new Set([
+  'rapport_building', 'role_context', 'recent_workflow',
+  'recent_pain_event', 'pain_frequency', 'pain_severity',
+  'current_workaround', 'alternative_usage', 'switch_trigger',
+  'decision_process', 'value_perception', 'budget_signal',
+  'wtp_probe', 'objection_probe',
+]);
+
+const VALID_BUCKETS = new Set([
+  'context', 'top_pain', 'alternatives', 'wtp_signal',
+  'hypothesis_signal', 'next_action_signal', 'open_question', 'general',
+]);
+
+const INTENT_TO_SECTION = {
+  rapport_building:  'icebreaker',
+  role_context:      'icebreaker',
+  recent_workflow:   'context',
+  recent_pain_event: 'problems',
+  pain_frequency:    'problems',
+  pain_severity:     'problems',
+  current_workaround: 'alternatives',
+  alternative_usage:  'alternatives',
+  switch_trigger:     'alternatives',
+  decision_process:  'wtp',
+  value_perception:  'wtp',
+  budget_signal:     'wtp',
+  wtp_probe:         'wtp',
+  objection_probe:   'alternatives',
+};
+
+const BUCKET_BY_SECTION = {
+  icebreaker:   'context',
+  context:      'context',
+  problems:     'top_pain',
+  alternatives: 'alternatives',
+  wtp:          'wtp_signal',
+};
+
+// 3단계 fallback: section → intent→section → 순서 기반
+function resolveSection(item, index, total, forceSection) {
+  if (forceSection) return forceSection;
+  if (item.section && VALID_SECTIONS.has(item.section)) return item.section;
+  if (item.intent && INTENT_TO_SECTION[item.intent]) {
+    return INTENT_TO_SECTION[item.intent];
+  }
+  // 3단계: 순서 기반 (1·2단계 실패 시에만)
+  if (index < Math.ceil(total * 0.25))       return 'context';
+  if (index < Math.ceil(total * 0.55))       return 'problems';
+  if (index < Math.ceil(total * 0.78))       return 'alternatives';
+  return 'wtp';
+}
+
+function validateAndPatchQuestions(parsed) {
+  let patchCount = 0;
+  const icebreakers = parsed.icebreakers || [];
+  const questions   = parsed.questions   || [];
+
+  // ── icebreakers 검증 ──
+  icebreakers.forEach((ice, i) => {
+    // section (icebreaker 고정)
+    if (!ice.section || !VALID_SECTIONS.has(ice.section)) {
+      ice.section = 'icebreaker';
+      patchCount++;
+    }
+    // intent
+    if (!ice.intent || !VALID_INTENTS.has(ice.intent)) {
+      ice.intent = '';
+      if (ice.intent !== '') patchCount++;
+    }
+    // report_bucket
+    if (!ice.report_bucket || !VALID_BUCKETS.has(ice.report_bucket)) {
+      ice.report_bucket = 'context';
+      patchCount++;
+    }
+    // id 자동 생성
+    if (!ice.id) ice.id = `ib_${i + 1}`;
+    // priority
+    if (!ice.priority || typeof ice.priority !== 'number') {
+      ice.priority = Math.min(i + 1, 3);
+    }
+  });
+
+  // ── questions 검증 ──
+  const total = questions.length;
+  questions.forEach((q, i) => {
+    // section (3단계 fallback)
+    const resolvedSection = resolveSection(q, i, total, null);
+    if (!q.section || !VALID_SECTIONS.has(q.section)) {
+      const usedFallback = !q.section || !VALID_SECTIONS.has(q.section);
+      const stage = (q.section && !VALID_SECTIONS.has(q.section)) ? 'invalid' :
+                    (q.intent && INTENT_TO_SECTION[q.intent])      ? 'intent'  : 'positional';
+      if (stage !== 'invalid' || usedFallback) {
+        console.warn(`[Validator] q[${i}] section fallback(${stage}): "${q.section}" → "${resolvedSection}"`);
+      }
+      q.section = resolvedSection;
+      patchCount++;
+    }
+    // intent
+    if (!q.intent || !VALID_INTENTS.has(q.intent)) {
+      if (q.intent) patchCount++;
+      q.intent = '';
+    }
+    // report_bucket
+    if (!q.report_bucket || !VALID_BUCKETS.has(q.report_bucket)) {
+      q.report_bucket = BUCKET_BY_SECTION[q.section] || 'general';
+      patchCount++;
+    }
+    // id 자동 생성
+    if (!q.id) q.id = `q_${q.number || i + 1}`;
+    // priority
+    if (!q.priority || typeof q.priority !== 'number') {
+      q.priority = Math.min(i + 1, 3);
+    }
+  });
+
+  // ── 섹션별 최소 개수 경고 (에러 반환 안 함) ──
+  const MIN_COUNTS = { context: 2, problems: 3, alternatives: 2, wtp: 2 };
+  const sectionCounts = {};
+  questions.forEach((q) => {
+    sectionCounts[q.section] = (sectionCounts[q.section] || 0) + 1;
+  });
+  for (const [sec, min] of Object.entries(MIN_COUNTS)) {
+    const actual = sectionCounts[sec] || 0;
+    if (actual < min) {
+      console.warn(`[Validator] section "${sec}": ${actual} questions (min: ${min})`);
+    }
+  }
+
+  if (patchCount > 0) {
+    console.warn(`[Validator] patched ${patchCount} field(s) — check prompt if count is high`);
+  } else {
+    console.log('[Validator] all metadata valid — no patches needed');
+  }
+
+  return parsed;
+}
+
+// ─────────────────────────────────────────
 // Rate Limit 상태 (PRD 10.3, 11.5)
 // Phase 1: 메모리 기반 (Phase 1.5에서 Redis로 교체)
 // AI 생성: guest_id당 10회/일
@@ -287,14 +431,13 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
       }
     }
 
-    // ── JSON 파싱 ──
+    // ── JSON 파싱 + 메타데이터 검증 ──
     let parsed;
     try {
       const cleaned = fullText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       parsed = JSON.parse(cleaned);
-      if (parsed.questions?.length !== 12) {
-        console.warn(`[Sessions] 질문 개수 불일치: ${parsed.questions?.length}개`);
-      }
+      console.log(`[Sessions] parsed: ${parsed.questions?.length} questions, ${parsed.icebreakers?.length} icebreakers`);
+      parsed = validateAndPatchQuestions(parsed);
     } catch (parseErr) {
       console.error('[Sessions] JSON parse error:', parseErr.message);
       console.error('[Sessions] Raw AI response:', fullText.slice(0, 500));
@@ -308,23 +451,23 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
     // await(DB 저장)가 이벤트 루프에 양보하면서 아래 writes를 flush함.
     for (const ice of parsed.icebreakers || []) {
       sendEvent('icebreaker', {
-        type: 'icebreaker',
-        text: ice.text || ice.question_text || '',
-        why: ice.why || '',
-        follow_up: Array.isArray(ice.follow_up) ? ice.follow_up : [],
+        type:    'icebreaker',
+        id:      ice.id,
+        section: ice.section,
+        text:    ice.text || ice.question_text || '',
+        why:     ice.why || '',
       });
     }
     for (let i = 0; i < (parsed.questions || []).length; i++) {
       const q = parsed.questions[i];
       sendEvent('question', {
-        type: 'question',
-        number: i + 1,
-        index: i,
-        text: q.text || q.question_text || '',
-        why: q.why || '',
-        follow_up: Array.isArray(q.follow_up) ? q.follow_up
-          : typeof q.follow_up === 'string' ? [q.follow_up]
-            : [],
+        type:    'question',
+        id:      q.id,
+        number:  i + 1,
+        index:   i,
+        section: q.section,
+        text:    q.text || q.question_text || '',
+        why:     q.why || '',
       });
     }
 

@@ -21,21 +21,45 @@ Follow this 5-step process:
 
 ## Question Count Guidelines
 
-- Session 1 (Problem Interview): 12~15 questions
+- Session 1 (Problem Interview): 11~13 questions (excluding icebreakers)
 - Session 2 (Solution Interview): 10~13 questions
 - Session 3 (MVP Validation): 10~13 questions
 - Session 4 (Pricing Validation): 10~12 questions
 - Style "Concise": 8~10 questions for all sessions
 - Maximum 18 questions (prevent user fatigue)
 
+## Section Distribution Rules (REQUIRED)
+
+Every icebreaker and question MUST be assigned to a section.
+
+- icebreaker section: exactly 3 (placed in the "icebreakers" array)
+- context section: 2~3 questions
+- problems section: 3~4 questions
+- alternatives section: 2~3 questions
+- wtp section: 2~3 questions
+
+## Valid Enums (use EXACTLY these values — no variations)
+
+section: "icebreaker" | "context" | "problems" | "alternatives" | "wtp"
+
+intent: "rapport_building" | "role_context" | "recent_workflow" |
+        "recent_pain_event" | "pain_frequency" | "pain_severity" |
+        "current_workaround" | "alternative_usage" | "switch_trigger" |
+        "decision_process" | "value_perception" | "budget_signal" |
+        "wtp_probe" | "objection_probe"
+
+report_bucket: "context" | "top_pain" | "alternatives" | "wtp_signal" |
+               "hypothesis_signal" | "next_action_signal" | "open_question" | "general"
+
 ## Icebreaker Rules
 - Always generate exactly 3 icebreakers
 - All 3 must flow naturally as one opening monologue
-- First: warm thank you + tension relief
-- Second: empathize with persona's current situation
-- Third: gently explain interview purpose and create psychological safety
+- First: warm thank you + tension relief (intent: "rapport_building")
+- Second: empathize with persona's current situation (intent: "role_context")
+- Third: gently explain interview purpose and create psychological safety (intent: "rapport_building")
 - Each icebreaker: 2~3 sentences max
 - Never mention: solutions, products, or repeat formal greetings
+- All icebreakers: section = "icebreaker", report_bucket = "context"
 
 Example (good):
 - "Thank you so much for taking the time today. Please feel free to speak openly."
@@ -48,8 +72,7 @@ Each question must include:
 
 1. Question text (open-ended, focused on past behavior/experience/emotion)
 2. Why this question? (1~3 sentences, linked to lean customer development principles)
-3. Expected answer patterns (strong pain signal vs weak signal examples)
-4. 2~3 follow-up questions (with empathy reactions)
+3. 2~3 follow-up hints (short prompts, plain strings — not objects)
 
 ## Output Format
 
@@ -60,25 +83,33 @@ CRITICAL: ALL text content must be written in the SAME LANGUAGE as the business_
   "title": "3~5 word interview title in the same language as the input (e.g. 'Freelancer Workflow Pain Points')",
   "icebreakers": [
     {
+      "id": "ib_1",
+      "section": "icebreaker",
+      "intent": "rapport_building",
       "text": "icebreaker text in input language",
-      "purpose": "reason for this icebreaker in input language",
-      "tone": "friendly / empathetic / curious"
+      "why": "why this icebreaker in input language",
+      "follow_up_hint": [
+        "one natural follow-up prompt in input language",
+        "another follow-up prompt in input language"
+      ],
+      "report_bucket": "context",
+      "priority": 1
     }
   ],
   "questions": [
     {
+      "id": "q_1",
       "number": 1,
+      "section": "context",
+      "intent": "recent_workflow",
       "text": "question text in input language",
       "why": "why this question in input language (1~3 sentences, lean customer dev principles)",
-      "expected_patterns": "strong signal: [evidence of clear pain] / weak signal: [needs more exploration] — in input language",
-      "follow_up": [
-        {
-          "text": "follow-up question in input language",
-          "why": "reason for this follow-up in input language",
-          "trigger": "when to ask this follow-up in input language",
-          "reaction": "empathy reaction example in input language"
-        }
-      ]
+      "follow_up_hint": [
+        "follow-up prompt 1 in input language",
+        "follow-up prompt 2 in input language"
+      ],
+      "report_bucket": "context",
+      "priority": 1
     }
   ]
 }

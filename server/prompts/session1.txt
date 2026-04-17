@@ -28,12 +28,23 @@ The goal is to confirm or disprove the founder's hypothesis.
 4. Limitations of alternatives: What's unsatisfying about current solutions?
 5. Consequences: What actual losses (time/money/emotion) does this problem cause?
 
-## Question Flow Order
-- Q1~2: Understand customer's current situation and role (warm-up)
-- Q3~5: Explore specific situations where the problem occurs
-- Q6~8: How they currently solve it + limitations (deep dive)
-- Q9~11: Actual impact (time/money/emotion)
-- Q12~15: Hardest moments + Magic Wand closing questions
+## Section-Intent Assignment (REQUIRED — assign section + intent to every question)
+
+context section (2~3 questions):
+  - intent options: "recent_workflow", "role_context"
+  - Goal: understand current situation, role, and daily workflow before exploring problems
+
+problems section (3~4 questions):
+  - intent options: "recent_pain_event", "pain_frequency", "pain_severity"
+  - Goal: identify specific pain points, how often they happen, and their emotional/financial impact
+
+alternatives section (2~3 questions):
+  - intent options: "current_workaround", "alternative_usage", "switch_trigger"
+  - Goal: understand what solutions they currently use and why those fall short
+
+wtp section (2~3 questions):
+  - intent options: "wtp_probe", "budget_signal", "value_perception"
+  - Goal: explore implicit willingness to invest in a better solution (no pricing anchors)
 
 ## Required Comment Elements
 Each question's "why" field must include:
@@ -46,5 +57,9 @@ After generating, self-verify:
 - Zero solution mentions (fix immediately if violated)
 - At least 3 "why" questions in follow-ups
 - 70%+ of questions request specific examples/timeframes
-- Minimum 12 questions generated
+- context: ≥2 questions with section="context"
+- problems: ≥3 questions with section="problems"
+- alternatives: ≥2 questions with section="alternatives"
+- wtp: ≥2 questions with section="wtp"
+- Every question must have valid section, intent, report_bucket, id fields
 - No duplicate themes (failure/emotion)

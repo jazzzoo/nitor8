@@ -244,7 +244,7 @@ export default function CreateScreen({ navigation }) {
       clearQueue();
       resetGeneration();
       tokenReceivedRef.current = false;
-      setStatusMessage('Sally가 사업 맥락을 파악하는 중...');
+      setStatusMessage('Reading your business context...');
       setMode('generating');
       setIsGenerating(true);
       setNavTitle('Generating...');
@@ -256,22 +256,22 @@ export default function CreateScreen({ navigation }) {
         onChunk: () => {
           if (!tokenReceivedRef.current) {
             tokenReceivedRef.current = true;
-            setStatusMessage('인터뷰 구조를 설계하는 중...');
+            setStatusMessage('Designing your interview structure...');
           }
         },
         onIcebreaker: (item) => {
-          setStatusMessage('✓ 아이스브레이킹 완성');
+          setStatusMessage('✓ Icebreakers ready');
           enqueueItem(item);
         },
         onQuestion: (item) => {
-          setStatusMessage('✓ 질문 리스트 완성');
+          setStatusMessage('✓ Questions ready');
           enqueueItem(item);
         },
 
         // complete: 큐가 모두 소진된 후 REST로 질문 배열 가져오기
         onComplete: (data) => {
           console.log('[COMPLETE] | queueLen:', itemQueueRef.current.length, '| timerActive:', !!queueTimerRef.current, '| data:', data);
-          setStatusMessage('인터뷰 질문이 준비됐어요! 🎉');
+          setStatusMessage('Your interview is ready! 🎉');
 
           afterQueueRef.current = async () => {
             // 이 시점: 큐가 비어있음 = 마지막 카드 표시 후 500ms 경과
