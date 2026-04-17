@@ -73,7 +73,8 @@ async function loadSession(token) {
        is2.expires_at,
        ql.questions  AS question_list,
        ql.title      AS interview_title,
-       s.input_context
+       s.input_context,
+       s.session_type
      FROM interview_sessions is2
      JOIN question_lists ql ON is2.question_list_id = ql.id
      JOIN sessions s ON ql.session_id = s.id
@@ -161,7 +162,7 @@ function getSectionTopics(questionList, section) {
 // ─────────────────────────────────────────────────────────────────
 // 프롬프트 조립
 // ─────────────────────────────────────────────────────────────────
-function buildSystemPrompt({ section, businessContext, keyTopics, completedSections, followupCount, maxFollowups }) {
+function buildSystemPrompt({ section, businessContext, keyTopics, completedSections, followupCount, maxFollowups, sessionType }) {
   const prevText =
     completedSections.length > 0
       ? completedSections
@@ -172,12 +173,13 @@ function buildSystemPrompt({ section, businessContext, keyTopics, completedSecti
   const topicsText =
     keyTopics.length > 0
       ? keyTopics.map((q, i) => {
-          const label = q.intent ? `[${q.intent}] ` : '';
           const hints = q.follow_up_hint?.length
-            ? `\n     Hints: ${q.follow_up_hint.slice(0, 2).join(' / ')}`
+            ? q.follow_up_hint.slice(0, 2)
+                .map((h, hi) => `     ${hi === 0 ? '→ If answer is short, probe:' : '→ Or dig deeper:'} ${h}`)
+                .join('\n')
             : '';
-          return `  ${i + 1}. ${label}${q.text || String(q)}${hints}`;
-        }).join('\n')
+          return `Q${i + 1}: ${q.text || String(q)}${hints ? '\n' + hints : ''}`;
+        }).join('\n\n')
       : '  (No specific topics — use your judgment based on the business context.)';
 
   const SECTION_COMPLETION_CRITERIA = {
@@ -202,6 +204,15 @@ Do NOT keep this section going unnecessarily. If the above conditions are mostly
 - You have some sense of budget or conditions`,
   };
 
+  const session1Rules = sessionType === 1 ? `
+[SESSION 1 RULES — CRITICAL, NO EXCEPTIONS]
+- NEVER mention solutions, products, or tools you could build
+- NEVER ask about pricing, value, or willingness to pay
+- NEVER ask "If you had a tool that..." or "What would it be worth..."
+- NEVER ask hypothetical future questions ("What if...", "Would you...")
+- Session 1 ends after the alternatives section — there is NO wtp section
+` : '';
+
   return `[ROLE]
 You are Sally, an expert customer development interviewer working on behalf of a non-native English founder.
 The respondent is a potential customer. Listen carefully and ask one thoughtful question at a time.
@@ -209,17 +220,26 @@ The respondent is a potential customer. Listen carefully and ask one thoughtful 
 [BUSINESS CONTEXT]
 ${businessContext}
 
-[KEY TOPICS TO COVER — use as guidance, not a rigid script]
+[INTERVIEW GUIDE — follow this closely]
+You have been given pre-designed interview questions for this section. Use them as your primary guide.
+
+Current section questions:
 ${topicsText}
+
+For each question:
+- Use the question text as your actual question (adapt naturally, don't read verbatim)
+- If the respondent gives a short answer, use the follow-up probes listed to dig deeper
+- Move to the next question only when the current one has been sufficiently explored
+DO NOT invent new questions outside this guide.
+DO NOT skip to solutions or pricing.
 
 [CURRENT SECTION: ${section.toUpperCase()}]
 Goal: ${SECTION_GOALS[section] || ''}
-
+${session1Rules}
 [RULES]
 - Ask exactly ONE question per response
 - Use natural, simple conversational English
 - Never mention section names, interview structure, or transitions to the respondent
-- Never ask about pricing until the wtp section
 - Do not repeat topics already covered in previous sections
 - Briefly acknowledge the respondent's last answer before your question (1 short sentence max)
 - Avoid hollow affirmations: no "Great!", "Interesting!", "Awesome!" — use genuine acknowledgment or nothing
@@ -313,11 +333,15 @@ async function callClaudeForTurn(systemPrompt, recentTurns, retryCount = 0) {
 // ─────────────────────────────────────────────────────────────────
 // 서버 의사결정 (Claude 힌트 참조하되 서버가 최종 결정)
 // ─────────────────────────────────────────────────────────────────
-function makeServerDecision(state, claudeResult, wordCount) {
+function makeServerDecision(state, claudeResult, wordCount, sessionType) {
   const section = state.current_section;
   const config = SECTION_CONFIG[section];
 
   if (!config) return { action: 'wrap_up' };
+
+  const orderedSections = sessionType === 1
+    ? SECTION_ORDER.filter((s) => s !== 'wtp')
+    : SECTION_ORDER;
 
   // 이번 턴 포함한 섹션 내 누적 user 턴 수
   const candidateTurnCount = (state.section_turn_count || 0) + 1;
@@ -329,8 +353,8 @@ function makeServerDecision(state, claudeResult, wordCount) {
 
   if (hardForce) {
     console.log(`[Interview] hard_max_turns(${config.hard_max_turns}) reached in section=${section}, forcing transition`);
-    const currentIdx = SECTION_ORDER.indexOf(section);
-    const nextSection = SECTION_ORDER[currentIdx + 1];
+    const currentIdx = orderedSections.indexOf(section);
+    const nextSection = orderedSections[currentIdx + 1];
     return nextSection
       ? { action: 'transition', nextSection }
       : { action: 'wrap_up' };
@@ -348,8 +372,8 @@ function makeServerDecision(state, claudeResult, wordCount) {
     claudeResult.section_complete_candidate;
 
   if (softTransition) {
-    const currentIdx = SECTION_ORDER.indexOf(section);
-    const nextSection = SECTION_ORDER[currentIdx + 1];
+    const currentIdx = orderedSections.indexOf(section);
+    const nextSection = orderedSections[currentIdx + 1];
     return nextSection
       ? { action: 'transition', nextSection }
       : { action: 'wrap_up' };
@@ -631,6 +655,7 @@ router.post('/:token/start', async (req, res) => {
       completedSections: [],
       followupCount:    0,
       maxFollowups:     SECTION_CONFIG.icebreaker.maxFollowups,
+      sessionType:      session.session_type,
     });
 
     let greetingText = `Hi ${session.respondent_name}! Great to meet you. Could you start by telling me a bit about yourself and what you do?`;
@@ -866,6 +891,7 @@ router.post('/:token/chat', async (req, res) => {
         completedSections,
         followupCount:    state.followup_count || 0,
         maxFollowups:     SECTION_CONFIG[state.current_section]?.maxFollowups ?? 0,
+        sessionType:      session.session_type,
       });
 
       // user turn 저장 후 context 로드 (현재 user 턴 포함)
@@ -873,7 +899,7 @@ router.post('/:token/chat', async (req, res) => {
       const claudeResult = await callClaudeForTurn(systemPrompt, recentTurns);
 
       // 2. 서버 최종 결정
-      decision = makeServerDecision(state, claudeResult, wordCount);
+      decision = makeServerDecision(state, claudeResult, wordCount, session.session_type);
 
       if (decision.action === 'transition') {
         // 전환: 현재 섹션 요약 생성 후 새 섹션 opening 질문 요청
@@ -887,6 +913,7 @@ router.post('/:token/chat', async (req, res) => {
           completedSections: updatedCompletedSections,
           followupCount:    0,
           maxFollowups:     SECTION_CONFIG[decision.nextSection]?.maxFollowups ?? 0,
+          sessionType:      session.session_type,
         });
 
         const nextResult = await callClaudeForTurn(nextSystemPrompt, recentTurns);
