@@ -18,8 +18,17 @@ const PORT = process.env.PORT || 3000;
 // ─────────────────────────────────────────
 // 미들웨어
 // ─────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'https://sally-ai-gamma.vercel.app',
+  'http://localhost:8081',
+  'http://localhost:19006',
+  ...(process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || []),
+];
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS blocked: ${origin}`));
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: '*',
   exposedHeaders: ['Content-Type', 'Cache-Control'],
