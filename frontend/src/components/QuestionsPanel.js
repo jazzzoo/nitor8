@@ -268,9 +268,6 @@ export default function QuestionsPanel({ scrollRef, style }) {
           {interviewSessions.map((s) => {
             const report = reports[s.id];
             const isCompleted = s.status === 'completed';
-            const isActive = s.status === 'active';
-            const appUrl = 'https://sally-ai-gamma.vercel.app';
-            const interviewUrl = s.url || (s.link_token ? `${appUrl}/interview/${s.link_token}` : null);
             return (
               <Pressable
                 key={s.id}
@@ -279,24 +276,31 @@ export default function QuestionsPanel({ scrollRef, style }) {
                   pressed && { opacity: 0.75 },
                 ]}
                 onPress={() => {
-                  console.log('[SessionRow] pressed, status=', s.status, 'report=', report?.status);
+                  console.log('[SessionRow] pressed, status=', s.status, 'report=', report?.status, 'link_token=', s.link_token);
                   if (isCompleted && report?.status === 'completed') {
                     navigation.navigate('Report', { reportId: report.id });
-                  } else if (isActive && interviewUrl) {
+                    return;
+                  }
+                  if (s.status === 'active' || s.status === 'pending') {
+                    const url = s.link_token
+                      ? `https://sally-ai-gamma.vercel.app/interview/${s.link_token}`
+                      : s.url || null;
                     Alert.alert(
                       'Interview Link',
-                      interviewUrl,
+                      url || 'Link not available',
                       [
-                        {
+                        url ? {
                           text: 'Copy Link',
-                          onPress: async () => {
-                            await copyToClipboard(interviewUrl);
+                          onPress: () => {
+                            navigator.clipboard?.writeText(url)
+                              .catch(() => console.log('Copy failed'));
                             Alert.alert('Copied!');
                           },
-                        },
-                        { text: 'Close', style: 'cancel' },
-                      ]
+                        } : null,
+                        { text: 'Close' },
+                      ].filter(Boolean)
                     );
+                    return;
                   }
                 }}
               >
