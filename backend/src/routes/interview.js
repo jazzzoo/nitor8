@@ -48,7 +48,7 @@ const SECTION_GOALS = {
 function detectExitSignal(text) {
   const t = text.trim();
   if (/^(stop|quit|end|exit|bye|goodbye|done|finish)\.?$/i.test(t)) return 'hard_stop';
-  if (/need to (go|leave|run|jump)|can we wrap|running out of time|one (last|more) (question|thing)/i.test(t)) return 'soft_stop';
+  if (/need to (go|leave|run|jump)|can we (wrap|stop)|running out of time|one (last|more) (question|thing)|I have to (go|leave)|I need to leave/i.test(t)) return 'soft_stop';
   if (/how (much|long|many).*(longer|left|more|remain|take)|when (will|does|do).*(end|finish|over|done)|almost (done|over|finished)/i.test(t)) return 'time_check';
   return null;
 }
@@ -857,22 +857,15 @@ router.post('/:token/chat', async (req, res) => {
          WHERE interview_session_id = $2`,
         [newCount, session.id]
       );
-      if (newCount >= 3) {
-        await query(
-          `UPDATE interview_sessions
-           SET status = 'abandoned', abandoned_at = NOW(), last_activity_at = NOW()
-           WHERE id = $1`,
-          [session.id]
-        );
+      if (newCount >= 5) {
         return res.json({
           success: true,
           data: {
             message: {
               role: 'assistant',
-              content: "It seems like you're having trouble responding right now. Feel free to come back anytime — the link will still be active.",
+              content: "No worries — take your time! Let me ask you something slightly different.",
             },
             is_completed: false,
-            abandoned: true,
           },
         });
       }
@@ -984,7 +977,7 @@ router.post('/:token/chat', async (req, res) => {
       let forceSkip = false;
       if (responseType === 'discomfort') {
         forceSkip = true;
-      } else if ((responseType === 'off_topic' || responseType === 'short_answer') && recoveryCount >= 2) {
+      } else if ((responseType === 'off_topic' || responseType === 'short_answer') && recoveryCount >= 3) {
         forceSkip = true;
       }
 

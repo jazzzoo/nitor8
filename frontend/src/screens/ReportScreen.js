@@ -9,14 +9,18 @@ import { colors, spacing, radius, textStyles } from '../theme';
 
 const POLL_INTERVAL_MS = 5000;
 const POLL_MAX_MS      = 60000;
+const AUTO_RETRY_MS    = 30000;
 
 export default function ReportScreen({ route, navigation }) {
   const { reportId } = route.params;
-  const [report, setReport]   = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
-  const pollRef    = useRef(null);
-  const elapsedRef = useRef(0);
+  const [report, setReport]       = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState(null);
+  const [isTimedOut, setIsTimedOut] = useState(false);
+  const pollRef         = useRef(null);
+  const elapsedRef      = useRef(0);
+  const autoRetryRef    = useRef(null);
+  const autoRetryDoneRef = useRef(false);
 
   async function fetchReport() {
     try {
@@ -26,6 +30,7 @@ export default function ReportScreen({ route, navigation }) {
       setLoading(false);
       if (data?.status === 'completed' || data?.status === 'failed') {
         stopPolling();
+        setIsTimedOut(false);
       }
     } catch (err) {
       setError(err.message || 'Failed to load report.');
@@ -41,17 +46,45 @@ export default function ReportScreen({ route, navigation }) {
     }
   }
 
-  useEffect(() => {
-    fetchReport();
+  function startPolling() {
+    stopPolling();
+    elapsedRef.current = 0;
+    setIsTimedOut(false);
     pollRef.current = setInterval(() => {
       elapsedRef.current += POLL_INTERVAL_MS;
       if (elapsedRef.current >= POLL_MAX_MS) {
         stopPolling();
+        setIsTimedOut(true);
+        if (!autoRetryDoneRef.current) {
+          autoRetryDoneRef.current = true;
+          autoRetryRef.current = setTimeout(() => {
+            fetchReport();
+            startPolling();
+          }, AUTO_RETRY_MS);
+        }
         return;
       }
       fetchReport();
     }, POLL_INTERVAL_MS);
-    return () => stopPolling();
+  }
+
+  function handleRefresh() {
+    if (autoRetryRef.current) {
+      clearTimeout(autoRetryRef.current);
+      autoRetryRef.current = null;
+    }
+    autoRetryDoneRef.current = false;
+    fetchReport();
+    startPolling();
+  }
+
+  useEffect(() => {
+    fetchReport();
+    startPolling();
+    return () => {
+      stopPolling();
+      if (autoRetryRef.current) clearTimeout(autoRetryRef.current);
+    };
   }, [reportId]);
 
   return (
@@ -72,7 +105,9 @@ export default function ReportScreen({ route, navigation }) {
             ? <CompletedReport report={report} />
             : report.status === 'failed'
               ? <ErrorState message="Report generation failed. Please try again later." />
-              : <PendingState />
+              : isTimedOut
+                ? <TimeoutState onRefresh={handleRefresh} />
+                : <PendingState />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -106,6 +141,21 @@ function PendingState() {
         <View style={[styles.skeletonLine, { width: '90%' }]} />
         <View style={[styles.skeletonLine, { width: '65%' }]} />
       </View>
+    </View>
+  );
+}
+
+function TimeoutState({ onRefresh }) {
+  return (
+    <View style={styles.centered}>
+      <ActivityIndicator size="large" color={colors.primaryMid} />
+      <Text style={styles.timeoutTitle}>Still generating your report...</Text>
+      <Text style={styles.timeoutSubtext}>
+        This is taking longer than usual.{'\n'}Please check back in a few minutes.
+      </Text>
+      <TouchableOpacity style={styles.refreshBtn} onPress={onRefresh}>
+        <Text style={styles.refreshBtnText}>Refresh</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -377,6 +427,17 @@ const styles = StyleSheet.create({
   },
   loadingText:    { ...textStyles.body,   color: colors.textSecondary, marginTop: spacing.md },
   loadingSubtext: { ...textStyles.caption, color: colors.textDisabled },
+  timeoutTitle: { ...textStyles.body, color: colors.textPrimary, fontWeight: '600', marginTop: spacing.md, textAlign: 'center' },
+  timeoutSubtext: { ...textStyles.caption, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
+  refreshBtn: {
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 10,
+  },
+  refreshBtnText: { ...textStyles.bodyS, color: colors.primary, fontWeight: '600' },
   errorIcon:    { fontSize: 32, color: colors.error },
   errorTitle:   { ...textStyles.h3,   color: colors.textPrimary },
   errorMessage: { ...textStyles.bodyS, color: colors.textSecondary, textAlign: 'center', paddingHorizontal: spacing.lg },

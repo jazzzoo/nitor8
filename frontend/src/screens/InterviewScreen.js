@@ -130,6 +130,7 @@ export default function InterviewScreen({ route }) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState(null);
   const [needsName, setNeedsName] = useState(false);
+  const [isClosed, setIsClosed] = useState(false);
 
   const scrollRef = useRef(null);
 
@@ -157,6 +158,11 @@ export default function InterviewScreen({ route }) {
         setIsLoading(false);
         scrollToBottom();
       } catch (err) {
+        if (err.status === 410 || err.code === 'INTERVIEW_CLOSED') {
+          setIsClosed(true);
+          setIsLoading(false);
+          return;
+        }
         setError(err.message || 'Failed to load interview.');
         setIsLoading(false);
       }
@@ -211,6 +217,20 @@ export default function InterviewScreen({ route }) {
     }
   }, [inputText, isSending, isCompleted, token]);
 
+  // 비활성화된 링크
+  if (isClosed) {
+    return (
+      <SafeAreaView style={styles.errorContainer}>
+        <Text style={styles.errorIcon}>✦</Text>
+        <Text style={styles.errorTitle}>Interview Closed</Text>
+        <Text style={styles.errorMessage}>
+          This interview is no longer accepting responses.{'\n'}
+          If you have questions, please contact the researcher.
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
   // 에러 표시
   if (error && !sessionInfo) {
     return (
@@ -259,7 +279,7 @@ export default function InterviewScreen({ route }) {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}
         keyboardVerticalOffset={0}
       >
         {/* 채팅 영역 */}

@@ -42,6 +42,8 @@ export default function QuestionsPanel({ scrollRef, style }) {
   const [interviewSessions, setInterviewSessions] = useState([]);
   const [reports, setReports] = useState({});
   const [linkModal, setLinkModal] = useState({ visible: false, url: null });
+  const [closingSessionId, setClosingSessionId] = useState(null);
+  const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
 
   const toggle = useCallback(
     (id) => setExpanded((prev) => (prev === id ? null : id)),
@@ -124,6 +126,21 @@ export default function QuestionsPanel({ scrollRef, style }) {
   }
 
   // 응답자 1명 = 링크 1개, 항상 새로 생성
+  async function handleCloseLink() {
+    if (!closingSessionId) return;
+    setCloseConfirmVisible(false);
+    try {
+      await interviewSessionsApi.deactivate(closingSessionId);
+      setInterviewSessions((prev) =>
+        prev.map((s) => s.id === closingSessionId ? { ...s, status: 'abandoned' } : s)
+      );
+    } catch (err) {
+      Alert.alert('Error', 'Failed to close the link. Please try again.');
+    } finally {
+      setClosingSessionId(null);
+    }
+  }
+
   async function handleFinalizePress() {
     if (!listId) return;
     setIsLoadingLink(true);
@@ -259,6 +276,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
           {interviewSessions.map((s) => {
             const report = reports[s.id];
             const isCompleted = s.status === 'completed';
+            const isActive = s.status === 'active' || s.status === 'in_progress';
             return (
               <Pressable
                 key={s.id}
@@ -272,7 +290,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
                     navigation.navigate('Report', { reportId: report.id });
                     return;
                   }
-                  if (s.status === 'active' || s.status === 'pending') {
+                  if (isActive) {
                     setLinkModal({
                       visible: true,
                       url: s.link_token
@@ -293,6 +311,18 @@ export default function QuestionsPanel({ scrollRef, style }) {
                 </View>
                 <View style={styles.sessionRight}>
                   <ReportBadge status={s.status} reportStatus={report?.status} />
+                  {isActive && (
+                    <TouchableOpacity
+                      style={styles.closeLinkBtn}
+                      onPress={(e) => {
+                        e.stopPropagation?.();
+                        setClosingSessionId(s.id);
+                        setCloseConfirmVisible(true);
+                      }}
+                    >
+                      <Text style={styles.closeLinkText}>Close Link</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </Pressable>
             );
@@ -345,6 +375,35 @@ export default function QuestionsPanel({ scrollRef, style }) {
         </View>
       </Modal>
 
+      {/* Close Link 확인 모달 */}
+      <Modal
+        visible={closeConfirmVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCloseConfirmVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Close this interview link?</Text>
+            <Text style={styles.modalSubtitle}>
+              Respondents won't be able to access it anymore.
+            </Text>
+            <TouchableOpacity
+              style={[styles.modalBtnPrimary, { backgroundColor: '#C62828' }]}
+              onPress={handleCloseLink}
+            >
+              <Text style={styles.modalBtnPrimaryText}>Close Link</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalBtnClose}
+              onPress={() => setCloseConfirmVisible(false)}
+            >
+              <Text style={styles.modalBtnCloseText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* 질문 리스트 공유 (Share2 아이콘 → 팀원 공유용) */}
       <InterviewLinkModal
         visible={linkModal.visible}
@@ -379,9 +438,10 @@ export default function QuestionsPanel({ scrollRef, style }) {
 // ── 리포트 상태 배지 ───────────────────────────────────────────
 function ReportBadge({ status, reportStatus }) {
   if (status !== 'completed') {
-    const label = status === 'active' ? 'Active' : 'Abandoned';
-    const bg = status === 'active' ? '#E8F4FD' : '#F5F5F5';
-    const color = status === 'active' ? '#1976D2' : '#9E9E9E';
+    const isActive = status === 'active' || status === 'in_progress';
+    const label = isActive ? 'Active' : 'Closed';
+    const bg = isActive ? '#E8F4FD' : '#F5F5F5';
+    const color = isActive ? '#1976D2' : '#9E9E9E';
     return <View style={[styles.badge, { backgroundColor: bg }]}><Text style={[styles.badgeText, { color }]}>{label}</Text></View>;
   }
   if (!reportStatus || reportStatus === 'pending' || reportStatus === 'generating') {
@@ -681,4 +741,13 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   viewReportText: { fontSize: 12, fontWeight: '600', color: colors.white },
+  closeLinkBtn: {
+    backgroundColor: '#FFF0F0',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  closeLinkText: { fontSize: 11, fontWeight: '600', color: '#C62828' },
 });
