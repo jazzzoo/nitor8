@@ -9,6 +9,7 @@ import {
   Platform, SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, gradientColors } from '../theme';
 import { interviewApi } from '../api/client';
 
@@ -122,9 +123,11 @@ function NamePrompt({ onSubmit, isLoading }) {
 export default function InterviewScreen({ route }) {
   const token = route?.params?.token;
 
-  useEffect(() => {
-    if (typeof document !== 'undefined') document.title = 'Sally - Interview';
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (typeof document !== 'undefined') document.title = 'Sally - Interview';
+    }, [])
+  );
 
   const [sessionInfo, setSessionInfo] = useState(null);
   const [turns, setTurns] = useState([]);

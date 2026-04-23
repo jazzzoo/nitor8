@@ -129,12 +129,9 @@ export default function IntroScreen({ navigation }) {
   const { width } = useWindowDimensions();
   const setNavTitle = useStore((s) => s.setNavTitle);
 
-  useEffect(() => {
-    if (typeof document !== 'undefined') document.title = 'Sally';
-  }, []);
-
   useFocusEffect(
     React.useCallback(() => {
+      if (typeof document !== 'undefined') document.title = 'Sally';
       setNavTitle('');   // 인트로에선 타이틀 비움
     }, [])
   );
