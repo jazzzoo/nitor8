@@ -3,11 +3,11 @@
 // 데스크탑: CreateScreen 우측 패널에서 렌더
 // 모바일:   QuestionsScreen에서 렌더
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   ScrollView, StyleSheet, Alert, Clipboard,
-  Share, Pressable, Modal, Platform,
+  Share, Pressable, Modal, Platform, Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import InterviewLinkModal from './InterviewLinkModal';
@@ -20,7 +20,7 @@ import ModalDialog from './ModalDialog';
 import useStore from '../store/useStore';
 import { questionListsApi, interviewSessionsApi, reportsApi } from '../api/client';
 import { colors, spacing, radius, textStyles, shadows } from '../theme';
-import { Copy, Share2 } from 'lucide-react-native';
+import { Copy, Share2, List } from 'lucide-react-native';
 
 
 export default function QuestionsPanel({ scrollRef, style }) {
@@ -44,6 +44,18 @@ export default function QuestionsPanel({ scrollRef, style }) {
   const [linkModal, setLinkModal] = useState({ visible: false, url: null });
   const [closingSessionId, setClosingSessionId] = useState(null);
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
+  const [interviewPanelOpen, setInterviewPanelOpen] = useState(false);
+  const slideAnim = useRef(new Animated.Value(300)).current;
+
+  function openInterviewPanel() {
+    setInterviewPanelOpen(true);
+    Animated.timing(slideAnim, { toValue: 0, duration: 250, useNativeDriver: true }).start();
+  }
+
+  function closeInterviewPanel() {
+    Animated.timing(slideAnim, { toValue: 300, duration: 250, useNativeDriver: true })
+      .start(() => setInterviewPanelOpen(false));
+  }
 
   const toggle = useCallback(
     (id) => setExpanded((prev) => (prev === id ? null : id)),
@@ -184,6 +196,9 @@ export default function QuestionsPanel({ scrollRef, style }) {
             <TouchableOpacity style={styles.iconBtn} onPress={handleExportPress} title="공유하기">
               <Share2 size={20} color={colors.textSecondary} />
             </TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn} onPress={openInterviewPanel} title="Interviews">
+              <List size={20} color={interviewSessions.length > 0 ? colors.primaryEnd : colors.textSecondary} />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -269,66 +284,79 @@ export default function QuestionsPanel({ scrollRef, style }) {
 
       </Pressable>
 
-      {/* 인터뷰 세션 목록 — Pressable 밖에 배치 (이벤트 가로채기 방지) */}
-      {interviewSessions.length > 0 && (
-        <View style={styles.sessionsSection}>
-          <Text style={styles.sectionLabel}>Interviews</Text>
-          {interviewSessions.map((s) => {
-            const report = reports[s.id];
-            const isCompleted = s.status === 'completed';
-            const isActive = s.status === 'active' || s.status === 'in_progress';
-            return (
-              <Pressable
-                key={s.id}
-                style={({ pressed }) => [
-                  styles.sessionRow,
-                  pressed && { opacity: 0.75 },
-                ]}
-                onPress={() => {
-                  console.log('[SessionRow] pressed, status=', s.status, 'report=', report?.status, 'link_token=', s.link_token);
-                  if (isCompleted && report?.status === 'completed') {
-                    navigation.navigate('Report', { reportId: report.id });
-                    return;
-                  }
-                  if (isActive) {
-                    setLinkModal({
-                      visible: true,
-                      url: s.link_token
-                        ? `https://sally-ai-gamma.vercel.app/interview/${s.link_token}`
-                        : s.url || null,
-                    });
-                    return;
-                  }
-                }}
-              >
-                <View style={styles.sessionInfo}>
-                  <Text style={styles.sessionName}>
-                    {s.respondent_name || 'Pending...'}
-                  </Text>
-                  <Text style={styles.sessionDate}>
-                    {new Date(s.created_at).toLocaleDateString()}
-                  </Text>
-                </View>
-                <View style={styles.sessionRight}>
-                  <ReportBadge status={s.status} reportStatus={report?.status} />
-                  {isActive && (
-                    <TouchableOpacity
-                      style={styles.closeLinkBtn}
-                      onPress={(e) => {
-                        e.stopPropagation?.();
-                        setClosingSessionId(s.id);
-                        setCloseConfirmVisible(true);
+      {/* 인터뷰 현황 슬라이드 패널 */}
+      <Modal
+        visible={interviewPanelOpen}
+        transparent
+        animationType="none"
+        onRequestClose={closeInterviewPanel}
+      >
+        <View style={styles.slideOverlayContainer}>
+          <Pressable style={styles.slideOverlay} onPress={closeInterviewPanel} />
+          <Animated.View style={[styles.slidePanel, { transform: [{ translateX: slideAnim }] }]}>
+            <View style={styles.slidePanelHeader}>
+              <Text style={styles.slidePanelTitle}>Interviews</Text>
+              <Pressable onPress={closeInterviewPanel} style={styles.slidePanelClose}>
+                <Text style={styles.slidePanelCloseText}>✕</Text>
+              </Pressable>
+            </View>
+            <ScrollView style={styles.slidePanelScroll} contentContainerStyle={styles.slidePanelContent}>
+              {interviewSessions.length === 0 ? (
+                <Text style={styles.slidePanelEmpty}>No interviews yet.{'\n'}Tap "Finalize → Share Link" to create one.</Text>
+              ) : (
+                interviewSessions.map((s) => {
+                  const report = reports[s.id];
+                  const isCompleted = s.status === 'completed';
+                  const isActive = s.status === 'active' || s.status === 'in_progress';
+                  return (
+                    <Pressable
+                      key={s.id}
+                      style={({ pressed }) => [styles.sessionRow, pressed && { opacity: 0.75 }]}
+                      onPress={() => {
+                        if (isCompleted && report?.status === 'completed') {
+                          closeInterviewPanel();
+                          navigation.navigate('Report', { reportId: report.id });
+                          return;
+                        }
+                        if (isActive) {
+                          closeInterviewPanel();
+                          setLinkModal({
+                            visible: true,
+                            url: s.link_token
+                              ? `https://sally-ai-gamma.vercel.app/interview/${s.link_token}`
+                              : s.url || null,
+                          });
+                          return;
+                        }
                       }}
                     >
-                      <Text style={styles.closeLinkText}>Close Link</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </Pressable>
-            );
-          })}
+                      <View style={styles.sessionInfo}>
+                        <Text style={styles.sessionName}>{s.respondent_name || 'Pending...'}</Text>
+                        <Text style={styles.sessionDate}>{new Date(s.created_at).toLocaleDateString()}</Text>
+                      </View>
+                      <View style={styles.sessionRight}>
+                        <ReportBadge status={s.status} reportStatus={report?.status} />
+                        {isActive && (
+                          <TouchableOpacity
+                            style={styles.closeLinkBtn}
+                            onPress={(e) => {
+                              e.stopPropagation?.();
+                              setClosingSessionId(s.id);
+                              setCloseConfirmVisible(true);
+                            }}
+                          >
+                            <Text style={styles.closeLinkText}>Close Link</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </Pressable>
+                  );
+                })
+              )}
+            </ScrollView>
+          </Animated.View>
         </View>
-      )}
+      </Modal>
 
       {/* 인터뷰 링크 모달 */}
       <Modal
@@ -700,18 +728,62 @@ const styles = StyleSheet.create({
     color: colors.textDisabled,
   },
 
-  // ── 인터뷰 세션 목록 ──────────────────────────────────────────
-  sessionsSection: {
-    marginTop: spacing.md,
+  // ── 인터뷰 슬라이드 패널 ─────────────────────────────────────
+  slideOverlayContainer: {
+    flex: 1,
+  },
+  slideOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  slidePanel: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: '85%',
+    maxWidth: 360,
+    backgroundColor: colors.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: -2, height: 0 },
+    shadowOpacity: 0.2,
+    elevation: 10,
+  },
+  slidePanelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingTop: 48,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  slidePanelTitle: {
+    ...textStyles.bodyM,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  slidePanelClose: {
+    padding: 8,
+  },
+  slidePanelCloseText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+  slidePanelScroll: {
+    flex: 1,
+  },
+  slidePanelContent: {
+    padding: spacing.md,
     gap: spacing.xs,
   },
-  sectionLabel: {
-    ...textStyles.caption,
+  slidePanelEmpty: {
+    ...textStyles.bodyS,
     color: colors.textDisabled,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 4,
+    textAlign: 'center',
+    marginTop: spacing.lg,
+    lineHeight: 22,
   },
   sessionRow: {
     flexDirection: 'row',
