@@ -82,8 +82,22 @@ export default function EditPanel({ item, listId, onUpdate }) {
       </View>
 
       <View style={styles.panelBody}>
-        {/* 현재 텍스트 (아이스브레이커 / 리액션만) */}
-        {(isIce || isReaction) && (
+        {/* 아이스브레이커: 번역 있을 때 EN + Translation 두 칸 표시 */}
+        {isIce && item.text_translated && (
+          <Section label="Current Text">
+            <View style={styles.insetBox}>
+              <Text style={styles.translatedNoteLabel}>EN — Respondent</Text>
+              <Text style={styles.currentText}>{item.text}</Text>
+            </View>
+            <View style={[styles.insetBox, { marginTop: spacing.xs }]}>
+              <Text style={styles.translatedNoteLabel}>Translation</Text>
+              <Text style={styles.currentText}>{item.text_translated}</Text>
+            </View>
+          </Section>
+        )}
+
+        {/* 아이스브레이커(번역 없음) / 리액션: 기존 편집 가능 텍스트 */}
+        {((isIce && !item.text_translated) || isReaction) && (
           <Section label="Current Text">
             <View style={styles.insetBox}>
               {isEditing ? (
@@ -107,6 +121,37 @@ export default function EditPanel({ item, listId, onUpdate }) {
                   <Text style={styles.currentText}>{item.text}</Text>
                 </TouchableOpacity>
               )}
+            </View>
+          </Section>
+        )}
+
+        {/* 아이스브레이커: 번역 있을 때 편집 모드 */}
+        {isIce && item.text_translated && isEditing && (
+          <Section label="Edit Text (EN)">
+            <View style={styles.insetBox}>
+              <TextInput
+                style={[styles.currentText, { minHeight: 60 }]}
+                value={editText}
+                onChangeText={setEditText}
+                multiline
+                autoFocus
+              />
+              <TouchableOpacity
+                onPress={() => { onUpdate?.({ text: editText }); setIsEditing(false); }}
+                style={{ marginTop: 6, alignItems: 'flex-end' }}
+              >
+                <Text style={{ fontSize: 14, color: colors.primaryEnd, fontWeight: '600' }}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </Section>
+        )}
+
+        {/* 아이스브레이커 Why */}
+        {isIce && (item.why || item.why_translated) && (
+          <Section label="Why This Question?">
+            <View style={styles.whyBox}>
+              <Text style={styles.whyLabel}>Why? </Text>
+              <Text style={styles.whyText}>{item.why_translated || item.why}</Text>
             </View>
           </Section>
         )}
@@ -146,19 +191,13 @@ export default function EditPanel({ item, listId, onUpdate }) {
           </Section>
         )}
 
-        {/* 왜 이 질문? (일반 질문만) - 번역 우선, 영어 원문 아래 표시 */}
+        {/* 왜 이 질문? (일반 질문만) */}
         {!isIce && !isReaction && (item.why || item.why_translated) && (
           <Section label="Why This Question?">
             <View style={styles.whyBox}>
               <Text style={styles.whyLabel}>Why? </Text>
               <Text style={styles.whyText}>{item.why_translated || item.why}</Text>
             </View>
-            {item.why_translated && (
-              <View style={[styles.whyBox, { marginTop: spacing.xs }]}>
-                <Text style={styles.enNoteLabel}>EN </Text>
-                <Text style={styles.enNoteText}>{item.why}</Text>
-              </View>
-            )}
           </Section>
         )}
 
