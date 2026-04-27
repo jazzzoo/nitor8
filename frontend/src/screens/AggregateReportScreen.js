@@ -5,9 +5,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { reportsApi } from '../api/client';
-import { colors, gradientColors, spacing, radius, textStyles } from '../theme';
+import { colors, spacing, radius, textStyles } from '../theme';
 
 const POLL_INTERVAL_MS = 5000;
 const POLL_MAX_MS      = 90000;
@@ -98,9 +97,9 @@ function CompletedAggregateReport({ report }) {
     <View style={styles.reportContainer}>
       {/* Header */}
       <View style={styles.headerRow}>
-        <LinearGradient colors={gradientColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.countBadge}>
+        <View style={styles.countBadge}>
           <Text style={styles.countBadgeText}>{r.respondent_count ?? '?'} respondents</Text>
-        </LinearGradient>
+        </View>
         {r.completed_at && (
           <Text style={styles.dateText}>
             {(() => { const d = new Date(report.completed_at); return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`; })()}
@@ -218,7 +217,7 @@ function DecisionBadge({ recommendation }) {
     continue:         { label: 'Continue Interviewing',      bg: colors.surface, color: colors.primary },
     narrow_icp:       { label: 'Narrow ICP',                 bg: colors.surface, color: colors.primaryMid },
     pivot:            { label: 'Pivot',                      bg: colors.surface, color: colors.primaryEnd },
-    move_to_solution: { label: 'Move to Solution Interview', bg: colors.surface, color: colors.textPrimary },
+    move_to_solution: { label: 'Move to Solution Interview', bg: colors.surface, color: colors.textSecondary },
   };
   const cfg = map[recommendation] || { label: recommendation, bg: colors.border, color: colors.textSecondary };
   return (
@@ -245,7 +244,7 @@ function VerdictBadge({ status }) {
 
 function EvidenceBadge({ level }) {
   const map = {
-    strong: { label: 'Strong evidence', bg: colors.background, color: colors.textPrimary },
+    strong: { label: 'Strong evidence', bg: colors.background, color: colors.textSecondary },
     medium: { label: 'Medium evidence', bg: colors.background, color: colors.textSecondary },
     weak:   { label: 'Weak evidence',   bg: colors.background, color: colors.textDisabled },
   };
@@ -325,8 +324,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   backBtn:  { width: 60 },
-  backText: { fontSize: 16, color: colors.primary, fontWeight: '500' },
-  topTitle: { ...textStyles.h3, color: colors.textPrimary },
+  backText: { fontSize: 14, color: colors.primary, fontWeight: '500' },
+  topTitle: { ...textStyles.h3, color: colors.textSecondary },
 
   scroll: {
     padding: spacing.lg,
@@ -348,14 +347,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   refreshBtnText: { ...textStyles.bodyS, color: colors.primary, fontWeight: '600' },
-  errorTitle:   { ...textStyles.h3,    color: colors.textPrimary },
+  errorTitle:   { ...textStyles.h3,    color: colors.textSecondary },
   errorMessage: { ...textStyles.bodyS, color: colors.textSecondary, textAlign: 'center' },
 
   reportContainer: { gap: spacing.md },
 
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs },
-  countBadge: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5 },
-  countBadgeText: { fontSize: 13, fontWeight: '400', color: colors.white },
+  countBadge: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: colors.background },
+  countBadgeText: { fontSize: 11, fontWeight: '700', color: colors.textSecondary },
   dateText: { ...textStyles.caption, color: colors.textDisabled },
 
   decisionCard: {
@@ -399,7 +398,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   painHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, flexWrap: 'wrap' },
-  painTitle: { ...textStyles.bodyS, color: colors.textPrimary, fontWeight: '700', flex: 1 },
+  painTitle: { ...textStyles.bodyS, color: colors.textSecondary, fontWeight: '700', flex: 1 },
   freqChip: {
     ...textStyles.caption,
     fontSize: 14,
@@ -416,8 +415,8 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.sm,
     gap: 4,
   },
-  workaroundMethod: { ...textStyles.bodyS, color: colors.textPrimary, fontWeight: '700', flex: 1 },
-  complaint: { ...textStyles.caption, color: colors.primaryEnd, fontStyle: 'italic', lineHeight: 29 },
+  workaroundMethod: { ...textStyles.bodyS, color: colors.textSecondary, fontWeight: '700', flex: 1 },
+  complaint: { ...textStyles.bodyS, color: colors.primaryEnd, fontStyle: 'italic' },
 
   evidenceQuote: {
     ...textStyles.caption,
