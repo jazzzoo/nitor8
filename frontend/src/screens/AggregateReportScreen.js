@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
 
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs },
   countBadge: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5 },
-  countBadgeText: { fontSize: 12, fontWeight: '700', color: colors.white },
+  countBadgeText: { fontSize: 13, fontWeight: '400', color: colors.white },
   dateText: { ...textStyles.caption, color: colors.textDisabled },
 
   decisionCard: {
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 11, fontWeight: '700' },
 
   painCard: {
-    borderLeftWidth: 3,
+    borderLeftWidth: 2,
     borderLeftColor: colors.primaryEnd,
     paddingLeft: spacing.sm,
     gap: 6,
@@ -402,36 +402,37 @@ const styles = StyleSheet.create({
   painTitle: { ...textStyles.bodyS, color: colors.textPrimary, fontWeight: '700', flex: 1 },
   freqChip: {
     ...textStyles.caption,
+    fontSize: 14,
     color: colors.textDisabled,
     backgroundColor: colors.background,
     borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
   },
 
   workaroundCard: {
-    borderLeftWidth: 3,
+    borderLeftWidth: 2,
     borderLeftColor: colors.primary,
     paddingLeft: spacing.sm,
     gap: 4,
   },
   workaroundMethod: { ...textStyles.bodyS, color: colors.textPrimary, fontWeight: '700', flex: 1 },
-  complaint: { ...textStyles.bodyS, color: colors.primaryEnd, fontStyle: 'italic' },
+  complaint: { ...textStyles.caption, color: colors.primaryEnd, fontStyle: 'italic', lineHeight: 29 },
 
   evidenceQuote: {
-    ...textStyles.bodyS,
+    ...textStyles.caption,
     color: colors.textSecondary,
     fontStyle: 'italic',
     borderLeftWidth: 2,
     borderLeftColor: colors.primaryMid,
     paddingLeft: spacing.sm,
-    lineHeight: 22,
+    lineHeight: 26,
   },
 
   listItem: { flexDirection: 'row', gap: spacing.xs },
-  listBullet: { ...textStyles.bodyS, color: colors.textDisabled, width: 20 },
-  listText: { ...textStyles.bodyS, color: colors.textSecondary, flex: 1, lineHeight: 22 },
+  listBullet: { ...textStyles.caption, color: colors.textDisabled, width: 20, lineHeight: 29 },
+  listText: { ...textStyles.caption, color: colors.textSecondary, flex: 1, lineHeight: 26 },
 
-  bodyText: { ...textStyles.bodyS, color: colors.textSecondary, lineHeight: 22 },
-  quote: { ...textStyles.bodyS, color: colors.textSecondary, fontStyle: 'italic', lineHeight: 22, marginTop: 2 },
+  bodyText: { ...textStyles.caption, color: colors.textSecondary, lineHeight: 26 },
+  quote: { ...textStyles.caption, color: colors.textSecondary, fontStyle: 'italic', lineHeight: 26, marginTop: 2 },
 });
