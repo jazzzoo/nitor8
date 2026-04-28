@@ -139,9 +139,8 @@ export default function IntroScreen({ navigation }) {
   const [showBetaModal, setShowBetaModal] = useState(false);
 
   useEffect(() => {
-    if (typeof localStorage !== 'undefined' && !localStorage.getItem('nitor8-beta-notice')) {
-      setShowBetaModal(true);
-    }
+    // TODO: 테스트 완료 후 localStorage 체크 복구
+    setShowBetaModal(true);
   }, []);
 
   function dismissBetaModal() {
