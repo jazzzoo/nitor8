@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Nitor8",
+    "slug": "nitor8",
+    "version": "1.0.0",
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "favicon": "./web/assets/favicon.png",
+      "bundler": "metro"
+    }
+  }
+}
