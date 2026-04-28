@@ -152,14 +152,18 @@ export default function IntroScreen({ navigation }) {
     if (!showBetaModal) return null;
     return (
       <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: colors.overlay, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <div style={{ background: colors.surface, borderRadius: radius.lg, maxWidth: 520, width: '100%', padding: 40, minHeight: 650 }}>
+        <div style={{ background: colors.surface, borderRadius: radius.lg, maxWidth: 520, width: '100%', padding: 40, minHeight: 550 }}>
           <p style={{ fontSize: 15, fontWeight: 700, color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>BETA</p>
-          <h2 style={{ fontSize: 32, fontWeight: 700, color: colors.textSecondary, marginBottom: 12 }}>Welcome to Nitor8 Beta</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 32, fontWeight: 700, color: colors.textSecondary, marginBottom: 12 }}>
+            <span>Welcome to </span>
+            <img src="/assets/logodark.png" height={28} alt="Nitor8" />
+            <span> Beta</span>
+          </div>
           <ul style={{ paddingLeft: 20, color: colors.textSecondary, fontSize: 18, lineHeight: '30px', marginBottom: 20 }}>
             <li>This is a beta version — features may change.</li>
             <li>Currently supports Session 1 (Problem Interview) only.</li>
             <li>Use the same browser &amp; device for best experience.</li>
-            <li>Questions or feedback? <a href="mailto:support@nitor8.com" style={{ color: colors.primary }}>support@nitor8.com</a></li>
+            <li>Questions or feedback? <a href="https://x.com/nitor8_hq" style={{ color: colors.primary }}>@nitor8_hq on X</a></li>
           </ul>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 15 }}>
             <button onClick={dismissBetaModal} style={{ background: `linear-gradient(90deg, ${colors.primary}, ${colors.primaryMid}, ${colors.primaryEnd})`, color: colors.white, border: 'none', borderRadius: radius.md, padding: '12px 24px', fontSize: 19, fontWeight: 600, cursor: 'pointer', width: '40%' }}>Got it →</button>
