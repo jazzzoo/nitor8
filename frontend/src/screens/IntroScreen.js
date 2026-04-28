@@ -9,12 +9,12 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 
 import GradientButton from '../components/GradientButton';
+import LogoMark from '../components/LogoMark';
 import useStore from '../store/useStore';
-import { colors, gradientColors, spacing, radius, textStyles } from '../theme';
+import { colors, spacing, radius, textStyles } from '../theme';
 
 // ── 무한 스크롤 텍스트 6개 ─────────────────────────────────────
 const HINTS = [
@@ -143,14 +143,7 @@ export default function IntroScreen({ navigation }) {
 
           {/* 로고 */}
           <View style={styles.logoRow}>
-            <LinearGradient
-              colors={gradientColors}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.logoBox}
-            >
-              <Text style={styles.logoIcon}>✦</Text>
-            </LinearGradient>
+            <LogoMark size={48} />
             <Text style={styles.appName}>Nitor8</Text>
           </View>
 
@@ -200,11 +193,6 @@ const styles = StyleSheet.create({
   },
 
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  logoBox: {
-    width: 56, height: 56, borderRadius: 16,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  logoIcon: { fontSize: 24, color: '#fff' },
   appName: { fontSize: 36, fontWeight: '700', color: colors.textSecondary, letterSpacing: -0.8 },
 
   headline: {

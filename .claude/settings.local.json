@@ -5,7 +5,11 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(node -e ' *)",
-      "Bash(npx expo *)"
+      "Bash(npx expo *)",
+      "Bash(sed -n '80,95p' frontend/src/screens/InterviewScreen.js)",
+      "Bash(sed -n '273,285p' frontend/src/screens/InterviewScreen.js)",
+      "Bash(identify frontend/web/assets/favicon.png)",
+      "Bash(node -e \"const b=require\\('fs'\\).readFileSync\\('frontend/web/assets/favicon.png'\\); console.log\\('PNG size bytes:', b.length, '| Width/Height from IHDR:', b.readUInt32BE\\(16\\)+'x'+b.readUInt32BE\\(20\\)\\);\")"
     ]
   }
 }

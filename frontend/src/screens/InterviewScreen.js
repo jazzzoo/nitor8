@@ -11,6 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, gradientColors } from '../theme';
+import LogoMark from '../components/LogoMark';
 import { interviewApi } from '../api/client';
 
 // ── 상수 ──────────────────────────────────────────────────────────
@@ -77,14 +78,7 @@ function NamePrompt({ onSubmit, isLoading }) {
   return (
     <View style={styles.namePromptOverlay}>
       <View style={[styles.namePromptCard, { padding: isMobile ? 16 : 28 }]}>
-        <LinearGradient
-          colors={gradientColors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.namePromptLogo}
-        >
-          <Text style={styles.namePromptLogoIcon}>✦</Text>
-        </LinearGradient>
+        <LogoMark size={40} />
         <Text style={[styles.namePromptTitle, { fontSize: isMobile ? 17 : 20 }]}>Welcome to Nitor8</Text>
         <Text style={styles.namePromptSubtitle}>
           What's your first name? Nitor will use it during the interview.
@@ -270,14 +264,7 @@ export default function InterviewScreen({ route }) {
     <SafeAreaView style={styles.safe}>
       {/* 헤더 */}
       <View style={[styles.header, { paddingHorizontal: isMobile ? 12 : 20 }]}>
-        <LinearGradient
-          colors={gradientColors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.headerLogo}
-        >
-          <Text style={styles.headerLogoIcon}>✦</Text>
-        </LinearGradient>
+        <LogoMark size={28} />
         <Text style={styles.headerTitle}>Nitor8</Text>
         {isCompleted && (
           <View style={styles.completedBadge}>
@@ -385,14 +372,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 10,
   },
-  headerLogo: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerLogoIcon: { fontSize: 18, color: '#fff', fontWeight: '700' },
   headerTitle: { fontSize: 18, fontWeight: '700', color: colors.textSecondary },
   completedBadge: {
     marginLeft: 'auto',
@@ -477,15 +456,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  namePromptLogo: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  namePromptLogoIcon: { fontSize: 28, color: '#fff', fontWeight: '700' },
   namePromptTitle: {
     fontSize: 20,
     fontWeight: '700',

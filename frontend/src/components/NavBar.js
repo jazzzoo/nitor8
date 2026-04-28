@@ -9,8 +9,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import LegalModal from './LegalModal';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, gradientColors } from '../theme';
+import { colors } from '../theme';
+import LogoMark from './LogoMark';
 import useStore from '../store/useStore';
 
 export default function NavBar({ onLogoPress }) {
@@ -23,14 +23,7 @@ export default function NavBar({ onLogoPress }) {
       <View style={styles.left}>
         {/* 로고 — CTA */}
         <TouchableOpacity onPress={onLogoPress} activeOpacity={0.8} style={styles.logoBtn}>
-          <LinearGradient
-            colors={gradientColors}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.logoBox}
-          >
-            <Text style={styles.logoIcon}>✦</Text>
-          </LinearGradient>
+          <LogoMark size={32} />
           <Text style={styles.logoText}>Nitor8</Text>
         </TouchableOpacity>
 
@@ -97,14 +90,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  logoBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoIcon: { fontSize: 20, color: '#fff', fontWeight: '700' },
   logoText: { fontSize: 20, fontWeight: '700', color: colors.textSecondary, letterSpacing: -0.3 },
 
   navTitle: {
