@@ -18,6 +18,60 @@ function generateLinkToken() {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// POST /api/interview-sessions/feedback
+// 베타 유저 피드백 인터뷰 링크 생성 (인증 불필요)
+// Body: { respondent_name? }
+// ─────────────────────────────────────────────────────────────────
+const FEEDBACK_QLIST_ID = '00000000-0000-0000-0000-000000000003';
+const FEEDBACK_GUEST_ID = '00000000-0000-0000-0000-000000000000';
+
+router.post('/feedback', async (req, res) => {
+  const { respondent_name } = req.body || {};
+
+  try {
+    let link_token;
+    let attempts = 0;
+    while (attempts < 5) {
+      link_token = generateLinkToken();
+      const exists = await query(
+        'SELECT id FROM interview_sessions WHERE link_token = $1',
+        [link_token]
+      );
+      if (exists.rows.length === 0) break;
+      attempts++;
+    }
+
+    const result = await query(
+      `INSERT INTO interview_sessions (question_list_id, guest_id, link_token, respondent_name)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, link_token, status, created_at, expires_at`,
+      [FEEDBACK_QLIST_ID, FEEDBACK_GUEST_ID, link_token, respondent_name || null]
+    );
+
+    const session = result.rows[0];
+    const appUrl = process.env.APP_URL || 'https://nitor8.vercel.app';
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        id: session.id,
+        link_token: session.link_token,
+        url: `${appUrl}/interview/${session.link_token}`,
+        status: session.status,
+        created_at: session.created_at,
+        expires_at: session.expires_at,
+      },
+    });
+  } catch (err) {
+    console.error('[InterviewSessions] POST /feedback error:', err.message);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: '피드백 링크 생성 중 오류가 발생했습니다.' },
+    });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────
 // POST /api/interview-sessions
 // 질문 리스트로부터 인터뷰 링크 생성
 // Body: { question_list_id }
