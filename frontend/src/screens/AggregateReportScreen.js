@@ -5,8 +5,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Copy, Share2 } from 'lucide-react-native';
+import { Copy, Share2, MessageSquare } from 'lucide-react-native';
 import { reportsApi } from '../api/client';
+import FeedbackModal from '../components/FeedbackModal';
 import { colors, spacing, radius, textStyles } from '../theme';
 
 const POLL_INTERVAL_MS = 5000;
@@ -98,13 +99,15 @@ export default function AggregateReportScreen({ route, navigation }) {
     }, [])
   );
 
-  const [report, setReport]     = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
-  const [isTimedOut, setIsTimedOut] = useState(false);
-  const [copied, setCopied]     = useState(false);
-  const pollRef    = useRef(null);
-  const elapsedRef = useRef(0);
+  const [report, setReport]           = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState(null);
+  const [isTimedOut, setIsTimedOut]   = useState(false);
+  const [copied, setCopied]           = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const pollRef         = useRef(null);
+  const elapsedRef      = useRef(0);
+  const feedbackTimerRef = useRef(null);
 
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const isCompleted = report?.status === 'completed';
@@ -159,7 +162,27 @@ export default function AggregateReportScreen({ route, navigation }) {
     return () => stopPolling();
   }, [questionListId]);
 
+  useEffect(() => {
+    if (!isCompleted) return;
+    const alreadySeen = typeof localStorage !== 'undefined' && localStorage.getItem('nitor8-feedback-shown') === 'true';
+    if (!alreadySeen) {
+      feedbackTimerRef.current = setTimeout(() => setShowFeedbackModal(true), 3000);
+    }
+    return () => { if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current); };
+  }, [isCompleted]);
+
+  function handleFeedbackClose() {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('nitor8-feedback-shown', 'true');
+    setShowFeedbackModal(false);
+  }
+
   return (
+    <>
+    <FeedbackModal
+      visible={showFeedbackModal}
+      onClose={handleFeedbackClose}
+      navigation={navigation}
+    />
     <SafeAreaView style={styles.safe}>
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -177,6 +200,9 @@ export default function AggregateReportScreen({ route, navigation }) {
               <Copy size={18} color={copied ? colors.primary : colors.textDisabled} />
             </TouchableOpacity>
           )}
+          <TouchableOpacity onPress={() => setShowFeedbackModal(true)} style={styles.iconBtn}>
+            <MessageSquare size={18} color={colors.textDisabled} />
+          </TouchableOpacity>
           {!isCompleted && <View style={{ width: 60 }} />}
         </View>
       </View>
@@ -195,6 +221,7 @@ export default function AggregateReportScreen({ route, navigation }) {
         )}
       </ScrollView>
     </SafeAreaView>
+    </>
   );
 }
 

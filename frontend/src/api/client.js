@@ -240,6 +240,11 @@ export const reportsApi = {
   getAggregate: (questionListId) => apiGet(`/api/reports/aggregate/${questionListId}`),
 };
 
+// 피드백 인터뷰 (공개 - 인증 불필요)
+export const feedbackApi = {
+  createFeedbackSession: () => apiPost('/api/interview-sessions/feedback', { respondent_name: '(beta tester)' }),
+};
+
 // 헬스체크
 export const healthApi = {
   check: () => apiGet('/health'),
