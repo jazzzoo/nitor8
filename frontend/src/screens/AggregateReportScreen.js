@@ -227,7 +227,7 @@ export default function AggregateReportScreen({ route, navigation }) {
 
 // ── Completed Aggregate Report ──────────────────────────────────
 
-function CompletedAggregateReport({ report }) {
+export function CompletedAggregateReport({ report }) {
   const r = report?.result || {};
 
   return (

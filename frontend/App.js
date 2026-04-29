@@ -18,7 +18,7 @@ import QuestionsScreen from './src/screens/QuestionsScreen';
 import InterviewScreen        from './src/screens/InterviewScreen';
 import ReportScreen          from './src/screens/ReportScreen';
 import AggregateReportScreen from './src/screens/AggregateReportScreen';
-// GenerateScreen 제거 — CreateScreen에 통합됨
+import AdminScreen           from './src/screens/AdminScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,12 +33,13 @@ const linking = {
       Interview:       'interview/:token',
       Report:          'report/:reportId',
       AggregateReport: 'report/aggregate/:questionListId',
+      Admin:           'admin',
     },
   },
 };
 
 // NavBar를 숨길 라우트
-const HIDDEN_NAVBAR_ROUTES = new Set(['Interview', 'Report', 'AggregateReport']);
+const HIDDEN_NAVBAR_ROUTES = new Set(['Interview', 'Report', 'AggregateReport', 'Admin']);
 
 // 웹 스크롤바 커스텀 CSS 주입
 if (typeof document !== 'undefined') {
@@ -88,6 +89,7 @@ export default function App() {
       if (path.startsWith('/report/'))   return 'Report';
       if (path.startsWith('/create'))    return 'Create';
       if (path.startsWith('/questions')) return 'Questions';
+      if (path === '/admin')             return 'Admin';
     }
     return 'Intro';
   });
@@ -134,6 +136,7 @@ export default function App() {
               <Stack.Screen name="Interview"       component={InterviewScreen} />
               <Stack.Screen name="Report"          component={ReportScreen} />
               <Stack.Screen name="AggregateReport" component={AggregateReportScreen} />
+              <Stack.Screen name="Admin"           component={AdminScreen} />
             </Stack.Navigator>
           </NavigationContainer>
 

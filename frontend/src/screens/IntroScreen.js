@@ -139,6 +139,10 @@ export default function IntroScreen({ navigation }) {
   const [showBetaModal, setShowBetaModal] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.pathname === '/admin') {
+      navigation.navigate('Admin');
+      return;
+    }
     // TODO: 테스트 완료 후 localStorage 체크 복구
     setShowBetaModal(true);
   }, []);
