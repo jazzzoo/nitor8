@@ -169,17 +169,38 @@ export default function AdminScreen({ navigation }) {
     setRegenerateStatus(null);
     try {
       await adminPost('/api/admin/feedback-regenerate', credentials);
-      setRegenerateStatus('generating');
-      setTimeout(() => {
-        setReport(undefined);
-        loadReport();
-        setRegenerateStatus(null);
-      }, 5000);
     } catch (err) {
       setRegenerateError(err.message);
-    } finally {
       setRegenerateLoading(false);
+      return;
     }
+    setRegenerateLoading(false);
+    setRegenerateStatus('generating');
+    setReport(null);
+
+    const MAX_MS = 60000;
+    const INTERVAL_MS = 5000;
+    let elapsed = 0;
+
+    const pollId = setInterval(async () => {
+      elapsed += INTERVAL_MS;
+      try {
+        const res = await adminGet('/api/admin/feedback-report', credentials);
+        if (res.data) {
+          clearInterval(pollId);
+          setReport(res.data);
+          setRegenerateStatus(null);
+        } else if (elapsed >= MAX_MS) {
+          clearInterval(pollId);
+          setRegenerateStatus('timeout');
+        }
+      } catch (_) {
+        if (elapsed >= MAX_MS) {
+          clearInterval(pollId);
+          setRegenerateStatus('timeout');
+        }
+      }
+    }, INTERVAL_MS);
   }
 
   function selectInterview(id) {
@@ -360,7 +381,10 @@ export default function AdminScreen({ navigation }) {
             </View>
             {regenerateError && <Text style={styles.errorText}>{regenerateError}</Text>}
             {regenerateStatus === 'generating' && (
-              <Text style={[styles.emptyText, { color: colors.primaryMid }]}>Regenerating report... refreshing in 5s.</Text>
+              <Text style={[styles.emptyText, { color: colors.primaryMid }]}>Generating report...</Text>
+            )}
+            {regenerateStatus === 'timeout' && (
+              <Text style={styles.errorText}>Generation timed out. Try refreshing.</Text>
             )}
             {reportLoading && (
               <View style={styles.centered}>

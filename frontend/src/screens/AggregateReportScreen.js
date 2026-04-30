@@ -202,8 +202,8 @@ export default function AggregateReportScreen({ route, navigation }) {
           {isCompleted && (
             <Pressable
               onPress={handleCopy}
-              onHoverIn={() => setCopyHovered(true)}
-              onHoverOut={() => setCopyHovered(false)}
+              onMouseEnter={() => setCopyHovered(true)}
+              onMouseLeave={() => setCopyHovered(false)}
               style={[styles.iconBtn, copyHovered && styles.iconBtnHovered]}
             >
               <Animated.View style={{ opacity: copyAnim }}>
