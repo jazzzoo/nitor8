@@ -105,9 +105,8 @@ export default function AggregateReportScreen({ route, navigation }) {
   const [isTimedOut, setIsTimedOut]   = useState(false);
   const [copied, setCopied]           = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const pollRef         = useRef(null);
-  const elapsedRef      = useRef(0);
-  const feedbackTimerRef = useRef(null);
+  const pollRef    = useRef(null);
+  const elapsedRef = useRef(0);
 
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const isCompleted = report?.status === 'completed';
@@ -118,6 +117,8 @@ export default function AggregateReportScreen({ route, navigation }) {
       await navigator.clipboard.writeText(buildReportText(report));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      const alreadySeen = typeof localStorage !== 'undefined' && localStorage.getItem('nitor8-feedback-shown') === 'true';
+      if (!alreadySeen) setShowFeedbackModal(true);
     } catch (_) {}
   }
 
@@ -125,6 +126,8 @@ export default function AggregateReportScreen({ route, navigation }) {
     if (!isCompleted || !canShare) return;
     try {
       await navigator.share({ title: 'Nitor8 — Overall Report', text: buildReportText(report) });
+      const alreadySeen = typeof localStorage !== 'undefined' && localStorage.getItem('nitor8-feedback-shown') === 'true';
+      if (!alreadySeen) setShowFeedbackModal(true);
     } catch (_) {}
   }
 
@@ -161,15 +164,6 @@ export default function AggregateReportScreen({ route, navigation }) {
     startPolling();
     return () => stopPolling();
   }, [questionListId]);
-
-  useEffect(() => {
-    if (!isCompleted) return;
-    const alreadySeen = typeof localStorage !== 'undefined' && localStorage.getItem('nitor8-feedback-shown') === 'true';
-    if (!alreadySeen) {
-      feedbackTimerRef.current = setTimeout(() => setShowFeedbackModal(true), 3000);
-    }
-    return () => { if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current); };
-  }, [isCompleted]);
 
   function handleFeedbackClose() {
     if (typeof localStorage !== 'undefined') localStorage.setItem('nitor8-feedback-shown', 'true');

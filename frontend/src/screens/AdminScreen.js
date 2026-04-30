@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  ActivityIndicator, StyleSheet,
+  ActivityIndicator, StyleSheet, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,11 +16,10 @@ import { colors, spacing, radius, textStyles } from '../theme';
 import { CompletedAggregateReport } from './AggregateReportScreen';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-const CREDENTIALS = btoa('admin:nitor8admin');
 
-async function adminGet(path) {
+async function adminGet(path, credentials) {
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { Authorization: `Basic ${CREDENTIALS}` },
+    headers: { Authorization: `Basic ${credentials}` },
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json?.error?.message || `HTTP ${res.status}`);
@@ -43,10 +42,17 @@ function formatDate(dateStr) {
 }
 
 export default function AdminScreen({ navigation }) {
+  const [authed, setAuthed]           = useState(false);
+  const [credentials, setCredentials] = useState('');
+  const [username, setUsername]       = useState('');
+  const [password, setPassword]       = useState('');
+  const [authError, setAuthError]     = useState(null);
+  const [authLoading, setAuthLoading] = useState(false);
+
   const [activeTab, setActiveTab] = useState('Interviews');
   const [selectedId, setSelectedId] = useState(null);
 
-  const [interviews, setInterviews]         = useState([]);
+  const [interviews, setInterviews]               = useState([]);
   const [interviewsLoading, setInterviewsLoading] = useState(false);
   const [interviewsError, setInterviewsError]     = useState(null);
 
@@ -65,22 +71,45 @@ export default function AdminScreen({ navigation }) {
   );
 
   useEffect(() => {
-    loadInterviews();
-  }, []);
+    if (authed) loadInterviews();
+  }, [authed]);
 
   useEffect(() => {
-    if (activeTab === 'Report' && report === undefined) loadReport();
-  }, [activeTab]);
+    if (authed && activeTab === 'Report' && report === undefined) loadReport();
+  }, [activeTab, authed]);
 
   useEffect(() => {
-    if (selectedId) loadTurns(selectedId);
+    if (authed && selectedId) loadTurns(selectedId);
   }, [selectedId]);
+
+  async function handleLogin() {
+    setAuthError(null);
+    setAuthLoading(true);
+    try {
+      const creds = btoa(`${username}:${password}`);
+      const res = await fetch(`${BASE_URL}/api/admin/feedback-interviews`, {
+        headers: { Authorization: `Basic ${creds}` },
+      });
+      if (res.status === 401) {
+        setAuthError('Invalid credentials');
+        return;
+      }
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error?.message || `HTTP ${res.status}`);
+      setCredentials(creds);
+      setAuthed(true);
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  }
 
   async function loadInterviews() {
     setInterviewsLoading(true);
     setInterviewsError(null);
     try {
-      const res = await adminGet('/api/admin/feedback-interviews');
+      const res = await adminGet('/api/admin/feedback-interviews', credentials);
       setInterviews(res.data || []);
     } catch (err) {
       setInterviewsError(err.message);
@@ -93,7 +122,7 @@ export default function AdminScreen({ navigation }) {
     setTurnsLoading(true);
     setTurnsError(null);
     try {
-      const res = await adminGet(`/api/admin/feedback-interviews/${id}/turns`);
+      const res = await adminGet(`/api/admin/feedback-interviews/${id}/turns`, credentials);
       setTurns(res.data || []);
     } catch (err) {
       setTurnsError(err.message);
@@ -106,7 +135,7 @@ export default function AdminScreen({ navigation }) {
     setReportLoading(true);
     setReportError(null);
     try {
-      const res = await adminGet('/api/admin/feedback-report');
+      const res = await adminGet('/api/admin/feedback-report', credentials);
       setReport(res.data); // null = 리포트 없음
     } catch (err) {
       setReportError(err.message);
@@ -119,6 +148,45 @@ export default function AdminScreen({ navigation }) {
   function selectInterview(id) {
     setSelectedId(id);
     setActiveTab('Chat Logs');
+  }
+
+  if (!authed) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.loginContainer}>
+          <Text style={styles.loginTitle}>Admin Login</Text>
+          <TextInput
+            style={styles.loginInput}
+            placeholder="Username"
+            placeholderTextColor={colors.placeholder}
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.loginInput}
+            placeholder="Password"
+            placeholderTextColor={colors.placeholder}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoCapitalize="none"
+          />
+          {authError ? <Text style={styles.authErrorText}>{authError}</Text> : null}
+          <TouchableOpacity
+            onPress={handleLogin}
+            style={styles.loginBtn}
+            disabled={authLoading}
+          >
+            {authLoading
+              ? <ActivityIndicator color="#fff" size="small" />
+              : <Text style={styles.loginBtnText}>Enter</Text>
+            }
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -263,6 +331,39 @@ export default function AdminScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+
+  loginContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+    gap: spacing.md,
+  },
+  loginTitle: { ...textStyles.h3, color: colors.textSecondary, marginBottom: spacing.sm },
+  loginInput: {
+    width: '100%',
+    maxWidth: 320,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: colors.textSecondary,
+    backgroundColor: colors.surface,
+  },
+  authErrorText: { fontSize: 13, color: colors.primaryEnd, textAlign: 'center' },
+  loginBtn: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 46,
+  },
+  loginBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
 
   header: {
     flexDirection: 'row',
