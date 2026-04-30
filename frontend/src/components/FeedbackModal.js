@@ -16,6 +16,7 @@ export default function FeedbackModal({ visible, onClose, navigation }) {
     try {
       const res = await feedbackApi.createFeedbackSession();
       const { link_token } = res.data;
+      if (typeof localStorage !== 'undefined') localStorage.setItem('nitor8-feedback-done', 'true');
       onClose();
       navigation.navigate('Interview', { token: link_token });
     } catch (err) {

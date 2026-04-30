@@ -17,6 +17,20 @@ import { CompletedAggregateReport } from './AggregateReportScreen';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
+async function adminPost(path, credentials, body = {}) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${credentials}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json?.error?.message || `HTTP ${res.status}`);
+  return json;
+}
+
 async function adminGet(path, credentials) {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { Authorization: `Basic ${credentials}` },
@@ -63,6 +77,10 @@ export default function AdminScreen({ navigation }) {
   const [report, setReport]               = useState(undefined); // undefined = 아직 미로드
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError]     = useState(null);
+
+  const [regenerateLoading, setRegenerateLoading] = useState(false);
+  const [regenerateError, setRegenerateError]     = useState(null);
+  const [regenerateStatus, setRegenerateStatus]   = useState(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -142,6 +160,25 @@ export default function AdminScreen({ navigation }) {
       setReport(null);
     } finally {
       setReportLoading(false);
+    }
+  }
+
+  async function handleRegenerate() {
+    setRegenerateLoading(true);
+    setRegenerateError(null);
+    setRegenerateStatus(null);
+    try {
+      await adminPost('/api/admin/feedback-regenerate', credentials);
+      setRegenerateStatus('generating');
+      setTimeout(() => {
+        setReport(undefined);
+        loadReport();
+        setRegenerateStatus(null);
+      }, 5000);
+    } catch (err) {
+      setRegenerateError(err.message);
+    } finally {
+      setRegenerateLoading(false);
     }
   }
 
@@ -307,6 +344,24 @@ export default function AdminScreen({ navigation }) {
         {/* ── 탭 3: Report ── */}
         {activeTab === 'Report' && (
           <View>
+            <View style={styles.tabHeader}>
+              <Text style={styles.tabHeadline}>Feedback Report</Text>
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <TouchableOpacity onPress={() => { setReport(undefined); loadReport(); }} style={styles.refreshBtn}>
+                  <Text style={styles.refreshText}>↻ Refresh</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleRegenerate} style={[styles.refreshBtn, { borderColor: colors.primary }]} disabled={regenerateLoading}>
+                  {regenerateLoading
+                    ? <ActivityIndicator size="small" color={colors.primary} />
+                    : <Text style={[styles.refreshText, { color: colors.primary }]}>↺ Regenerate</Text>
+                  }
+                </TouchableOpacity>
+              </View>
+            </View>
+            {regenerateError && <Text style={styles.errorText}>{regenerateError}</Text>}
+            {regenerateStatus === 'generating' && (
+              <Text style={[styles.emptyText, { color: colors.primaryMid }]}>Regenerating report... refreshing in 5s.</Text>
+            )}
             {reportLoading && (
               <View style={styles.centered}>
                 <ActivityIndicator color={colors.primary} />

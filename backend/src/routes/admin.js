@@ -8,10 +8,12 @@
 import { Router } from 'express';
 import basicAuth from 'express-basic-auth';
 import { query } from '../models/db.js';
+import { generateAggregateReport } from './reports.js';
 
 const router = Router();
 
-const FEEDBACK_QLIST_ID = '00000000-0000-0000-0000-000000000003';
+const FEEDBACK_QLIST_ID  = '00000000-0000-0000-0000-000000000003';
+const FEEDBACK_GUEST_ID  = '00000000-0000-4000-8000-000000000000';
 
 // ── Basic Auth 미들웨어 ───────────────────────────────────────────
 router.use(basicAuth({
@@ -127,6 +129,63 @@ router.get('/feedback-report', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: { code: 'INTERNAL_ERROR', message: '리포트 조회 중 오류가 발생했습니다.' },
+    });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────
+// POST /api/admin/feedback-regenerate
+// 피드백 aggregate 리포트 재생성
+// ─────────────────────────────────────────────────────────────────
+router.post('/feedback-regenerate', async (req, res) => {
+  try {
+    const { rows: individualReports } = await query(
+      `SELECT r.id, r.result, is2.respondent_name
+       FROM reports r
+       JOIN interview_sessions is2 ON r.interview_session_id = is2.id
+       WHERE is2.question_list_id = $1
+         AND (r.type = 'individual' OR r.type IS NULL)
+         AND r.status = 'completed'`,
+      [FEEDBACK_QLIST_ID]
+    );
+
+    if (individualReports.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INSUFFICIENT_DATA', message: '완료된 인터뷰가 2개 이상 필요합니다.' },
+      });
+    }
+
+    const existing = await query(
+      `SELECT id FROM reports WHERE question_list_id = $1 AND type = 'aggregate'`,
+      [FEEDBACK_QLIST_ID]
+    );
+
+    let aggregateReportId;
+    if (existing.rows[0]) {
+      aggregateReportId = existing.rows[0].id;
+      await query(
+        `UPDATE reports SET status = 'generating', result = NULL, completed_at = NULL WHERE id = $1`,
+        [aggregateReportId]
+      );
+    } else {
+      const newRow = await query(
+        `INSERT INTO reports (guest_id, question_list_id, type, status)
+         VALUES ($1, $2, 'aggregate', 'generating')
+         RETURNING id`,
+        [FEEDBACK_GUEST_ID, FEEDBACK_QLIST_ID]
+      );
+      aggregateReportId = newRow.rows[0].id;
+    }
+
+    res.json({ success: true, data: { id: aggregateReportId, status: 'generating' } });
+
+    generateAggregateReport(aggregateReportId, individualReports, '').catch(console.error);
+  } catch (err) {
+    console.error('[Admin] POST /feedback-regenerate error:', err.message);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: '재생성 중 오류가 발생했습니다.' },
     });
   }
 });

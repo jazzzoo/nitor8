@@ -174,7 +174,7 @@ router.get('/:id', async (req, res) => {
 export default router;
 
 // ── 종합 리포트 생성 (백그라운드) ────────────────────────────────
-async function generateAggregateReport(reportId, individualReports, businessContext) {
+export async function generateAggregateReport(reportId, individualReports, businessContext) {
   const N = individualReports.length;
 
   const systemPrompt = `You are an expert customer development analyst trained in the Mom Test and Jobs-to-be-Done frameworks.

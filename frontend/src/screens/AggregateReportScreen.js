@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
-  TouchableOpacity, ActivityIndicator,
+  TouchableOpacity, ActivityIndicator, Pressable, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Copy, Share2, MessageSquare } from 'lucide-react-native';
+import { Copy, Share2, MessageSquare, Check } from 'lucide-react-native';
 import { reportsApi } from '../api/client';
 import FeedbackModal from '../components/FeedbackModal';
 import { colors, spacing, radius, textStyles } from '../theme';
@@ -105,11 +105,22 @@ export default function AggregateReportScreen({ route, navigation }) {
   const [isTimedOut, setIsTimedOut]   = useState(false);
   const [copied, setCopied]           = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [copyHovered, setCopyHovered] = useState(false);
   const pollRef    = useRef(null);
   const elapsedRef = useRef(0);
+  const copyAnim   = useRef(new Animated.Value(1)).current;
+  const isFirstRender = useRef(true);
 
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const isCompleted = report?.status === 'completed';
+
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    Animated.sequence([
+      Animated.timing(copyAnim, { toValue: 0.3, duration: 100, useNativeDriver: true }),
+      Animated.timing(copyAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+  }, [copied]);
 
   async function handleCopy() {
     if (!isCompleted) return;
@@ -117,7 +128,7 @@ export default function AggregateReportScreen({ route, navigation }) {
       await navigator.clipboard.writeText(buildReportText(report));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      const alreadySeen = typeof localStorage !== 'undefined' && localStorage.getItem('nitor8-feedback-shown') === 'true';
+      const alreadySeen = typeof localStorage !== 'undefined' && localStorage.getItem('nitor8-feedback-done') === 'true';
       if (!alreadySeen) setShowFeedbackModal(true);
     } catch (_) {}
   }
@@ -126,7 +137,7 @@ export default function AggregateReportScreen({ route, navigation }) {
     if (!isCompleted || !canShare) return;
     try {
       await navigator.share({ title: 'Nitor8 — Overall Report', text: buildReportText(report) });
-      const alreadySeen = typeof localStorage !== 'undefined' && localStorage.getItem('nitor8-feedback-shown') === 'true';
+      const alreadySeen = typeof localStorage !== 'undefined' && localStorage.getItem('nitor8-feedback-done') === 'true';
       if (!alreadySeen) setShowFeedbackModal(true);
     } catch (_) {}
   }
@@ -166,7 +177,6 @@ export default function AggregateReportScreen({ route, navigation }) {
   }, [questionListId]);
 
   function handleFeedbackClose() {
-    if (typeof localStorage !== 'undefined') localStorage.setItem('nitor8-feedback-shown', 'true');
     setShowFeedbackModal(false);
   }
 
@@ -190,9 +200,19 @@ export default function AggregateReportScreen({ route, navigation }) {
             </TouchableOpacity>
           )}
           {isCompleted && (
-            <TouchableOpacity onPress={handleCopy} style={styles.iconBtn}>
-              <Copy size={18} color={copied ? colors.primary : colors.textDisabled} />
-            </TouchableOpacity>
+            <Pressable
+              onPress={handleCopy}
+              onHoverIn={() => setCopyHovered(true)}
+              onHoverOut={() => setCopyHovered(false)}
+              style={[styles.iconBtn, copyHovered && styles.iconBtnHovered]}
+            >
+              <Animated.View style={{ opacity: copyAnim }}>
+                {copied
+                  ? <Check size={18} color={colors.primary} />
+                  : <Copy size={18} color={colors.textDisabled} />
+                }
+              </Animated.View>
+            </Pressable>
           )}
           <TouchableOpacity onPress={() => setShowFeedbackModal(true)} style={styles.iconBtn}>
             <MessageSquare size={18} color={colors.textDisabled} />
@@ -452,12 +472,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background,
   },
   backBtn:  { width: 60 },
   backText: { fontSize: 14, color: colors.primary, fontWeight: '500' },
   actionBtns: { flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 60, justifyContent: 'flex-end' },
-  iconBtn:    { padding: 6, borderRadius: radius.sm },
+  iconBtn:        { padding: 6, borderRadius: radius.sm },
+  iconBtnHovered: { padding: 6, borderRadius: radius.sm, backgroundColor: colors.background },
   topTitle: { ...textStyles.h3, color: colors.textSecondary },
 
   scroll: {
