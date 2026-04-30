@@ -107,12 +107,12 @@ router.get('/feedback-interviews/:id/turns', async (req, res) => {
 router.get('/feedback-report', async (req, res) => {
   try {
     const result = await query(
-      `SELECT r.*
-       FROM reports r
-       JOIN interview_sessions is2 ON r.interview_session_id = is2.id
-       WHERE is2.question_list_id = $1
-         AND r.status = 'completed'
-       ORDER BY r.created_at DESC
+      `SELECT *
+       FROM reports
+       WHERE question_list_id = $1
+         AND type = 'aggregate'
+         AND status = 'completed'
+       ORDER BY created_at DESC
        LIMIT 1`,
       [FEEDBACK_QLIST_ID]
     );
