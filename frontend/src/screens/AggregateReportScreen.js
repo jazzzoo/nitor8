@@ -194,38 +194,29 @@ export default function AggregateReportScreen({ route, navigation }) {
         <Text style={styles.topTitle}>Overall Report</Text>
         <View style={styles.actionBtns}>
           {isCompleted && canShare && (
-            <TouchableOpacity onPress={handleShare} style={styles.iconBtn}>
-              <Share2 size={18} color={colors.textDisabled} />
-            </TouchableOpacity>
-          )}
-          {isCompleted && (
-            <Pressable
-              onPress={handleCopy}
-              style={styles.iconBtn}
-            >
+            <Pressable onPress={handleShare} style={styles.iconBtn}>
               {({ hovered }) => (
-                <>
-                  {hovered && (
-                    <View style={{
-                      position: 'absolute',
-                      inset: 0,
-                      backgroundColor: colors.background,
-                      borderRadius: radius.sm,
-                    }} />
-                  )}
-                  <Animated.View style={{ opacity: copyAnim }}>
-                    {copied
-                      ? <Check size={18} color={colors.primary} />
-                      : <Copy size={18} color={hovered ? colors.textSecondary : colors.textDisabled} />
-                    }
-                  </Animated.View>
-                </>
+                <Share2 size={18} color={hovered ? colors.textSecondary : colors.textDisabled} />
               )}
             </Pressable>
           )}
-          <TouchableOpacity onPress={() => setShowFeedbackModal(true)} style={styles.iconBtn}>
-            <MessageSquare size={18} color={colors.textDisabled} />
-          </TouchableOpacity>
+          {isCompleted && (
+            <Pressable onPress={handleCopy} style={styles.iconBtn}>
+              {({ hovered }) => (
+                <Animated.View style={{ opacity: copyAnim }}>
+                  {copied
+                    ? <Check size={18} color={colors.primary} />
+                    : <Copy size={18} color={hovered ? colors.textSecondary : colors.textDisabled} />
+                  }
+                </Animated.View>
+              )}
+            </Pressable>
+          )}
+          <Pressable onPress={() => setShowFeedbackModal(true)} style={styles.iconBtn}>
+            {({ hovered }) => (
+              <MessageSquare size={18} color={hovered ? colors.textSecondary : colors.textDisabled} />
+            )}
+          </Pressable>
           {!isCompleted && <View style={{ width: 60 }} />}
         </View>
       </View>
@@ -486,8 +477,7 @@ const styles = StyleSheet.create({
   backBtn:  { width: 60 },
   backText: { fontSize: 14, color: colors.primary, fontWeight: '500' },
   actionBtns: { flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 60, justifyContent: 'flex-end' },
-  iconBtn:        { padding: 6, borderRadius: radius.sm, overflow: 'hidden' },
-  iconBtnHovered: { padding: 6, borderRadius: radius.sm, backgroundColor: colors.primaryEnd, opacity: 0.5 },
+  iconBtn: { padding: 6, borderRadius: radius.sm },
   topTitle: { ...textStyles.h3, color: colors.textSecondary },
 
   scroll: {
