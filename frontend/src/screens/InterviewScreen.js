@@ -148,6 +148,15 @@ export default function InterviewScreen({ route }) {
     }, 100);
   }, []);
 
+  // /start 호출 후 공통 상태 업데이트
+  async function applyStartResult(name, startRes) {
+    setSessionInfo((prev) => ({ ...prev, respondent_name: name, needs_name: false }));
+    setTurns(startRes.data.turns || []);
+    setNeedsName(false);
+    setIsCompleted(startRes.data.is_completed);
+    scrollToBottom();
+  }
+
   // 세션 로드
   useEffect(() => {
     if (!token) {
@@ -159,10 +168,22 @@ export default function InterviewScreen({ route }) {
     async function loadSession() {
       try {
         const res = await interviewApi.getSession(token);
-        setSessionInfo(res.data);
-        setTurns(res.data.turns || []);
-        setNeedsName(res.data.needs_name);
-        setIsCompleted(res.data.status === 'completed');
+        const data = res.data;
+        setSessionInfo(data);
+        setTurns(data.turns || []);
+        setNeedsName(data.needs_name);
+        setIsCompleted(data.status === 'completed');
+
+        // respondent_name이 미리 설정됐지만 /start가 아직 호출 안 된 경우 자동 시작
+        if (!data.needs_name && data.status === 'active') {
+          try {
+            const startRes = await interviewApi.start(token, data.respondent_name);
+            await applyStartResult(data.respondent_name, startRes);
+          } catch (startErr) {
+            setError(startErr.message || 'Failed to start interview.');
+          }
+        }
+
         setIsLoading(false);
         scrollToBottom();
       } catch (err) {
@@ -183,12 +204,8 @@ export default function InterviewScreen({ route }) {
   const handleNameSubmit = useCallback(async (name) => {
     setIsSending(true);
     try {
-      const res = await interviewApi.start(token, name);
-      setSessionInfo((prev) => ({ ...prev, respondent_name: name, needs_name: false }));
-      setTurns(res.data.turns || []);
-      setNeedsName(false);
-      setIsCompleted(res.data.is_completed);
-      scrollToBottom();
+      const startRes = await interviewApi.start(token, name);
+      await applyStartResult(name, startRes);
     } catch (err) {
       setError(err.message || 'Failed to start interview.');
     } finally {
