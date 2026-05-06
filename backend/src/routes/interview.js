@@ -10,6 +10,9 @@ import { Router } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import crypto from 'crypto';
 import pool, { query } from '../models/db.js';
+import { generateAggregateReport } from './reports.js';
+
+const AUTO_AGGREGATE_THRESHOLD = 8;
 
 const router = Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -536,6 +539,78 @@ RULES — read carefully:
         [JSON.stringify(result), interviewSessionId]
       );
       console.log(`[Report] Generated successfully for session ${interviewSessionId}`);
+
+      // ── Auto aggregate trigger ──
+      try {
+        const sessionRow = await query(
+          `SELECT is2.question_list_id, is2.guest_id FROM interview_sessions is2 WHERE is2.id = $1`,
+          [interviewSessionId]
+        );
+        const { question_list_id: questionListId, guest_id: guestId } = sessionRow.rows[0] || {};
+        if (!questionListId) throw new Error('question_list_id not found');
+
+        const countRow = await query(
+          `SELECT COUNT(*) AS cnt FROM reports r
+           JOIN interview_sessions is2 ON r.interview_session_id = is2.id
+           WHERE is2.question_list_id = $1
+             AND (r.type = 'individual' OR r.type IS NULL)
+             AND r.status = 'completed'`,
+          [questionListId]
+        );
+        const completedCount = parseInt(countRow.rows[0].cnt, 10);
+
+        if (completedCount < AUTO_AGGREGATE_THRESHOLD) {
+          console.log(`[Interview] Auto aggregate skipped: only ${completedCount}/${AUTO_AGGREGATE_THRESHOLD} completed`);
+        } else {
+          const existingAgg = await query(
+            `SELECT id, status FROM reports WHERE question_list_id = $1 AND type = 'aggregate'`,
+            [questionListId]
+          );
+          const existing = existingAgg.rows[0];
+          if (existing && existing.status !== 'failed') {
+            console.log(`[Interview] Auto aggregate skipped: already ${existing.status}`);
+          } else {
+            const ctxRow = await query(
+              `SELECT s.input_context FROM question_lists ql JOIN sessions s ON ql.session_id = s.id WHERE ql.id = $1`,
+              [questionListId]
+            );
+            const autoBusinessContext = ctxRow.rows[0]?.input_context?.business_summary || '';
+
+            const indivRows = await query(
+              `SELECT r.id, r.result, is2.respondent_name
+               FROM reports r
+               JOIN interview_sessions is2 ON r.interview_session_id = is2.id
+               WHERE is2.question_list_id = $1
+                 AND (r.type = 'individual' OR r.type IS NULL)
+                 AND r.status = 'completed'`,
+              [questionListId]
+            );
+            const individualReports = indivRows.rows;
+
+            let aggregateReportId;
+            if (existing) {
+              await query(
+                `UPDATE reports SET status = 'generating', result = NULL, completed_at = NULL WHERE question_list_id = $1 AND type = 'aggregate'`,
+                [questionListId]
+              );
+              aggregateReportId = existing.id;
+            } else {
+              const inserted = await query(
+                `INSERT INTO reports (guest_id, question_list_id, type, status) VALUES ($1, $2, 'aggregate', 'generating') RETURNING id`,
+                [guestId, questionListId]
+              );
+              aggregateReportId = inserted.rows[0].id;
+            }
+
+            generateAggregateReport(aggregateReportId, individualReports, autoBusinessContext)
+              .catch((err) => console.error('[Interview] Auto aggregate error:', err.message));
+
+            console.log(`[Interview] Auto aggregate triggered for questionListId: ${questionListId} (${completedCount} interviews)`);
+          }
+        }
+      } catch (aggErr) {
+        console.error('[Interview] Auto aggregate check failed:', aggErr.message);
+      }
     } else {
       await query(
         `UPDATE reports SET status = 'failed' WHERE interview_session_id = $1`,
