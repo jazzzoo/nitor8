@@ -212,7 +212,11 @@ export default function AggregateReportScreen({ route, navigation }) {
               )}
             </Pressable>
           )}
-          <Pressable onPress={() => setShowFeedbackModal(true)} style={styles.iconBtn}>
+          <Pressable onPress={() => {
+              const done = typeof localStorage !== 'undefined'
+                && localStorage.getItem('nitor8-feedback-done') === 'true';
+              if (!done) setShowFeedbackModal(true);
+            }} style={styles.iconBtn}>
             {({ hovered }) => (
               <MessageSquare size={18} color={hovered ? colors.textSecondary : colors.textDisabled} />
             )}

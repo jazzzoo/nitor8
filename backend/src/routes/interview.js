@@ -271,7 +271,7 @@ async function callClaudeForTurn(systemPrompt, recentTurns, retryCount = 0) {
 
   try {
     const response = await anthropic.messages.create({
-      model: process.env.AI_PRIMARY_MODEL || 'claude-haiku-4-5-20251001',
+      model: process.env.AI_MODEL_PRIMARY || 'claude-haiku-4-5-20251001',
       max_tokens: parseInt(process.env.AI_MAX_TOKENS_INTERVIEW) || 700,
       system: systemPrompt,
       messages,
@@ -377,7 +377,7 @@ function makeServerDecision(state, claudeResult, wordCount, sessionType, totalQu
 async function generateWrapUpMessage(respondentName, businessContext) {
   try {
     const response = await anthropic.messages.create({
-      model: process.env.AI_PRIMARY_MODEL || 'claude-haiku-4-5-20251001',
+      model: process.env.AI_MODEL_PRIMARY || 'claude-haiku-4-5-20251001',
       max_tokens: 200,
       system: `You are Nitor, a warm AI interviewer wrapping up a customer development interview.
 Write 2-3 sentences: thank the respondent sincerely, then optionally ask if there's anything else to share.
@@ -718,7 +718,7 @@ router.post('/:token/start', async (req, res) => {
 
     try {
       const greetingResponse = await anthropic.messages.create({
-        model:      process.env.AI_PRIMARY_MODEL || 'claude-haiku-4-5-20251001',
+        model:      process.env.AI_MODEL_PRIMARY || 'claude-haiku-4-5-20251001',
         max_tokens: parseInt(process.env.AI_MAX_TOKENS_INTERVIEW) || 700,
         system:     greetingPrompt,
         messages: [{

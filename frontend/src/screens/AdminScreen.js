@@ -103,8 +103,15 @@ export default function AdminScreen({ navigation }) {
   async function handleLogin() {
     setAuthError(null);
     setAuthLoading(true);
+    let creds;
     try {
-      const creds = btoa(`${username}:${password}`);
+      creds = btoa(`${username}:${password}`);
+    } catch (_) {
+      setAuthError('Invalid credentials format');
+      setAuthLoading(false);
+      return;
+    }
+    try {
       const res = await fetch(`${BASE_URL}/api/admin/feedback-interviews`, {
         headers: { Authorization: `Basic ${creds}` },
       });

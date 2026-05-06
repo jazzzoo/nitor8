@@ -28,15 +28,22 @@ const TOKEN_COST = {
 
 
 // ------------------------------------------------
-// 프롬프트 파일 로드
+// 프롬프트 파일 로드 (모듈 로드 시 1회 캐싱)
 // ------------------------------------------------
-function loadPrompt(filename) {
-  const filePath = path.join(new URL('.', import.meta.url).pathname, '../../../server/prompts', filename);
+const PROMPTS_DIR = path.join(new URL('.', import.meta.url).pathname, '../../../server/prompts');
+
+function readPromptFile(filename) {
+  const filePath = path.join(PROMPTS_DIR, filename);
   if (!fs.existsSync(filePath)) {
     throw new Error(`프롬프트 파일 없음: ${filePath}`);
   }
   return fs.readFileSync(filePath, 'utf-8');
 }
+
+const CACHED_PROMPTS = {
+  base:     readPromptFile('base.txt'),
+  session1: readPromptFile('session1.txt'),
+};
 
 
 // ------------------------------------------------
@@ -47,8 +54,9 @@ function loadPrompt(filename) {
 // 4. 동적 지시 (재생성 시)
 // ------------------------------------------------
 function assemblePrompt(sessionType, inputContext, dynamicInstructions = '') {
-  const basePrompt    = loadPrompt('base.txt');
-  const sessionPrompt = loadPrompt(`session${sessionType}.txt`);
+  const basePrompt    = CACHED_PROMPTS.base;
+  const sessionPrompt = CACHED_PROMPTS[`session${sessionType}`];
+  if (!sessionPrompt) throw new Error(`프롬프트 없음: session${sessionType}`);
 
   const contextBlock = `
 <user_context>

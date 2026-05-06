@@ -337,9 +337,18 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
   }
 
   // ── 비용 하드 리미트 체크 ──
-  const costCheck = await query(
-    `SELECT value FROM system_config WHERE key = 'generation_disabled'`
-  );
+  let costCheck;
+  try {
+    costCheck = await query(
+      `SELECT value FROM system_config WHERE key = 'generation_disabled'`
+    );
+  } catch (err) {
+    console.error('[Sessions] costCheck error:', err.message);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: '서비스 상태 확인 중 오류가 발생했습니다.' },
+    });
+  }
   if (costCheck.rows[0]?.value === 'true') {
     return res.status(503).json({
       success: false,
@@ -406,7 +415,7 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
 
   try {
     const stream = anthropic.messages.stream({
-      model: process.env.AI_PRIMARY_MODEL || 'claude-haiku-4-5-20251001',
+      model: process.env.AI_MODEL_PRIMARY || 'claude-haiku-4-5-20251001',
       max_tokens: parseInt(process.env.AI_MAX_TOKENS) || 8192,
       system: systemPrompt,
       messages: [
@@ -588,7 +597,7 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
         output_tokens: outputTokens,
         cost_usd: parseFloat(cost.toFixed(6)),
         generation_time_sec: parseFloat(generationTime),
-        model: process.env.AI_PRIMARY_MODEL || 'claude-haiku-4-5-20251001',
+        model: process.env.AI_MODEL_PRIMARY || 'claude-haiku-4-5-20251001',
       },
     });
 
