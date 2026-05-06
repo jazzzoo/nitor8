@@ -47,6 +47,7 @@ router.get('/feedback-interviews', async (req, res) => {
        JOIN sessions s ON ql.session_id = s.id
        LEFT JOIN interview_state ist ON ist.interview_session_id = is2.id
        WHERE s.session_type = 2
+         AND is2.respondent_name NOT IN ('Test User A', 'Test User B')
        ORDER BY is2.created_at DESC`
     );
 
