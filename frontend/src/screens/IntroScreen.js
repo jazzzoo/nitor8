@@ -143,8 +143,10 @@ export default function IntroScreen({ navigation }) {
       navigation.navigate('Admin');
       return;
     }
-    // TODO: 테스트 완료 후 localStorage 체크 복구
-    setShowBetaModal(true);
+    const seen = typeof localStorage !== 'undefined'
+      ? localStorage.getItem('nitor8-beta-notice')
+      : null;
+    if (!seen) setShowBetaModal(true);
   }, []);
 
   function dismissBetaModal() {
