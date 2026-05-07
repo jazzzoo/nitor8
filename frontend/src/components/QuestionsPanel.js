@@ -356,7 +356,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
                           setLinkModal({
                             visible: true,
                             url: s.link_token
-                              ? `https://nitor8.vercel.app/interview/${s.link_token}`
+                              ? `https://nitor8.com/interview/${s.link_token}`
                               : s.url || null,
                           });
                           return;

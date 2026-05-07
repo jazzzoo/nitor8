@@ -20,6 +20,8 @@ const PORT = process.env.PORT || 3000;
 // 미들웨어
 // ─────────────────────────────────────────
 const ALLOWED_ORIGINS = [
+  'https://nitor8.com',
+  'https://www.nitor8.com',
   'https://nitor8.vercel.app',
   'http://localhost:8081',
   'http://localhost:19006',

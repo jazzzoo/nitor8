@@ -11,16 +11,16 @@ const OG_TAGS = `
     <meta name="description" content="AI-powered customer development interviews for startup founders. Generate questions, conduct interviews, and get insights automatically.">
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://nitor8.vercel.app">
+    <meta property="og:url" content="https://nitor8.com">
     <meta property="og:title" content="Nitor8 — AI Customer Interview Tool">
     <meta property="og:description" content="AI-powered customer development interviews for startup founders. Generate questions, conduct interviews, and get insights automatically.">
-    <meta property="og:image" content="https://nitor8.vercel.app/og-image.png">
+    <meta property="og:image" content="https://nitor8.com/og-image.png">
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://nitor8.vercel.app">
+    <meta property="twitter:url" content="https://nitor8.com">
     <meta property="twitter:title" content="Nitor8 — AI Customer Interview Tool">
     <meta property="twitter:description" content="AI-powered customer development interviews for startup founders. Generate questions, conduct interviews, and get insights automatically.">
-    <meta property="twitter:image" content="https://nitor8.vercel.app/og-image.png">`;
+    <meta property="twitter:image" content="https://nitor8.com/og-image.png">`;
 
 let html = readFileSync(distPath, 'utf-8');
 const titleClose = '</title>';
