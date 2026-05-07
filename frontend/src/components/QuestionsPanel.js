@@ -185,6 +185,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
 
   const questionCount = items.filter((i) => i.type === 'question' && !i.hidden).length;
   const reactionCount = items.filter((i) => i.type === 'reaction').length;
+  const completedCount = interviewSessions.filter((s) => s.status === 'completed').length;
 
   return (
     <ScrollView
@@ -203,6 +204,11 @@ export default function QuestionsPanel({ scrollRef, style }) {
             <Text style={styles.meta}>
               {questionCount} Questions + {reactionCount} Reactions
             </Text>
+            {interviewSessions.length > 0 && (
+              <Text style={[styles.interviewProgress, { color: completedCount >= 8 ? colors.primaryEnd : colors.textDisabled }]}>
+                {completedCount}/8 interviews completed
+              </Text>
+            )}
           </View>
           <View style={styles.headerBtns}>
             <TouchableOpacity style={styles.iconBtn} onPress={handleCopy} title="클립보드에 복사">
@@ -681,6 +687,7 @@ const styles = StyleSheet.create({
   },
   title: { ...textStyles.h2, color: colors.textSecondary },
   meta: { ...textStyles.caption, color: colors.textSecondary, marginTop: 2 },
+  interviewProgress: { fontSize: 11, marginTop: 2 },
   headerBtns: { flexDirection: 'row', gap: spacing.xs },
   iconBtn: {
     backgroundColor: colors.surface,

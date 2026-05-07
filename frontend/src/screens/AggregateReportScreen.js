@@ -6,7 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Copy, Share2, MessageSquare, Check } from 'lucide-react-native';
-import { reportsApi } from '../api/client';
+import { reportsApi, interviewSessionsApi } from '../api/client';
 import FeedbackModal from '../components/FeedbackModal';
 import { colors, spacing, radius, textStyles } from '../theme';
 
@@ -105,6 +105,7 @@ export default function AggregateReportScreen({ route, navigation }) {
   const [isTimedOut, setIsTimedOut]   = useState(false);
   const [copied, setCopied]           = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [completedCount, setCompletedCount] = useState(0);
   const pollRef    = useRef(null);
   const elapsedRef = useRef(0);
   const copyAnim   = useRef(new Animated.Value(1)).current;
@@ -175,6 +176,13 @@ export default function AggregateReportScreen({ route, navigation }) {
     return () => stopPolling();
   }, [questionListId]);
 
+  useEffect(() => {
+    interviewSessionsApi.list(questionListId).then((res) => {
+      const count = (res.data || []).filter((s) => s.status === 'completed').length;
+      setCompletedCount(count);
+    }).catch(() => {});
+  }, [questionListId]);
+
   function handleFeedbackClose() {
     setShowFeedbackModal(false);
   }
@@ -191,7 +199,16 @@ export default function AggregateReportScreen({ route, navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.topTitle}>Overall Report</Text>
+        <View style={{ alignItems: 'center' }}>
+          <Text style={styles.topTitle}>Overall Report</Text>
+          <Text style={{
+            fontSize: 11,
+            color: completedCount >= 8 ? colors.primaryEnd : colors.textDisabled,
+            marginTop: 2,
+          }}>
+            {completedCount}/8 interviews completed
+          </Text>
+        </View>
         <View style={styles.actionBtns}>
           {isCompleted && canShare && (
             <Pressable onPress={handleShare} style={styles.iconBtn}>
