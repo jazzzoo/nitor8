@@ -1,0 +1,58 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(node scripts/seed-test-feedback.js)",
+      "Bash(git -C /c/Users/leetech/sally-ai status)",
+      "Bash(git -C /c/Users/leetech/sally-ai add backend/scripts/seed-test-feedback.js)",
+      "Bash(git -C /c/Users/leetech/sally-ai commit -m ' *)",
+      "Bash(git -C /c/Users/leetech/sally-ai push origin main)",
+      "Bash(git -C /c/Users/leetech/sally-ai add frontend/src/screens/InterviewScreen.js)",
+      "Bash(node scripts/migrate-feedback-guest-id.js)",
+      "Bash(git -C /c/Users/leetech/sally-ai add backend/src/models/db.js backend/src/routes/interviewSessions.js backend/scripts/seed-test-feedback.js backend/scripts/migrate-feedback-guest-id.js)",
+      "Bash(node -e ' *)",
+      "Bash(git -C /c/Users/leetech/sally-ai add backend/src/routes/admin.js)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(mkdir -p .claude/hooks)",
+      "Bash(chmod +x .claude/hooks/safety-guard.sh .claude/hooks/notify.sh .claude/hooks/dep-check.sh)",
+      "Bash(node -e \"const s = JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.json','utf8'\\)\\); console.log\\(s.hooks.SessionStart[0].hooks[0].command, '|', s.hooks.PreToolUse[0].hooks[0].command, '|', s.hooks.Stop[0].hooks[0].command\\)\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\leetech\\sally-ai\\.claude"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/dep-check.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/safety-guard.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

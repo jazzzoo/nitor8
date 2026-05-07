@@ -34,6 +34,13 @@ web-build/
 *.swp
 
 # -------------------------
+# Claude Code 훅 (로컬 환경 의존)
+# settings.json은 공유 가능, hooks/는 로컬 전용
+# -------------------------
+.claude/hooks/
+.claude/settings.local.json
+
+# -------------------------
 # 운영체제
 # -------------------------
 .DS_Store
