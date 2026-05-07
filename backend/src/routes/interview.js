@@ -12,8 +12,6 @@ import crypto from 'crypto';
 import pool, { query } from '../models/db.js';
 import { generateAggregateReport } from './reports.js';
 
-const AUTO_AGGREGATE_THRESHOLD = 8;
-
 const router = Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -559,15 +557,15 @@ RULES — read carefully:
         );
         const completedCount = parseInt(countRow.rows[0].cnt, 10);
 
-        if (completedCount < AUTO_AGGREGATE_THRESHOLD) {
-          console.log(`[Interview] Auto aggregate skipped: only ${completedCount}/${AUTO_AGGREGATE_THRESHOLD} completed`);
+        if (completedCount < 2) {
+          console.log(`[Interview] Auto aggregate skipped: only ${completedCount} completed`);
         } else {
           const existingAgg = await query(
             `SELECT id, status FROM reports WHERE question_list_id = $1 AND type = 'aggregate'`,
             [questionListId]
           );
           const existing = existingAgg.rows[0];
-          if (existing && existing.status !== 'failed') {
+          if (existing && (existing.status === 'generating' || existing.status === 'pending')) {
             console.log(`[Interview] Auto aggregate skipped: already ${existing.status}`);
           } else {
             const ctxRow = await query(

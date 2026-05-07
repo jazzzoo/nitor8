@@ -206,7 +206,9 @@ export default function QuestionsPanel({ scrollRef, style }) {
             </Text>
             {interviewSessions.length > 0 && (
               <Text style={[styles.interviewProgress, { color: completedCount >= 8 ? colors.primaryEnd : colors.textDisabled }]}>
-                {completedCount}/8 interviews completed
+                {completedCount >= 8
+                  ? `${completedCount} interviews completed ✦`
+                  : `${completedCount}/8 interviews completed`}
               </Text>
             )}
           </View>

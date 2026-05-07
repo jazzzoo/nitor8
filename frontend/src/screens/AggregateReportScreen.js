@@ -206,7 +206,9 @@ export default function AggregateReportScreen({ route, navigation }) {
             color: completedCount >= 8 ? colors.primaryEnd : colors.textDisabled,
             marginTop: 2,
           }}>
-            {completedCount}/8 interviews completed
+            {completedCount >= 8
+              ? `${completedCount} interviews completed ✦`
+              : `${completedCount}/8 interviews completed`}
           </Text>
         </View>
         <View style={styles.actionBtns}>
