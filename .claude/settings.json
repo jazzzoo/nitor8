@@ -16,7 +16,9 @@
       "Skill(update-config:*)",
       "Bash(mkdir -p .claude/hooks)",
       "Bash(chmod +x .claude/hooks/safety-guard.sh .claude/hooks/notify.sh .claude/hooks/dep-check.sh)",
-      "Bash(node -e \"const s = JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.json','utf8'\\)\\); console.log\\(s.hooks.SessionStart[0].hooks[0].command, '|', s.hooks.PreToolUse[0].hooks[0].command, '|', s.hooks.Stop[0].hooks[0].command\\)\")"
+      "Bash(node -e \"const s = JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.json','utf8'\\)\\); console.log\\(s.hooks.SessionStart[0].hooks[0].command, '|', s.hooks.PreToolUse[0].hooks[0].command, '|', s.hooks.Stop[0].hooks[0].command\\)\")",
+      "Bash(chmod +x .claude/hooks/auto-test.sh)",
+      "Bash(node -e \"const s = JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.json','utf8'\\)\\); console.log\\('PostToolUse:', s.hooks.PostToolUse[0].hooks[0].command\\)\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\leetech\\sally-ai\\.claude"
@@ -40,6 +42,17 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/safety-guard.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/auto-test.sh"
           }
         ]
       }
