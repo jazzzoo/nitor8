@@ -259,6 +259,7 @@ router.get('/history', authenticateGuest, async (req, res) => {
          JOIN sessions s ON ql.session_id = s.id
          JOIN projects p ON s.project_id = p.id
          WHERE p.guest_id = $1
+         AND ql.id != '00000000-0000-0000-0000-000000000003'
          ORDER BY ql.is_favorite DESC, ql.created_at DESC`,
         [req.guestId]
       );

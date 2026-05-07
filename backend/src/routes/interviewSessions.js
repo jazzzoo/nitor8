@@ -188,6 +188,7 @@ router.get('/', authenticateGuest, async (req, res) => {
          JOIN question_lists ql ON is2.question_list_id = ql.id
          LEFT JOIN interview_state ist ON ist.interview_session_id = is2.id
          ${whereClause}
+         AND is2.respondent_name NOT IN ('Test User A', 'Test User B', '(beta tester)')
          ORDER BY is2.created_at DESC`,
         params
       );
