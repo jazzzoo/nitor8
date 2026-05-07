@@ -3,15 +3,15 @@
     "allow": [
       "Bash(npm run *)",
       "Bash(node scripts/seed-test-feedback.js)",
-      "Bash(git -C /c/Users/leetech/sally-ai status)",
-      "Bash(git -C /c/Users/leetech/sally-ai add backend/scripts/seed-test-feedback.js)",
-      "Bash(git -C /c/Users/leetech/sally-ai commit -m ' *)",
-      "Bash(git -C /c/Users/leetech/sally-ai push origin main)",
-      "Bash(git -C /c/Users/leetech/sally-ai add frontend/src/screens/InterviewScreen.js)",
+      "Bash(git -C /c/Users/user/sally-ai status)",
+      "Bash(git -C /c/Users/user/sally-ai add backend/scripts/seed-test-feedback.js)",
+      "Bash(git -C /c/Users/user/sally-ai commit -m ' *)",
+      "Bash(git -C /c/Users/user/sally-ai push origin main)",
+      "Bash(git -C /c/Users/user/sally-ai add frontend/src/screens/InterviewScreen.js)",
       "Bash(node scripts/migrate-feedback-guest-id.js)",
-      "Bash(git -C /c/Users/leetech/sally-ai add backend/src/models/db.js backend/src/routes/interviewSessions.js backend/scripts/seed-test-feedback.js backend/scripts/migrate-feedback-guest-id.js)",
+      "Bash(git -C /c/Users/user/sally-ai add backend/src/models/db.js backend/src/routes/interviewSessions.js backend/scripts/seed-test-feedback.js backend/scripts/migrate-feedback-guest-id.js)",
       "Bash(node -e ' *)",
-      "Bash(git -C /c/Users/leetech/sally-ai add backend/src/routes/admin.js)",
+      "Bash(git -C /c/Users/user/sally-ai add backend/src/routes/admin.js)",
       "Skill(update-config)",
       "Skill(update-config:*)",
       "Bash(mkdir -p .claude/hooks)",
@@ -21,7 +21,7 @@
       "Bash(node -e \"const s = JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.json','utf8'\\)\\); console.log\\('PostToolUse:', s.hooks.PostToolUse[0].hooks[0].command\\)\")"
     ],
     "additionalDirectories": [
-      "C:\\Users\\leetech\\sally-ai\\.claude"
+      "C:\\Users\\user\\sally-ai\\.claude"
     ]
   },
   "hooks": {

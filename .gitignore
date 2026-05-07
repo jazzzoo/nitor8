@@ -34,10 +34,8 @@ web-build/
 *.swp
 
 # -------------------------
-# Claude Code 훅 (로컬 환경 의존)
-# settings.json은 공유 가능, hooks/는 로컬 전용
+# Claude Code (settings.local.json은 로컬 전용, hooks/는 공유)
 # -------------------------
-.claude/hooks/
 .claude/settings.local.json
 
 # -------------------------
