@@ -2,6 +2,7 @@ import { Router } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { authenticateGuest } from '../middleware/authenticateGuest.js';
 import { withRLS } from '../models/db.js';
+import { generateQuestions } from '../services/aiService.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -124,6 +125,70 @@ function normalizeQuestions(raw) {
 
     return items;
 }
+
+// ─────────────────────────────────────────
+// POST /api/question-lists/:id/regenerate
+// 전체 질문 재생성
+// ─────────────────────────────────────────
+router.post('/:id/regenerate', authenticateGuest, async (req, res) => {
+    const { id } = req.params;
+    const { additional_instruction } = req.body;
+
+    try {
+        const result = await withRLS(req.guestId, async (client) => {
+            return client.query(
+                `SELECT ql.id, ql.version, s.session_type, s.input_context
+                 FROM question_lists ql
+                 JOIN sessions s ON ql.session_id = s.id
+                 JOIN projects p ON s.project_id = p.id
+                 WHERE ql.id = $1 AND p.guest_id = $2`,
+                [id, req.guestId]
+            );
+        });
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: { code: 'NOT_FOUND', message: '질문 리스트를 찾을 수 없습니다.' },
+            });
+        }
+
+        const row = result.rows[0];
+        const aiResult = await generateQuestions(
+            row.session_type,
+            row.input_context,
+            additional_instruction || ''
+        );
+
+        if (!aiResult.success) {
+            return res.status(503).json({ success: false, error: aiResult.error });
+        }
+
+        await withRLS(req.guestId, async (client) => {
+            await client.query(
+                `UPDATE question_lists SET questions = $1, version = version + 1 WHERE id = $2`,
+                [JSON.stringify(aiResult.questions), id]
+            );
+        });
+
+        const normalized = normalizeQuestions(aiResult.questions);
+        return res.json({
+            success: true,
+            question_list: {
+                id: row.id,
+                version: row.version + 1,
+                questions: normalized,
+            },
+        });
+
+    } catch (err) {
+        console.error('[QuestionLists] regenerateAll error:', err.message);
+        return res.status(500).json({
+            success: false,
+            error: { code: 'INTERNAL_ERROR', message: '질문 재생성 중 오류가 발생했습니다.' },
+        });
+    }
+});
 
 // ─────────────────────────────────────────
 // POST /api/question-lists/:id/regenerate/:num

@@ -109,13 +109,15 @@ export default function QuestionsPanel({ scrollRef, style }) {
     if (!listId) return;
     setIsRegening(true);
     try {
-      await questionListsApi.regenerateAll(listId, {
+      const res = await questionListsApi.regenerateAll(listId, {
         additional_instruction: regenInput.trim() || undefined,
       });
-      Alert.alert('Regenerated', 'Questions have been regenerated.');
+      setQuestionList(listId, res.question_list);
       setRegenInput('');
     } catch (err) {
-      Alert.alert('error', err.message);
+      if (typeof window !== 'undefined') {
+        window.alert(err.message || 'Regeneration failed.');
+      }
     } finally {
       setIsRegening(false);
     }
