@@ -149,6 +149,7 @@ export default function CreateScreen({ navigation }) {
   const queueTimerRef = useRef(null);
   const afterQueueRef = useRef(null);  // 큐 소진 후 실행할 콜백
   const enqueuedCountRef = useRef(0);  // 총 enqueue된 아이템 수
+  const shouldNavigateToQuestions = useRef(false);
 
   // processQueueRef: 항상 최신 클로저를 유지하는 재귀 큐 프로세서
   const processQueueRef = useRef(null);
@@ -206,12 +207,12 @@ export default function CreateScreen({ navigation }) {
       setNavTitle('Preparing interview...');
       // 새로고침 후 복원
       if (currentListId && questionListCache[currentListId]) {
-        setMode('questions');
+        setMode('input');
         setNavTitle(businessSummary.trim().slice(0, 24));
       } else if (currentListId && !questionListCache[currentListId]) {
         questionListsApi.get(currentListId).then((res) => {
           setQuestionList(currentListId, res.question_list);
-          setMode('questions');
+          setMode('input');
           setNavTitle(businessSummary.trim().slice(0, 24));
         }).catch(() => {
           setMode('input');
@@ -221,9 +222,10 @@ export default function CreateScreen({ navigation }) {
     }, [currentListId])
   );
 
-  // 모바일에서 mode === 'questions'가 되는 순간 QuestionsScreen으로 이동
+  // 모바일에서 생성 완료 후 QuestionsScreen으로 이동 (뒤로가기로 돌아온 경우 제외)
   useEffect(() => {
-    if (!isDesktop && mode === 'questions') {
+    if (!isDesktop && mode === 'questions' && shouldNavigateToQuestions.current) {
+      shouldNavigateToQuestions.current = false;
       navigation.push('Questions');
     }
   }, [mode, isDesktop]);
@@ -316,7 +318,8 @@ export default function CreateScreen({ navigation }) {
               if (isDesktop) {
                 setMode('questions');
               } else {
-                navigation.navigate('Questions');
+                shouldNavigateToQuestions.current = true;
+                setMode('questions');
               }
               resetGeneration();
             } catch (fetchErr) {
