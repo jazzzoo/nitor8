@@ -224,7 +224,7 @@ export default function CreateScreen({ navigation }) {
   // 모바일에서 mode === 'questions'가 되는 순간 QuestionsScreen으로 이동
   useEffect(() => {
     if (!isDesktop && mode === 'questions') {
-      navigation.navigate('Questions');
+      navigation.push('Questions');
     }
   }, [mode, isDesktop]);
 
