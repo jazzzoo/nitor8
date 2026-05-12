@@ -509,6 +509,16 @@ export default function CreateScreen({ navigation }) {
                     disabled={!canSubmit || isLoading || isGenerating}
                     loading={isLoading}
                   />
+                  {!isDesktop && currentListId && (
+                    <TouchableOpacity
+                      onPress={() => navigation.push('Questions')}
+                      style={{ paddingVertical: spacing.md, alignItems: 'center' }}
+                    >
+                      <Text style={{ fontSize: 14, color: colors.primary }}>
+                        View last question list →
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
               </View>
