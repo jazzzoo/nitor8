@@ -422,13 +422,13 @@ export default function CreateScreen({ navigation }) {
               <View style={!isDesktop && { flex: 1 }}>
               {/* 모바일 전용: 아이콘 버튼 행 */}
               {!isDesktop && (
-                <View style={{ flexDirection: 'row', gap: spacing.xs, paddingHorizontal: spacing.lg, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
                   <TouchableOpacity onPress={openHistory} style={styles.topIconBtn}>
-                    <History size={18} color={colors.primary} />
+                    <History size={18} color={colors.textSecondary} />
                   </TouchableOpacity>
                   {currentListId && questionListCache[currentListId] && (
                     <TouchableOpacity onPress={() => navigation.push('Questions')} style={styles.topIconBtn}>
-                      <ListOrdered size={18} color={colors.primary} />
+                      <ListOrdered size={18} color={colors.textSecondary} />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -708,10 +708,6 @@ const styles = StyleSheet.create({
   leftPanel: { backgroundColor: colors.background },
   topIconBtn: {
     padding: 6,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
   },
   formScroll: { padding: spacing.lg, paddingBottom: spacing.xl, gap: spacing.lg },
   formHeader: { gap: spacing.xs },
