@@ -8,19 +8,29 @@
 
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ChevronLeft } from 'lucide-react-native';
 import LegalModal from './LegalModal';
 import { colors } from '../theme';
 import LogoMark from './LogoMark';
 import useStore from '../store/useStore';
 
-export default function NavBar({ onLogoPress }) {
+export default function NavBar({ onLogoPress, currentRoute, isDesktop, onBackPress }) {
   const navTitle = useStore((s) => s.navTitle);
   const [legalModal, setLegalModal] = useState(null); // 'privacy' | 'terms' | null
 
+  const showBack = !isDesktop && currentRoute === 'Questions';
+
   return (
     <View style={styles.bar}>
-      {/* 왼쪽: 로고 + 동적 타이틀 */}
+      {/* 왼쪽: (뒤로가기) + 로고 + 동적 타이틀 */}
       <View style={styles.left}>
+        {/* 뒤로가기 버튼 — 모바일 Questions 화면에서만 표시 */}
+        {showBack && (
+          <TouchableOpacity onPress={onBackPress} activeOpacity={0.7} style={styles.backBtn}>
+            <ChevronLeft size={22} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
+
         {/* 로고 — CTA */}
         <TouchableOpacity onPress={onLogoPress} activeOpacity={0.8} style={styles.logoBtn}>
           <LogoMark size={32} />
@@ -83,6 +93,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 30,             // 로고와 타이틀 사이 30px
     flex: 1,
+  },
+
+  backBtn: {
+    marginRight: -18,    // gap 30 중 일부 상쇄해서 로고와 자연스럽게 붙음
+    padding: 4,
   },
 
   logoBtn: {

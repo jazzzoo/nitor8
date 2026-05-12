@@ -111,7 +111,14 @@ export default function App() {
         <View style={{ flex: 1, backgroundColor: colors.background }}>
 
           {/* NavBar — Interview 화면 제외하고 표시 */}
-          {showNavBar && <NavBar onLogoPress={handleLogoPress} />}
+          {showNavBar && (
+            <NavBar
+              onLogoPress={handleLogoPress}
+              currentRoute={currentRoute}
+              isDesktop={isDesktop}
+              onBackPress={() => navRef.current?.goBack()}
+            />
+          )}
 
           <NavigationContainer
             ref={navRef}
