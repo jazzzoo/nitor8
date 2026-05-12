@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  ScrollView, StyleSheet, Alert,
+  ScrollView, StyleSheet, Alert, Modal,
   Animated, useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -140,6 +140,7 @@ export default function CreateScreen({ navigation }) {
   const [extraInstr, setExtraInstr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [leftVisible, setLeftVisible] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const panelWidth = useRef(new Animated.Value(400)).current;
   const [statusMessage, setStatusMessage] = useState('');
   const tokenReceivedRef = useRef(false);
@@ -373,7 +374,7 @@ export default function CreateScreen({ navigation }) {
           />
         )}
         {/* ══ 왼쪽: 입력 폼 ══════════════════════════════════ */}
-        {(isDesktop || mode === 'input') && (
+        {(isDesktop || mode !== 'generating') && (
           <Animated.View style={[
             styles.leftPanel,
             isDesktop && {
@@ -400,6 +401,15 @@ export default function CreateScreen({ navigation }) {
             {/* 입력 폼 — 숨김 시 안 보임 */}
             {leftVisible && (
               <View style={!isDesktop && { flex: 1 }}>
+              {/* 모바일 전용: 히스토리 버튼 */}
+              {!isDesktop && (
+                <TouchableOpacity
+                  onPress={() => setShowHistory(true)}
+                  style={{ paddingHorizontal: spacing.lg, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border, alignItems: 'flex-end' }}
+                >
+                  <Text style={{ fontSize: 13, color: colors.primary, fontWeight: '600' }}>History ▾</Text>
+                </TouchableOpacity>
+              )}
               <ScrollView
                 contentContainerStyle={styles.formScroll}
                 keyboardShouldPersistTaps="handled"
@@ -509,7 +519,7 @@ export default function CreateScreen({ navigation }) {
                     disabled={!canSubmit || isLoading || isGenerating}
                     loading={isLoading}
                   />
-                  {!isDesktop && currentListId && (
+                  {!isDesktop && currentListId && questionListCache[currentListId] && (
                     <TouchableOpacity
                       onPress={() => navigation.push('Questions')}
                       style={{ paddingVertical: spacing.md, alignItems: 'center' }}
@@ -626,6 +636,34 @@ export default function CreateScreen({ navigation }) {
           </View>
         )}
       </View>
+
+      {/* ══ 모바일 히스토리 모달 ══════════════════════════ */}
+      {!isDesktop && (
+        <Modal
+          visible={showHistory}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowHistory(false)}
+        >
+          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <TouchableOpacity
+              style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' }}
+              onPress={() => setShowHistory(false)}
+              activeOpacity={1}
+            />
+            <View style={{ backgroundColor: colors.background, maxHeight: '75%', borderTopWidth: 1, borderTopColor: colors.border }}>
+              <HistorySidebar
+                style={{ width: '100%', flex: 1, borderRightWidth: 0 }}
+                onSelect={(listId) => {
+                  setCurrentListId(listId);
+                  setShowHistory(false);
+                  navigation.push('Questions');
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }

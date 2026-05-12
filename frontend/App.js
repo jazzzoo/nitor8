@@ -116,7 +116,15 @@ export default function App() {
               onLogoPress={handleLogoPress}
               currentRoute={currentRoute}
               isDesktop={isDesktop}
-              onBackPress={() => navRef.current?.goBack()}
+              onBackPress={() => {
+                if (navRef.isReady()) {
+                  if (navRef.canGoBack()) {
+                    navRef.goBack();
+                  } else {
+                    navRef.navigate('Create');
+                  }
+                }
+              }}
             />
           )}
 

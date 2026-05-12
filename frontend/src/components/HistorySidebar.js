@@ -10,7 +10,7 @@ import { colors, spacing, radius, textStyles } from '../theme';
 import { Star, Trash2, Pencil } from 'lucide-react-native';
 import ModalDialog from './ModalDialog';
 
-export default function HistorySidebar({ onSelect }) {
+export default function HistorySidebar({ onSelect, style }) {
   const { currentListId, setCurrentListId, setQuestionList, updateListTitle, historyRefresh } = useStore();
   const [history, setHistory] = useState([]);
   const [editModal, setEditModal] = useState({ visible: false, item: null, text: '' });
@@ -93,7 +93,7 @@ export default function HistorySidebar({ onSelect }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Text style={styles.header}>History</Text>
       <ScrollView contentContainerStyle={styles.scroll}>
         {history.length === 0 && (
