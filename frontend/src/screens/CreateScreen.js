@@ -18,7 +18,7 @@ import HistorySidebar from '../components/HistorySidebar';
 import useStore from '../store/useStore';
 import { sessionsApi, streamGenerateQuestions, questionListsApi } from '../api/client';
 import { colors, gradientColors, spacing, radius, textStyles } from '../theme';
-import { ChevronsLeft, ChevronsRight } from 'lucide-react-native';
+import { ChevronsLeft, ChevronsRight, History, ListOrdered } from 'lucide-react-native';
 
 const STYLE_OPTIONS = ['Neutral', 'Deep', 'Soft'];
 const STYLE_MAP = { 'Neutral': 'neutral', 'Deep': 'deep', 'Soft': 'soft' };
@@ -151,6 +151,8 @@ export default function CreateScreen({ navigation }) {
   const afterQueueRef = useRef(null);  // 큐 소진 후 실행할 콜백
   const enqueuedCountRef = useRef(0);  // 총 enqueue된 아이템 수
   const shouldNavigateToQuestions = useRef(false);
+  const historySlide = useRef(new Animated.Value(-280)).current;
+  const historyBackdrop = useRef(new Animated.Value(0)).current;
 
   // processQueueRef: 항상 최신 클로저를 유지하는 재귀 큐 프로세서
   const processQueueRef = useRef(null);
@@ -186,6 +188,23 @@ export default function CreateScreen({ navigation }) {
     itemQueueRef.current = [];
     afterQueueRef.current = null;
     enqueuedCountRef.current = 0;
+  }
+
+  function openHistory() {
+    historySlide.setValue(-280);
+    historyBackdrop.setValue(0);
+    setShowHistory(true);
+    Animated.parallel([
+      Animated.timing(historySlide, { toValue: 0, duration: 270, useNativeDriver: true }),
+      Animated.timing(historyBackdrop, { toValue: 1, duration: 200, useNativeDriver: true }),
+    ]).start();
+  }
+
+  function closeHistory() {
+    Animated.parallel([
+      Animated.timing(historySlide, { toValue: -280, duration: 220, useNativeDriver: true }),
+      Animated.timing(historyBackdrop, { toValue: 0, duration: 180, useNativeDriver: true }),
+    ]).start(() => setShowHistory(false));
   }
 
   const toggleLeft = () => {
@@ -401,14 +420,18 @@ export default function CreateScreen({ navigation }) {
             {/* 입력 폼 — 숨김 시 안 보임 */}
             {leftVisible && (
               <View style={!isDesktop && { flex: 1 }}>
-              {/* 모바일 전용: 히스토리 버튼 */}
+              {/* 모바일 전용: 아이콘 버튼 행 */}
               {!isDesktop && (
-                <TouchableOpacity
-                  onPress={() => setShowHistory(true)}
-                  style={{ paddingHorizontal: spacing.lg, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border, alignItems: 'flex-end' }}
-                >
-                  <Text style={{ fontSize: 13, color: colors.primary, fontWeight: '600' }}>History ▾</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: spacing.xs, paddingHorizontal: spacing.lg, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                  <TouchableOpacity onPress={openHistory} style={styles.topIconBtn}>
+                    <History size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                  {currentListId && questionListCache[currentListId] && (
+                    <TouchableOpacity onPress={() => navigation.push('Questions')} style={styles.topIconBtn}>
+                      <ListOrdered size={18} color={colors.primary} />
+                    </TouchableOpacity>
+                  )}
+                </View>
               )}
               <ScrollView
                 contentContainerStyle={styles.formScroll}
@@ -519,16 +542,6 @@ export default function CreateScreen({ navigation }) {
                     disabled={!canSubmit || isLoading || isGenerating}
                     loading={isLoading}
                   />
-                  {!isDesktop && currentListId && questionListCache[currentListId] && (
-                    <TouchableOpacity
-                      onPress={() => navigation.push('Questions')}
-                      style={{ paddingVertical: spacing.md, alignItems: 'center' }}
-                    >
-                      <Text style={{ fontSize: 14, color: colors.primary }}>
-                        View last question list →
-                      </Text>
-                    </TouchableOpacity>
-                  )}
                 </View>
               )}
               </View>
@@ -637,21 +650,16 @@ export default function CreateScreen({ navigation }) {
         )}
       </View>
 
-      {/* ══ 모바일 히스토리 모달 ══════════════════════════ */}
+      {/* ══ 모바일 히스토리 모달 (왼쪽 슬라이드) ════════════ */}
       {!isDesktop && (
         <Modal
           visible={showHistory}
           transparent
-          animationType="slide"
-          onRequestClose={() => setShowHistory(false)}
+          animationType="none"
+          onRequestClose={closeHistory}
         >
-          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-            <TouchableOpacity
-              style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' }}
-              onPress={() => setShowHistory(false)}
-              activeOpacity={1}
-            />
-            <View style={{ backgroundColor: colors.background, maxHeight: '75%', borderTopWidth: 1, borderTopColor: colors.border }}>
+          <View style={{ flex: 1, flexDirection: 'row' }}>
+            <Animated.View style={{ width: 280, transform: [{ translateX: historySlide }] }}>
               <HistorySidebar
                 style={{ width: '100%', flex: 1, borderRightWidth: 0 }}
                 onSelect={(listId) => {
@@ -660,7 +668,14 @@ export default function CreateScreen({ navigation }) {
                   navigation.push('Questions');
                 }}
               />
-            </View>
+            </Animated.View>
+            <Animated.View style={{ flex: 1, opacity: historyBackdrop }}>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }}
+                onPress={closeHistory}
+                activeOpacity={1}
+              />
+            </Animated.View>
           </View>
         </Modal>
       )}
@@ -691,6 +706,13 @@ const styles = StyleSheet.create({
   mobileContainer: { flex: 1 },
 
   leftPanel: { backgroundColor: colors.background },
+  topIconBtn: {
+    padding: 6,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
   formScroll: { padding: spacing.lg, paddingBottom: spacing.xl, gap: spacing.lg },
   formHeader: { gap: spacing.xs },
   formTitle: { fontSize: 22, fontWeight: '700', color: colors.textSecondary, letterSpacing: -0.4 },

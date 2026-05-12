@@ -3,8 +3,9 @@
 // 데스크탑에서는 CreateScreen 우측 패널이 QuestionsPanel을 직접 렌더함
 
 import React from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, Text, useWindowDimensions } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { SquarePen } from 'lucide-react-native';
 import QuestionsPanel from '../components/QuestionsPanel';
 import useStore        from '../store/useStore';
 import { colors } from '../theme';
@@ -29,7 +30,7 @@ export default function QuestionsScreen({ navigation }) {
           onPress={() => navigation.goBack()}
           style={styles.backRow}
         >
-          <Text style={styles.backText}>‹ Edit inputs</Text>
+          <SquarePen size={18} color={colors.textSecondary} />
         </TouchableOpacity>
       )}
       <QuestionsPanel />
@@ -45,5 +46,4 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  backText: { fontSize: 14, color: colors.textSecondary },
 });
