@@ -199,7 +199,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
       <Pressable onPress={() => setExpanded(null)}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <View>
+          <View style={{ flex: 1, minWidth: 0, marginRight: spacing.xs }}>
             <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
               {cached?.title || businessSummary || 'Session 1'}
             </Text>
@@ -214,7 +214,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
               </Text>
             )}
           </View>
-          <View style={styles.headerBtns}>
+          <View style={[styles.headerBtns, { flexShrink: 0 }]}>
             <TouchableOpacity style={styles.iconBtn} onPress={handleCopy} title="클립보드에 복사">
               <Copy size={20} color={colors.textSecondary} />
             </TouchableOpacity>

@@ -372,6 +372,7 @@ export default function CreateScreen({ navigation }) {
               borderRightWidth: 1,
               borderRightColor: colors.border,
             },
+            !isDesktop && { flex: 1 },
           ]}>
             {/* 토글 버튼 — 오른쪽 상단 고정 */}
             {isDesktop && (
@@ -388,6 +389,7 @@ export default function CreateScreen({ navigation }) {
             )}
             {/* 입력 폼 — 숨김 시 안 보임 */}
             {leftVisible && (
+              <View style={!isDesktop && { flex: 1 }}>
               <ScrollView
                 contentContainerStyle={styles.formScroll}
                 keyboardShouldPersistTaps="handled"
@@ -479,16 +481,67 @@ export default function CreateScreen({ navigation }) {
                 </Field>
 
                 {/* CTA */}
-                <GradientButton
-                  label={isLoading ? 'Creating...' : mode === 'questions' ? '✦ Regenerate' : '✦ Generate Questions'}
-                  onPress={handleGenerate}
-                  disabled={!canSubmit || isLoading || isGenerating}
-                  loading={isLoading}
-                  style={{ marginTop: spacing.sm }}
-                />
+                {isDesktop && (
+                  <GradientButton
+                    label={isLoading ? 'Creating...' : mode === 'questions' ? '✦ Regenerate' : '✦ Generate Questions'}
+                    onPress={handleGenerate}
+                    disabled={!canSubmit || isLoading || isGenerating}
+                    loading={isLoading}
+                    style={{ marginTop: spacing.sm }}
+                  />
+                )}
               </ScrollView>
+              {!isDesktop && (
+                <View style={{ padding: spacing.lg, paddingTop: 0 }}>
+                  <GradientButton
+                    label={isLoading ? 'Creating...' : mode === 'questions' ? '✦ Regenerate' : '✦ Generate Questions'}
+                    onPress={handleGenerate}
+                    disabled={!canSubmit || isLoading || isGenerating}
+                    loading={isLoading}
+                  />
+                </View>
+              )}
+              </View>
             )}
           </Animated.View>
+        )}
+
+        {/* ══ 모바일: 생성 중 화면 ══════════════════════════ */}
+        {!isDesktop && mode === 'generating' && (
+          <ScrollView
+            ref={rightScrollRef}
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.rightScroll}
+          >
+            <Text style={styles.genTitle}>Generating Questions</Text>
+            <Text style={styles.genSub}>Writing based on Lean Customer Development framework</Text>
+
+            {generatedItems.map((item, idx) => (
+              <AnimatedCard key={idx} item={item} />
+            ))}
+
+            {isGenerating && (
+              <NeuCard style={[styles.streamCard, styles.thinkingCard]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                  <DotIndicator />
+                  <Text style={styles.statusText}>{statusMessage}</Text>
+                </View>
+              </NeuCard>
+            )}
+
+            <TouchableOpacity
+              onPress={() => {
+                cancelStream();
+                setMode('input');
+                setNavTitle('Preparing interview...');
+              }}
+              style={{ alignItems: 'center', marginTop: spacing.sm }}
+            >
+              <Text style={{ fontSize: 14, color: colors.textDisabled, textDecorationLine: 'underline' }}>
+                Cancel and start over
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
         )}
 
         {/* ══ 오른쪽: 생성 결과 패널 ════════════════════════ */}
