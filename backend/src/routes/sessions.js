@@ -296,10 +296,12 @@ router.get('/:id', authenticateGuest, async (req, res) => {
                 ) ORDER BY ql.version DESC
               ) FILTER (WHERE ql.id IS NOT NULL) as question_lists
        FROM sessions s
+       JOIN projects p ON s.project_id = p.id
        LEFT JOIN question_lists ql ON ql.session_id = s.id
        WHERE s.id = $1
+         AND p.guest_id = $2
        GROUP BY s.id`,
-        [id]
+        [id, req.guestId]
       );
     });
 

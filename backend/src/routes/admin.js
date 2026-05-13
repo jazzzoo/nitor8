@@ -10,12 +10,17 @@ import basicAuth from 'express-basic-auth';
 import { query, FEEDBACK_QLIST_ID, FEEDBACK_GUEST_ID } from '../models/db.js';
 import { generateAggregateReport } from './reports.js';
 
+if (!process.env.ADMIN_USER || !process.env.ADMIN_PASS) {
+  console.error('[Admin] FATAL: ADMIN_USER and ADMIN_PASS environment variables must be set');
+  process.exit(1);
+}
+
 const router = Router();
 
 // ── Basic Auth 미들웨어 ───────────────────────────────────────────
 router.use(basicAuth({
   users: {
-    [process.env.ADMIN_USER || 'admin']: process.env.ADMIN_PASS || 'nitor8admin',
+    [process.env.ADMIN_USER]: process.env.ADMIN_PASS,
   },
   challenge: true,
   realm: 'Nitor8 Admin',
