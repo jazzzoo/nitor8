@@ -8,7 +8,7 @@
 import { Router } from 'express';
 import { randomBytes } from 'crypto';
 import { authenticateGuest } from '../middleware/authenticateGuest.js';
-import { withRLS, query } from '../models/db.js';
+import { withRLS, query, FEEDBACK_QLIST_ID, FEEDBACK_GUEST_ID } from '../models/db.js';
 
 const router = Router();
 
@@ -22,9 +22,6 @@ function generateLinkToken() {
 // 베타 유저 피드백 인터뷰 링크 생성 (인증 불필요)
 // Body: { respondent_name? }
 // ─────────────────────────────────────────────────────────────────
-const FEEDBACK_QLIST_ID = '00000000-0000-0000-0000-000000000003';
-const FEEDBACK_GUEST_ID = '00000000-0000-4000-8000-000000000000';
-
 router.post('/feedback', async (req, res) => {
   const { respondent_name } = req.body || {};
 

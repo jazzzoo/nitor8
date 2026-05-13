@@ -71,21 +71,35 @@ export async function apiPost(path, body) {
 
 export async function apiPatch(path, body) {
   const headers = await buildHeaders();
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: 'PATCH',
-    headers,
-    body: JSON.stringify(body),
-  });
-  return parseResponse(res);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    return parseResponse(res);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function apiDelete(path) {
   const headers = await buildHeaders();
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: 'DELETE',
-    headers,
-  });
-  return parseResponse(res);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: 'DELETE',
+      headers,
+      signal: controller.signal,
+    });
+    return parseResponse(res);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ── SSE 스트리밍 ──────────────────────────────────────────────

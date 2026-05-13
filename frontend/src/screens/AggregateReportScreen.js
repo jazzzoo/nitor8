@@ -274,7 +274,7 @@ export function CompletedAggregateReport({ report }) {
         <View style={styles.countBadge}>
           <Text style={styles.countBadgeText}>{r.respondent_count ?? '?'} respondents</Text>
         </View>
-        {r.completed_at && (
+        {report?.completed_at && (
           <Text style={styles.dateText}>
             {(() => { const d = new Date(report.completed_at); return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`; })()}
           </Text>

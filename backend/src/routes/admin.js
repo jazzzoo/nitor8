@@ -7,13 +7,10 @@
 
 import { Router } from 'express';
 import basicAuth from 'express-basic-auth';
-import { query } from '../models/db.js';
+import { query, FEEDBACK_QLIST_ID, FEEDBACK_GUEST_ID } from '../models/db.js';
 import { generateAggregateReport } from './reports.js';
 
 const router = Router();
-
-const FEEDBACK_QLIST_ID  = '00000000-0000-0000-0000-000000000003';
-const FEEDBACK_GUEST_ID  = '00000000-0000-4000-8000-000000000000';
 
 // ── Basic Auth 미들웨어 ───────────────────────────────────────────
 router.use(basicAuth({

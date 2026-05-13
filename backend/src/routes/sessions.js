@@ -162,7 +162,7 @@ const checkDailyLimit = (guestId) => {
   const today = new Date().toISOString().slice(0, 10);
   const key = `${guestId}_${today}`;
   const count = rateLimitMap.get(key) || 0;
-  if (count >= 50) return false;
+  if (count >= 10) return false;
   rateLimitMap.set(key, count + 1);
   return true;
 };
