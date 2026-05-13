@@ -166,6 +166,12 @@ const checkDailyLimit = (guestId) => {
   rateLimitMap.set(key, count + 1);
   return true;
 };
+setInterval(() => {
+  const today = new Date().toISOString().slice(0, 10);
+  for (const key of rateLimitMap.keys()) {
+    if (!key.endsWith(`_${today}`)) rateLimitMap.delete(key);
+  }
+}, 3_600_000);
 
 // ─────────────────────────────────────────
 // POST /api/sessions

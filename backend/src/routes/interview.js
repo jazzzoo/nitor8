@@ -66,6 +66,12 @@ const checkChatLimit = (token) => {
   chatLimitMap.set(key, count + 1);
   return true;
 };
+setInterval(() => {
+  const today = new Date().toISOString().slice(0, 10);
+  for (const key of chatLimitMap.keys()) {
+    if (!key.endsWith(`_${today}`)) chatLimitMap.delete(key);
+  }
+}, 3_600_000);
 
 // ─────────────────────────────────────────────────────────────────
 // DB 헬퍼

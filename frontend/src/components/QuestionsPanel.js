@@ -151,7 +151,16 @@ export default function QuestionsPanel({ scrollRef, style }) {
           : `### Q${i.number}\n${i.text}\n\n**왜 이 질문?** ${i.why || ''}`
       )
       .join('\n\n---\n\n');
-    await Share.share({ message: md });
+    if (Platform.OS === 'web') {
+      if (navigator.share) {
+        await navigator.share({ text: md });
+      } else {
+        await navigator.clipboard.writeText(md);
+        Alert.alert('Copied', 'Questions copied to clipboard.');
+      }
+    } else {
+      await Share.share({ message: md });
+    }
   }
 
   // 응답자 1명 = 링크 1개, 항상 새로 생성
@@ -357,9 +366,9 @@ export default function QuestionsPanel({ scrollRef, style }) {
                           closeInterviewPanel();
                           setLinkModal({
                             visible: true,
-                            url: s.link_token
-                              ? `https://nitor8.com/interview/${s.link_token}`
-                              : s.url || null,
+                            url: s.url || (s.link_token
+                              ? `${process.env.EXPO_PUBLIC_APP_URL || 'https://nitor8.com'}/interview/${s.link_token}`
+                              : null),
                           });
                           return;
                         }

@@ -279,18 +279,11 @@ router.post('/:id/regenerate/:num', authenticateGuest, async (req, res) => {
             ...(questions.questions || []).map(q => ({ ...q, type: 'question' })),
         ];
         const { type, text } = req.body;
-        // 디버그
-        console.log('[DEBUG] icebreakers in DB:', JSON.stringify(questions.icebreakers?.map(q => ({ text: q.text, question_text: q.question_text })).slice(0, 3)));
-        console.log('[DEBUG] 찾는 text:', text?.slice(0, 30));
         let target;
-        // 수정
         if (type === 'icebreaker') {
             const iceIndex = Math.abs(qNum) - 1; // -1 → 0, -2 → 1
             target = questions.icebreakers?.[iceIndex];
         } else {
-            console.log('[DEBUG] questions 배열 길이:', questions.questions?.length);
-            console.log('[DEBUG] questions[0]:', JSON.stringify(questions.questions?.[0])?.slice(0, 50));
-            console.log('[DEBUG] qNum:', qNum, 'type:', type);
             target = questions.questions?.[qNum];
             target = target ? { ...target, type: 'question', _isIce: false } : null;
         }
@@ -406,9 +399,6 @@ router.patch('/:id/questions/:num/hide', authenticateGuest, async (req, res) => 
         }
 
         const questions = result.rows[0].questions;
-        console.log('[HIDE_DEBUG] DB questions[0]:', JSON.stringify(questions.questions?.[0]));
-        console.log('[HIDE_DEBUG] DB questions[1]:', JSON.stringify(questions.questions?.[1]));
-        console.log('[HIDE_DEBUG] qNum(index):', qNum);
         const updatedQuestions = { ...questions };
 
         if (qNum < 0) {

@@ -274,8 +274,6 @@ export default function CreateScreen({ navigation }) {
       if (!session?.id) throw new Error('Failed to receive session ID.');
       setCurrentSession(session);
 
-      console.log('[DEBUG] 세션 생성 성공:', session.id);
-
       clearQueue();
       resetGeneration();
       tokenReceivedRef.current = false;
@@ -285,8 +283,6 @@ export default function CreateScreen({ navigation }) {
       setNavTitle('Generating...');
 
       // 2. SSE 스트리밍 시작
-      console.log('[DEBUG] streamGenerateQuestions 호출 시작');
-
       const close = await streamGenerateQuestions(session.id, {
         onChunk: () => {
           if (!tokenReceivedRef.current) {
@@ -305,7 +301,6 @@ export default function CreateScreen({ navigation }) {
 
         // complete: 큐가 모두 소진된 후 REST로 질문 배열 가져오기
         onComplete: (data) => {
-          console.log('[COMPLETE] | queueLen:', itemQueueRef.current.length, '| timerActive:', !!queueTimerRef.current, '| data:', data);
           setStatusMessage('Your interview is ready! 🎉');
 
           afterQueueRef.current = async () => {
@@ -322,8 +317,6 @@ export default function CreateScreen({ navigation }) {
             try {
               const listRes = await questionListsApi.get(listId);
               const list = listRes.question_list;
-              console.log('[DEBUG] 질문 리스트 로드 성공:', list.questions?.length, '개');
-
               setQuestionList(listId, list);
               setCurrentListId(listId);
               setHistoryRefresh(Date.now());

@@ -142,7 +142,6 @@ export async function streamGenerateQuestions(sessionId, callbacks) {
 
   es.addEventListener('question', (e) => {
     try {
-      console.log('[DEBUG] question 이벤트 raw:', e.data?.slice(0, 50));
       const data = JSON.parse(e.data);
       callbacks.onQuestion?.(data);
     } catch (err) {
