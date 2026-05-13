@@ -35,7 +35,8 @@ It was zero interviews.
 
 - Lean Customer Development: methodology for validating business ideas through customer interviews
 - Problem Interview (Session 1): interviews focused on understanding customer pain points
-- The Blank Rule: 8 customer interviews are sufficient to validate a business idea (based on Steve Blank's lean customer development and Nick Hicksfield's research)
+- Lean Customer Development (Steve Blank): a methodology for validating business ideas through structured customer interviews before building
+- The 8-Interview Rule: Nick Swinmurn and others in the lean startup community have observed that patterns emerge after roughly 8 customer interviews — Nitor8 is designed around this threshold
 - Aggregate Report: synthesized insights across multiple interviews
 - Problem Verdict: AI judgment on whether the problem is confirmed, mixed, or rejected
 
@@ -59,7 +60,14 @@ Each interview generates a structured report including:
 ## Pricing
 
 - Beta: Free
+- Beta access: https://nitor8.com
 - Planned: Credit-based pricing (pay per interview session)
+
+## Coming Soon
+
+- Session 2: Solution Interview
+- Session 3: MVP Validation Interview
+- Session 4: Pricing Interview
 
 ## Alternatives
 
