@@ -191,4 +191,44 @@ router.post('/feedback-regenerate', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────
+// GET /api/admin/sessions
+// session_type = 1인 고객 인터뷰 세션 목록
+// ─────────────────────────────────────────────────────────────────
+router.get('/sessions', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT
+         is2.id,
+         is2.link_token,
+         is2.respondent_name,
+         is2.status,
+         is2.created_at,
+         is2.completed_at,
+         ql.title AS question_list_title,
+         (SELECT COUNT(*) FROM interview_turns it
+          WHERE it.interview_session_id = is2.id AND it.role = 'user') AS response_count
+       FROM interview_sessions is2
+       JOIN question_lists ql ON is2.question_list_id = ql.id
+       JOIN sessions s ON ql.session_id = s.id
+       WHERE s.session_type = 1
+         AND (is2.respondent_name IS NULL
+              OR is2.respondent_name NOT IN ('Test User A', 'Test User B'))
+       ORDER BY is2.created_at DESC
+       LIMIT 200`
+    );
+
+    const rows = result.rows;
+    const completedCount = rows.filter((r) => r.status === 'completed').length;
+
+    return res.json({ success: true, data: rows, meta: { total: rows.length, completed: completedCount } });
+  } catch (err) {
+    console.error('[Admin] GET /sessions error:', err.message);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: '세션 목록 조회 중 오류가 발생했습니다.' },
+    });
+  }
+});
+
 export default router;

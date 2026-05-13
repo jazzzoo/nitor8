@@ -40,7 +40,7 @@ async function adminGet(path, credentials) {
   return json;
 }
 
-const TABS = ['Interviews', 'Chat Logs', 'Report'];
+const TABS = ['Interviews', 'Chat Logs', 'Report', 'Sessions'];
 
 const STATUS_COLOR = {
   active:    colors.primary,
@@ -82,6 +82,11 @@ export default function AdminScreen({ navigation }) {
   const [regenerateError, setRegenerateError]     = useState(null);
   const [regenerateStatus, setRegenerateStatus]   = useState(null);
 
+  const [sessions, setSessions]               = useState([]);
+  const [sessionsMeta, setSessionsMeta]       = useState(null);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [sessionsError, setSessionsError]     = useState(null);
+
   useFocusEffect(
     React.useCallback(() => {
       if (typeof document !== 'undefined') document.title = 'Nitor8 Admin';
@@ -94,6 +99,7 @@ export default function AdminScreen({ navigation }) {
 
   useEffect(() => {
     if (authed && activeTab === 'Report' && report === undefined) loadReport();
+    if (authed && activeTab === 'Sessions' && sessions.length === 0 && !sessionsLoading) loadSessions();
   }, [activeTab, authed]);
 
   useEffect(() => {
@@ -208,6 +214,20 @@ export default function AdminScreen({ navigation }) {
         }
       }
     }, INTERVAL_MS);
+  }
+
+  async function loadSessions() {
+    setSessionsLoading(true);
+    setSessionsError(null);
+    try {
+      const res = await adminGet('/api/admin/sessions', credentials);
+      setSessions(res.data || []);
+      setSessionsMeta(res.meta || null);
+    } catch (err) {
+      setSessionsError(err.message);
+    } finally {
+      setSessionsLoading(false);
+    }
   }
 
   function selectInterview(id) {
@@ -410,6 +430,59 @@ export default function AdminScreen({ navigation }) {
           </View>
         )}
 
+        {/* ── 탭 4: Sessions ── */}
+        {activeTab === 'Sessions' && (
+          <View>
+            <View style={styles.tabHeader}>
+              <Text style={styles.tabHeadline}>Customer Interview Sessions</Text>
+              <TouchableOpacity onPress={loadSessions} style={styles.refreshBtn}>
+                <Text style={styles.refreshText}>↻ Refresh</Text>
+              </TouchableOpacity>
+            </View>
+
+            {sessionsMeta && (
+              <View style={styles.metaSummary}>
+                <Text style={styles.metaSummaryText}>
+                  Total: {sessionsMeta.total}  ·  Completed: {sessionsMeta.completed}
+                </Text>
+              </View>
+            )}
+
+            {sessionsLoading && (
+              <View style={styles.centered}>
+                <ActivityIndicator color={colors.primary} />
+              </View>
+            )}
+            {sessionsError && (
+              <Text style={styles.errorText}>{sessionsError}</Text>
+            )}
+            {!sessionsLoading && !sessionsError && sessions.length === 0 && (
+              <Text style={styles.emptyText}>No customer interview sessions yet.</Text>
+            )}
+            {sessions.map((item) => (
+              <View key={item.id} style={styles.listCard}>
+                <View style={styles.listCardRow}>
+                  <Text style={styles.respondentName}>
+                    {item.respondent_name || '(anonymous)'}
+                  </Text>
+                  <Text style={[styles.statusChip, { color: STATUS_COLOR[item.status] || colors.textDisabled }]}>
+                    {item.status}
+                  </Text>
+                </View>
+                {item.question_list_title ? (
+                  <Text style={styles.sessionTitle}>{item.question_list_title}</Text>
+                ) : null}
+                <View style={styles.listCardRow}>
+                  <Text style={styles.dateText}>{formatDate(item.created_at)}</Text>
+                  {item.response_count != null && (
+                    <Text style={styles.metaText}>{item.response_count} responses</Text>
+                  )}
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -568,4 +641,16 @@ const styles = StyleSheet.create({
   },
   bubbleContent: { fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
   bubbleMeta:    { fontSize: 11, color: colors.placeholder, fontStyle: 'italic' },
+
+  metaSummary: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 8,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  metaSummaryText: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
+  sessionTitle:    { fontSize: 13, color: colors.placeholder, marginTop: 2 },
 });

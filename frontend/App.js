@@ -1,5 +1,6 @@
 // frontend/App.js
 
+import { inject as injectAnalytics } from '@vercel/analytics';
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, useWindowDimensions } from 'react-native';
@@ -40,6 +41,11 @@ const linking = {
 
 // NavBar를 숨길 라우트
 const HIDDEN_NAVBAR_ROUTES = new Set(['Interview', 'Report', 'AggregateReport', 'Admin']);
+
+// Vercel Analytics 초기화 (웹 전용)
+if (typeof document !== 'undefined') {
+  injectAnalytics();
+}
 
 // 웹 스크롤바 커스텀 CSS 주입
 if (typeof document !== 'undefined') {
