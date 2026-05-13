@@ -1,0 +1,81 @@
+# Nitor8
+
+> AI customer interview tool for non-English founders targeting US/UK markets.
+
+Nitor8 removes the language barrier from customer development.
+Non-English founders describe their product in their own language,
+Nitor8 runs the interview in English with their target customers,
+and delivers a structured Lean-style report back in the founder's language.
+
+## Problem
+
+Most startup books say "talk to your customers."
+But for non-English founders, live English conversations —
+follow-up questions, reading the room, real-time decisions —
+cause founders to skip customer interviews entirely.
+The alternative to AI-assisted interviews is not "perfect interviews."
+It was zero interviews.
+
+## What Nitor8 Does
+
+1. Founder describes their product in their own language
+2. Nitor8 generates Lean Customer Development interview questions
+3. Founder shares an interview link with their target customer
+4. AI interviewer (Nitor) runs the full conversation in English
+5. Founder receives a structured report in their own language
+
+## Who It's For
+
+- Non-English founders from Korea, India, Eastern Europe, Southeast Asia
+- Founders building for US/UK markets
+- Early-stage founders who need to validate problems with English-speaking customers
+- Solo founders and small teams (1-5 people)
+
+## Key Concepts
+
+- Lean Customer Development: methodology for validating business ideas through customer interviews
+- Problem Interview (Session 1): interviews focused on understanding customer pain points
+- The Blank Rule: 8 customer interviews are sufficient to validate a business idea (based on Steve Blank's lean customer development and Nick Hicksfield's research)
+- Aggregate Report: synthesized insights across multiple interviews
+- Problem Verdict: AI judgment on whether the problem is confirmed, mixed, or rejected
+
+## Report Structure
+
+Each interview generates a structured report including:
+- Problem verdict (confirmed / mixed / rejected)
+- Top pain points with evidence quotes
+- Current workarounds customers are using
+- Consequences of the problem
+- Next interview questions to ask
+- Recommended next actions
+
+## Current Status
+
+- Phase 0.9 Beta (free access, honest feedback only)
+- Session 1 (Problem Interview) available
+- Multilingual support: English interviews, reports in founder's language
+- No account required to start
+
+## Pricing
+
+- Beta: Free
+- Planned: Credit-based pricing (pay per interview session)
+
+## Alternatives
+
+- Listen Labs: enterprise-focused, English-only, high price
+- Outset: enterprise-focused, no self-serve option
+- Manual customer interviews: requires live English conversation skills
+
+## Why Nitor8 Is Different
+
+- Built specifically for non-English founders
+- Self-serve, low cost
+- AI handles the live English conversation pressure
+- Lean Customer Development methodology built in
+- Reports delivered in founder's native language
+
+## Links
+
+- Product: https://nitor8.com
+- Beta access: https://nitor8.com
