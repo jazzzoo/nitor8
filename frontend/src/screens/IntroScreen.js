@@ -99,53 +99,53 @@ function NeuCard({ children, style }) {
 // ─────────────────────────────────────────────────────────────────
 function PhoneFrame() {
   const shadowStyle = Platform.OS === 'web'
-    ? { boxShadow: '0 20px 60px rgba(0,0,0,0.28), 0 4px 16px rgba(0,0,0,0.18)' }
-    : { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.28, shadowRadius: 20, elevation: 14 };
+    ? { boxShadow: '0 24px 70px rgba(0,0,0,0.28), 0 6px 20px rgba(0,0,0,0.18)' }
+    : { shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.28, shadowRadius: 24, elevation: 16 };
 
   return (
     <View style={[{
-      width: 200,
+      width: 280,
       backgroundColor: '#1a1a2e',
-      borderRadius: 36,
-      padding: 10,
+      borderRadius: 44,
+      padding: 14,
       borderWidth: 2,
       borderColor: '#333',
     }, shadowStyle]}>
       {/* Screen */}
-      <View style={{ backgroundColor: colors.background, borderRadius: 26, overflow: 'hidden', height: 400 }}>
+      <View style={{ backgroundColor: colors.background, borderRadius: 30, overflow: 'hidden', height: 532 }}>
         {/* Notch */}
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center', zIndex: 20, paddingTop: 13 }}>
-          <View style={{ width: 52, height: 14, backgroundColor: '#1a1a2e', borderRadius: 7 }} />
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center', zIndex: 20, paddingTop: 15 }}>
+          <View style={{ width: 60, height: 16, backgroundColor: '#1a1a2e', borderRadius: 8 }} />
         </View>
 
         {/* Chat UI */}
-        <View style={{ flex: 1, padding: spacing.sm, paddingTop: 38 }}>
+        <View style={{ flex: 1, padding: 16, paddingTop: 44 }}>
           {/* Header */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingBottom: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: spacing.sm }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success }} />
-            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textPrimary }}>Nitor</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingTop: 14, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 10 }}>
+            <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.success }} />
+            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textPrimary }}>Nitor</Text>
           </View>
 
           {/* Nitor bubble */}
-          <View style={{ alignSelf: 'flex-start', backgroundColor: colors.surface, borderRadius: radius.md, borderTopLeftRadius: 4, padding: spacing.sm, maxWidth: '88%', marginBottom: spacing.sm }}>
-            <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textDisabled, letterSpacing: 0.5, marginBottom: 2 }}>Nitor</Text>
-            <Text style={{ fontSize: 11, color: colors.textSecondary, lineHeight: 16 }}>
-              {"Hi Sarah! Before we dive in,\ncould you tell me what you do\nfor work and where you're based?"}
+          <View style={{ alignSelf: 'flex-start', backgroundColor: colors.surface, borderRadius: radius.md, borderTopLeftRadius: 4, paddingVertical: 10, paddingHorizontal: 14, maxWidth: '88%', marginBottom: 10 }}>
+            <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textDisabled, letterSpacing: 0.5, marginBottom: 3 }}>Nitor</Text>
+            <Text style={{ fontSize: 15, color: colors.textSecondary, lineHeight: 22 }}>
+              {"Hi Sarah! Before we dive in, could you tell me what you do for work and where you're based?"}
             </Text>
           </View>
 
           {/* Sarah bubble */}
-          <View style={{ alignSelf: 'flex-end', backgroundColor: colors.primary, borderRadius: radius.md, borderBottomRightRadius: 4, padding: spacing.sm, maxWidth: '88%', marginBottom: spacing.sm }}>
-            <Text style={{ fontSize: 11, color: colors.white, lineHeight: 16 }}>
-              {"I'm a product manager at a\nB2B SaaS in New York."}
+          <View style={{ alignSelf: 'flex-end', backgroundColor: colors.primary, borderRadius: radius.md, borderBottomRightRadius: 4, paddingVertical: 10, paddingHorizontal: 14, maxWidth: '88%', marginBottom: 10 }}>
+            <Text style={{ fontSize: 15, color: colors.white, lineHeight: 22 }}>
+              {"I'm a product manager at a B2B SaaS in New York."}
             </Text>
           </View>
 
           {/* Nitor bubble */}
-          <View style={{ alignSelf: 'flex-start', backgroundColor: colors.surface, borderRadius: radius.md, borderTopLeftRadius: 4, padding: spacing.sm, maxWidth: '88%' }}>
-            <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textDisabled, letterSpacing: 0.5, marginBottom: 2 }}>Nitor</Text>
-            <Text style={{ fontSize: 11, color: colors.textSecondary, lineHeight: 16 }}>
-              {"Tell me about a time this\ncaused a real problem?"}
+          <View style={{ alignSelf: 'flex-start', backgroundColor: colors.surface, borderRadius: radius.md, borderTopLeftRadius: 4, paddingVertical: 10, paddingHorizontal: 14, maxWidth: '88%' }}>
+            <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textDisabled, letterSpacing: 0.5, marginBottom: 3 }}>Nitor</Text>
+            <Text style={{ fontSize: 15, color: colors.textSecondary, lineHeight: 22 }}>
+              {"Tell me about a time this caused a real problem?"}
             </Text>
           </View>
         </View>
@@ -155,38 +155,85 @@ function PhoneFrame() {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Hero report card (overlaps phone frame)
+// Hero report card (overlaps phone frame) — full report structure
 // ─────────────────────────────────────────────────────────────────
 function HeroReportCard({ style }) {
+  const sectionLabel = { fontSize: 10, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs };
+  const sectionWrap  = { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm, marginBottom: spacing.sm };
+
   return (
-    <NeuCard style={[{ width: 200 }, style]}>
-      {/* Verdict badge */}
-      <View style={{ backgroundColor: colors.success, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: spacing.sm }}>
-        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.white }}>✅ Problem Confirmed</Text>
-      </View>
+    <NeuCard style={[{ width: 300, padding: 0, overflow: 'hidden' }, style]}>
+      <ScrollView style={{ maxHeight: 520 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.md }}>
 
-      {/* Evidence Level */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs }}>
-        <Text style={{ fontSize: 10, color: colors.textDisabled, letterSpacing: 0.8, textTransform: 'uppercase' }}>Evidence Level</Text>
-        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primaryEnd }}>High</Text>
-      </View>
+        {/* Badge row */}
+        <View style={{ flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap', marginBottom: spacing.xs }}>
+          <View style={{ backgroundColor: 'rgba(102,187,106,0.15)', borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4 }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.success }}>✅ Problem Confirmed</Text>
+          </View>
+          <View style={{ backgroundColor: 'rgba(168,186,217,0.2)', borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4 }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primary }}>High Evidence</Text>
+          </View>
+        </View>
 
-      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.xs }} />
+        {/* Respondent context */}
+        <Text style={{ fontSize: 11, color: colors.textDisabled, marginBottom: spacing.sm }}>
+          Product Manager · B2B SaaS · New York
+        </Text>
 
-      {/* Top Pain */}
-      <View style={{ marginBottom: spacing.xs }}>
-        <Text style={{ fontSize: 10, color: colors.textDisabled, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>Top Pain</Text>
-        <Text style={{ fontSize: 12, fontStyle: 'italic', color: colors.textPrimary, lineHeight: 17 }}>"Never know if they understood"</Text>
-        <Text style={{ fontSize: 10, color: colors.textDisabled, marginTop: 2 }}>— 3 of 5 respondents</Text>
-      </View>
+        {/* Top Pains */}
+        <View style={sectionWrap}>
+          <Text style={sectionLabel}>Top Pains</Text>
+          {[
+            { title: 'Communication clarity gap',           quote: 'I never know if they actually understood what I need', freq: 'High'   },
+            { title: 'Project delays from miscommunication', quote: 'We delayed our launch by 3 weeks',                    freq: 'Medium' },
+          ].map((pain, i) => (
+            <View key={i} style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryEnd, backgroundColor: colors.surface, borderRadius: radius.sm, paddingLeft: 12, paddingRight: spacing.sm, paddingVertical: spacing.sm, marginBottom: spacing.xs }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textPrimary, marginBottom: 4 }}>{pain.title}</Text>
+              <Text style={{ fontSize: 11, fontStyle: 'italic', color: colors.textSecondary, lineHeight: 16, marginBottom: 4 }}>"{pain.quote}"</Text>
+              <Text style={{ fontSize: 10, color: colors.textDisabled }}>● {pain.freq} frequency</Text>
+            </View>
+          ))}
+        </View>
 
-      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.xs }} />
+        {/* Current Workarounds */}
+        <View style={sectionWrap}>
+          <Text style={sectionLabel}>Current Workarounds</Text>
+          {['Hiring local project managers', 'Over-documenting requirements', 'Extra weekly review calls'].map((w, i) => (
+            <Text key={i} style={{ fontSize: 12, color: colors.textSecondary, lineHeight: 20 }}>· {w}</Text>
+          ))}
+        </View>
 
-      {/* Next Action */}
-      <View>
-        <Text style={{ fontSize: 10, color: colors.textDisabled, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>Next Action</Text>
-        <Text style={{ fontSize: 12, color: colors.primaryEnd, lineHeight: 16 }}>→ Focus on async communication</Text>
-      </View>
+        {/* Consequences */}
+        <View style={sectionWrap}>
+          <Text style={sectionLabel}>Consequences</Text>
+          {['Launch delays averaging 2-3 weeks', 'Budget overruns from rework'].map((c, i) => (
+            <Text key={i} style={{ fontSize: 12, color: colors.textSecondary, lineHeight: 20 }}>· {c}</Text>
+          ))}
+        </View>
+
+        {/* Evidence Quotes */}
+        <View style={sectionWrap}>
+          <Text style={sectionLabel}>Evidence Quotes</Text>
+          <View style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryMid, paddingLeft: 10 }}>
+            <Text style={{ fontSize: 11, fontStyle: 'italic', color: colors.textSecondary, lineHeight: 17 }}>
+              "They say yes but mean maybe. It took us months to figure that out."
+            </Text>
+          </View>
+        </View>
+
+        {/* Next Actions */}
+        <View style={sectionWrap}>
+          <Text style={sectionLabel}>Next Actions</Text>
+          {[
+            'Focus on async communication clarity',
+            'Build status visibility dashboard',
+            'Interview 3 more ops managers',
+          ].map((a, i) => (
+            <Text key={i} style={{ fontSize: 12, color: colors.primary, lineHeight: 20 }}>→ {a}</Text>
+          ))}
+        </View>
+
+      </ScrollView>
     </NeuCard>
   );
 }
@@ -436,7 +483,7 @@ export default function IntroScreen({ navigation }) {
             <View style={{
               maxWidth: MAX_W, width: '100%', alignSelf: 'center',
               flexDirection: isDesktop ? 'row' : 'column',
-              gap: spacing.xxl,
+              gap: isDesktop ? 80 : spacing.xxl,
               alignItems: isDesktop ? 'center' : 'flex-start',
             }}>
               {/* Left */}
@@ -464,26 +511,18 @@ export default function IntroScreen({ navigation }) {
               </View>
 
               {/* Right: phone frame + report card */}
-              <View style={{ flex: isDesktop ? 1 : undefined, width: isDesktop ? undefined : '100%', marginTop: isDesktop ? 0 : spacing.xl }}>
+              <View style={{ flex: isDesktop ? 1.2 : undefined, width: isDesktop ? undefined : '100%', marginTop: isDesktop ? 0 : spacing.xl }}>
                 {isDesktop ? (
                   <View style={{ flexDirection: 'row', alignItems: 'flex-start', position: 'relative' }}>
                     <PhoneFrame />
-                    <HeroReportCard style={{ marginLeft: -30, marginTop: 40 }} />
+                    <HeroReportCard style={{ marginLeft: -20, marginTop: 50 }} />
                     {Platform.OS === 'web' && (
-                      <>
-                        <View style={{
-                          position: 'absolute', left: 0, top: 0, bottom: 0, width: 60,
-                          backgroundImage: `linear-gradient(to right, ${colors.background}, transparent)`,
-                          pointerEvents: 'none',
-                          zIndex: 10,
-                        }} />
-                        <View style={{
-                          position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
-                          backgroundImage: `linear-gradient(to left, ${colors.background}, transparent)`,
-                          pointerEvents: 'none',
-                          zIndex: 10,
-                        }} />
-                      </>
+                      <View style={{
+                        position: 'absolute', right: 0, top: 0, bottom: 0, width: 80,
+                        backgroundImage: 'linear-gradient(to left, #E9EEF2 0%, transparent 100%)',
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                      }} />
                     )}
                   </View>
                 ) : (
