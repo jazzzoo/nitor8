@@ -93,56 +93,99 @@ function NeuCard({ children, style }) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Chat Mockup
+// Smartphone frame mockup (Hero)
 // ─────────────────────────────────────────────────────────────────
-const CHAT_MESSAGES = [
-  { role: 'nitor', text: "Hi Sarah! Before we dive in, could you tell me what you do for work and where you're based?" },
-  { role: 'user',  text: "I'm a product manager at a B2B SaaS company in New York." },
-  { role: 'nitor', text: "Could you tell me about a specific time this caused a real problem?" },
-  { role: 'user',  text: "Last quarter we delayed a launch by 3 weeks because..." },
-];
+function PhoneFrame() {
+  const shadowStyle = Platform.OS === 'web'
+    ? { boxShadow: '0 20px 60px rgba(0,0,0,0.28), 0 4px 16px rgba(0,0,0,0.18)' }
+    : { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.28, shadowRadius: 20, elevation: 14 };
 
-function ChatMockup({ style }) {
   return (
-    <View style={[mock.chatBox, style]}>
-      <View style={mock.chatHeader}>
-        <View style={mock.statusDot} />
-        <Text style={mock.chatTitle}>Nitor8 · Interview</Text>
-      </View>
-      {CHAT_MESSAGES.map((m, i) => (
-        <View key={i} style={m.role === 'user' ? { alignItems: 'flex-end' } : null}>
-          <View style={m.role === 'nitor' ? mock.nitorBubble : mock.userBubble}>
-            {m.role === 'nitor' && <Text style={mock.senderLabel}>Nitor</Text>}
-            <Text style={m.role === 'nitor' ? mock.nitorText : mock.userText}>{m.text}</Text>
+    <View style={[{
+      width: 200,
+      backgroundColor: '#1a1a2e',
+      borderRadius: 36,
+      padding: 10,
+      borderWidth: 2,
+      borderColor: '#333',
+    }, shadowStyle]}>
+      {/* Screen */}
+      <View style={{ backgroundColor: colors.background, borderRadius: 26, overflow: 'hidden', height: 400 }}>
+        {/* Notch */}
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center', zIndex: 20, paddingTop: 13 }}>
+          <View style={{ width: 52, height: 14, backgroundColor: '#1a1a2e', borderRadius: 7 }} />
+        </View>
+
+        {/* Chat UI */}
+        <View style={{ flex: 1, padding: spacing.sm, paddingTop: 38 }}>
+          {/* Header */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingBottom: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: spacing.sm }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success }} />
+            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textPrimary }}>Nitor</Text>
+          </View>
+
+          {/* Nitor bubble */}
+          <View style={{ alignSelf: 'flex-start', backgroundColor: colors.surface, borderRadius: radius.md, borderTopLeftRadius: 4, padding: spacing.sm, maxWidth: '88%', marginBottom: spacing.sm }}>
+            <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textDisabled, letterSpacing: 0.5, marginBottom: 2 }}>Nitor</Text>
+            <Text style={{ fontSize: 11, color: colors.textSecondary, lineHeight: 16 }}>
+              {"Hi Sarah! Before we dive in,\ncould you tell me what you do\nfor work and where you're based?"}
+            </Text>
+          </View>
+
+          {/* Sarah bubble */}
+          <View style={{ alignSelf: 'flex-end', backgroundColor: colors.primary, borderRadius: radius.md, borderBottomRightRadius: 4, padding: spacing.sm, maxWidth: '88%', marginBottom: spacing.sm }}>
+            <Text style={{ fontSize: 11, color: colors.white, lineHeight: 16 }}>
+              {"I'm a product manager at a\nB2B SaaS in New York."}
+            </Text>
+          </View>
+
+          {/* Nitor bubble */}
+          <View style={{ alignSelf: 'flex-start', backgroundColor: colors.surface, borderRadius: radius.md, borderTopLeftRadius: 4, padding: spacing.sm, maxWidth: '88%' }}>
+            <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textDisabled, letterSpacing: 0.5, marginBottom: 2 }}>Nitor</Text>
+            <Text style={{ fontSize: 11, color: colors.textSecondary, lineHeight: 16 }}>
+              {"Tell me about a time this\ncaused a real problem?"}
+            </Text>
           </View>
         </View>
-      ))}
+      </View>
     </View>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Report Card Mockup (compact, hero overlay)
+// Hero report card (overlaps phone frame)
 // ─────────────────────────────────────────────────────────────────
-function ReportCardMockup({ style }) {
+function HeroReportCard({ style }) {
   return (
-    <View style={[mock.reportCard, style]}>
-      <View style={mock.infoRow}>
-        <Text style={mock.infoLabel}>Problem Verdict</Text>
-        <Text style={mock.verdictText}>✅ Confirmed</Text>
+    <NeuCard style={[{ width: 200 }, style]}>
+      {/* Verdict badge */}
+      <View style={{ backgroundColor: colors.success, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: spacing.sm }}>
+        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.white }}>✅ Problem Confirmed</Text>
       </View>
-      <View style={mock.infoRow}>
-        <Text style={mock.infoLabel}>Evidence Level</Text>
-        <Text style={mock.evidenceText}>High</Text>
+
+      {/* Evidence Level */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs }}>
+        <Text style={{ fontSize: 10, color: colors.textDisabled, letterSpacing: 0.8, textTransform: 'uppercase' }}>Evidence Level</Text>
+        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primaryEnd }}>High</Text>
       </View>
-      <View style={mock.sep} />
-      <Text style={mock.infoLabel}>Top Pain</Text>
-      <Text style={mock.painQuote}>"Never know if they understood"</Text>
-      <Text style={mock.painMeta}>— 3 of 5 respondents</Text>
-      <View style={mock.sep} />
-      <Text style={mock.infoLabel}>Next Action</Text>
-      <Text style={mock.actionLine}>→ Focus on async features</Text>
-    </View>
+
+      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.xs }} />
+
+      {/* Top Pain */}
+      <View style={{ marginBottom: spacing.xs }}>
+        <Text style={{ fontSize: 10, color: colors.textDisabled, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>Top Pain</Text>
+        <Text style={{ fontSize: 12, fontStyle: 'italic', color: colors.textPrimary, lineHeight: 17 }}>"Never know if they understood"</Text>
+        <Text style={{ fontSize: 10, color: colors.textDisabled, marginTop: 2 }}>— 3 of 5 respondents</Text>
+      </View>
+
+      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.xs }} />
+
+      {/* Next Action */}
+      <View>
+        <Text style={{ fontSize: 10, color: colors.textDisabled, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>Next Action</Text>
+        <Text style={{ fontSize: 12, color: colors.primaryEnd, lineHeight: 16 }}>→ Focus on async communication</Text>
+      </View>
+    </NeuCard>
   );
 }
 
@@ -418,17 +461,33 @@ export default function IntroScreen({ navigation }) {
                 <Text style={lp.trust}>No account needed · Free beta</Text>
               </View>
 
-              {/* Right: overlapping mockups */}
+              {/* Right: phone frame + report card */}
               <View style={{ flex: isDesktop ? 1 : undefined, width: isDesktop ? undefined : '100%', marginTop: isDesktop ? 0 : spacing.xl }}>
                 {isDesktop ? (
-                  <View style={{ height: 370, position: 'relative' }}>
-                    <ChatMockup style={{ position: 'absolute', top: 0, left: 0, right: 32, zIndex: 1 }} />
-                    <ReportCardMockup style={{ position: 'absolute', bottom: 0, right: 0, width: 220, zIndex: 2 }} />
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', position: 'relative' }}>
+                    <PhoneFrame />
+                    <HeroReportCard style={{ marginLeft: -30, marginTop: 40 }} />
+                    {Platform.OS === 'web' && (
+                      <>
+                        <View style={{
+                          position: 'absolute', left: 0, top: 0, bottom: 0, width: 60,
+                          backgroundImage: `linear-gradient(to right, ${colors.background}, transparent)`,
+                          pointerEvents: 'none',
+                          zIndex: 10,
+                        }} />
+                        <View style={{
+                          position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
+                          backgroundImage: `linear-gradient(to left, ${colors.background}, transparent)`,
+                          pointerEvents: 'none',
+                          zIndex: 10,
+                        }} />
+                      </>
+                    )}
                   </View>
                 ) : (
-                  <View style={{ gap: spacing.md }}>
-                    <ChatMockup />
-                    <ReportCardMockup />
+                  <View style={{ gap: spacing.md, alignItems: 'center' }}>
+                    <PhoneFrame />
+                    <HeroReportCard />
                   </View>
                 )}
               </View>
@@ -660,120 +719,3 @@ const lp = StyleSheet.create({
   },
 });
 
-// ─────────────────────────────────────────────────────────────────
-// Mockup styles
-// ─────────────────────────────────────────────────────────────────
-const mock = StyleSheet.create({
-  chatBox: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  chatHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    marginBottom: spacing.xs,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.success,
-  },
-  chatTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.textDisabled,
-    letterSpacing: 0.5,
-  },
-  nitorBubble: {
-    backgroundColor: colors.background,
-    borderRadius: radius.md,
-    borderTopLeftRadius: 4,
-    padding: spacing.sm,
-    maxWidth: '85%',
-    alignSelf: 'flex-start',
-  },
-  userBubble: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    borderBottomRightRadius: 4,
-    padding: spacing.sm,
-    maxWidth: '85%',
-    alignSelf: 'flex-end',
-  },
-  senderLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.textDisabled,
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  nitorText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  userText: {
-    fontSize: 13,
-    color: colors.white,
-    lineHeight: 20,
-  },
-  reportCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    gap: spacing.xs,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  infoLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: colors.textDisabled,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  verdictText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.success,
-  },
-  evidenceText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primaryEnd,
-  },
-  sep: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 2,
-  },
-  painQuote: {
-    fontSize: 12,
-    color: colors.textPrimary,
-    fontStyle: 'italic',
-    lineHeight: 18,
-  },
-  painMeta: {
-    fontSize: 10,
-    color: colors.textDisabled,
-  },
-  actionLine: {
-    fontSize: 12,
-    color: colors.primaryEnd,
-    lineHeight: 20,
-  },
-});
