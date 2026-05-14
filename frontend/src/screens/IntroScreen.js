@@ -9,6 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
+import { AlarmClock, EyeOff, Shovel, MessageCircleX, BookOpenCheck, Link, FileChartColumn } from 'lucide-react-native';
+
 import GradientButton from '../components/GradientButton';
 import useStore from '../store/useStore';
 import { colors, spacing, radius } from '../theme';
@@ -517,14 +519,14 @@ export default function IntroScreen({ navigation }) {
                 <NeuCard>
                   <View style={{ gap: spacing.lg }}>
                     {[
-                      'Follow-up questions in real time',
-                      'Reading between the lines',
-                      'Knowing when to push deeper',
-                      'Not freezing mid-conversation',
-                    ].map((txt, i) => (
-                      <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
-                        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primaryEnd, marginTop: 9, flexShrink: 0 }} />
-                        <Text style={{ fontSize: 18, color: colors.textSecondary, lineHeight: 28, flex: 1 }}>{txt}</Text>
+                      { Icon: AlarmClock,      text: 'Follow-up questions in real time' },
+                      { Icon: EyeOff,          text: 'Reading between the lines' },
+                      { Icon: Shovel,          text: 'Knowing when to push deeper' },
+                      { Icon: MessageCircleX,  text: 'Not freezing mid-conversation' },
+                    ].map(({ Icon, text }, i) => (
+                      <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                        <Icon size={24} color={colors.error} style={{ flexShrink: 0 }} />
+                        <Text style={{ fontSize: 18, color: colors.textSecondary, lineHeight: 28, flex: 1 }}>{text}</Text>
                       </View>
                     ))}
                   </View>
@@ -552,25 +554,28 @@ export default function IntroScreen({ navigation }) {
 
               <View style={{ marginTop: spacing.xxl, gap: spacing.xl }}>
                 {[
-                  { num: '01', title: 'Describe', body: 'Write about your product in your own language. Nitor8 generates Lean-style interview questions.' },
-                  { num: '02', title: 'Share',    body: 'Send an interview link to your target customer. Nitor8 handles the full English conversation for you.' },
-                  { num: '03', title: 'Learn',    body: 'Get a structured Lean-style report back in your language. Problem verdict, key pains, quotes, next actions.' },
-                ].map((step, i) => (
+                  { Icon: BookOpenCheck,   title: 'Describe', body: 'Write about your product in your own language. Nitor8 generates Lean-style interview questions.' },
+                  { Icon: Link,            title: 'Share',    body: 'Send an interview link to your target customer. Nitor8 handles the full English conversation for you.' },
+                  { Icon: FileChartColumn, title: 'Learn',    body: 'Get a structured Lean-style report back in your language. Problem verdict, key pains, quotes, next actions.' },
+                ].map(({ Icon, title, body }, i) => (
                   <NeuCard key={i}>
                     <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: spacing.xl, alignItems: 'flex-start' }}>
+                      {/* Gradient border box: LinearGradient outer + solid inner */}
                       <LinearGradient
-                        colors={GRAD}
+                        colors={[colors.primary, colors.primaryEnd]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={{ width: 56, height: 56, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                        style={{ width: 56, height: 56, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                       >
-                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.white, letterSpacing: 1.5 }}>{step.num}</Text>
+                        <View style={{ width: 46, height: 46, borderRadius: radius.md - 3, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon size={28} color={colors.primary} />
+                        </View>
                       </LinearGradient>
                       <View style={{ flex: 1 }}>
                         <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs }}>
-                          Step {i + 1} — {step.title}
+                          {title}
                         </Text>
-                        <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26 }}>{step.body}</Text>
+                        <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26 }}>{body}</Text>
                       </View>
                     </View>
                   </NeuCard>
