@@ -5,7 +5,6 @@ import {
   Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -553,23 +552,41 @@ export default function IntroScreen({ navigation }) {
                 </Text>
               </View>
 
-              {/* Right: bullets in NeuCard */}
+              {/* Right: bullets */}
               <View style={{ flex: 1, justifyContent: 'center', marginTop: isDesktop ? 0 : spacing.xl }}>
-                <NeuCard>
-                  <View style={{ gap: spacing.lg }}>
+                {isDesktop ? (
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md }}>
                     {[
-                      { Icon: AlarmClock,      text: 'Follow-up questions in real time' },
-                      { Icon: EyeOff,          text: 'Reading between the lines' },
-                      { Icon: Shovel,          text: 'Knowing when to push deeper' },
-                      { Icon: MessageCircleX,  text: 'Not freezing mid-conversation' },
+                      { Icon: AlarmClock,     text: 'Follow-up questions in real time' },
+                      { Icon: EyeOff,         text: 'Reading between the lines' },
+                      { Icon: Shovel,         text: 'Knowing when to push deeper' },
+                      { Icon: MessageCircleX, text: 'Not freezing mid-conversation' },
                     ].map(({ Icon, text }, i) => (
-                      <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                        <Icon size={24} color={colors.error} style={{ flexShrink: 0 }} />
-                        <Text style={{ fontSize: 18, color: colors.textSecondary, lineHeight: 28, flex: 1 }}>{text}</Text>
+                      <View key={i} style={{ flex: 1, alignItems: 'center' }}>
+                        <View style={{ width: 64, height: 64, backgroundColor: colors.primaryEnd, borderRadius: radius.md, padding: spacing.md, alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon size={32} color={colors.white} />
+                        </View>
+                        <Text style={{ marginTop: spacing.sm, textAlign: 'center', fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>{text}</Text>
                       </View>
                     ))}
                   </View>
-                </NeuCard>
+                ) : (
+                  <NeuCard>
+                    <View style={{ gap: spacing.lg }}>
+                      {[
+                        { Icon: AlarmClock,     text: 'Follow-up questions in real time' },
+                        { Icon: EyeOff,         text: 'Reading between the lines' },
+                        { Icon: Shovel,         text: 'Knowing when to push deeper' },
+                        { Icon: MessageCircleX, text: 'Not freezing mid-conversation' },
+                      ].map(({ Icon, text }, i) => (
+                        <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                          <Icon size={24} color={colors.error} style={{ flexShrink: 0 }} />
+                          <Text style={{ fontSize: 18, color: colors.textSecondary, lineHeight: 28, flex: 1 }}>{text}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </NeuCard>
+                )}
               </View>
             </View>
 
@@ -599,17 +616,25 @@ export default function IntroScreen({ navigation }) {
                 ].map(({ Icon, title, body }, i) => (
                   <NeuCard key={i}>
                     <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: spacing.xl, alignItems: 'flex-start' }}>
-                      {/* Gradient border box: LinearGradient outer + solid inner */}
-                      <LinearGradient
-                        colors={[colors.primary, colors.primaryEnd]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={{ width: 56, height: 56, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                      >
-                        <View style={{ width: 46, height: 46, borderRadius: radius.md - 3, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
-                          <Icon size={28} color={colors.primary} />
-                        </View>
-                      </LinearGradient>
+                      {/* Gradient border box */}
+                      <View style={Platform.OS === 'web' ? {
+                        width: 56, height: 56, borderRadius: radius.md,
+                        alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        borderWidth: 1,
+                        borderColor: 'transparent',
+                        backgroundImage: `linear-gradient(${colors.surface}, ${colors.surface}), linear-gradient(135deg, ${colors.primary}, ${colors.primaryEnd})`,
+                        backgroundOrigin: 'border-box',
+                        backgroundClip: 'padding-box, border-box',
+                        backgroundColor: colors.surface,
+                      } : {
+                        width: 56, height: 56, borderRadius: radius.md,
+                        alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        borderWidth: 1,
+                        borderColor: colors.primary,
+                        backgroundColor: colors.surface,
+                      }}>
+                        <Icon size={28} color={colors.primary} />
+                      </View>
                       <View style={{ flex: 1 }}>
                         <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs }}>
                           {title}
@@ -643,14 +668,34 @@ export default function IntroScreen({ navigation }) {
                 <View style={{ flex: isDesktop ? 1.4 : 1 }}>
                   <MockReport />
                 </View>
-                <View style={{ flex: 1, justifyContent: 'center', gap: spacing.md, marginTop: isDesktop ? 0 : spacing.lg }}>
-                  {['Problem Verdict', 'Evidence Level', 'Top 3 Pain Points with quotes', 'Current Workarounds', 'Consequences', 'Next Actions'].map((item, i) => (
-                    <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                      <Text style={{ fontSize: 16, color: colors.success, fontWeight: '700' }}>✓</Text>
-                      <Text style={{ fontSize: 17, color: colors.textSecondary }}>{item}</Text>
-                    </View>
-                  ))}
-                </View>
+                {isDesktop ? (
+                  <View style={{ flex: 1, alignSelf: 'stretch', paddingTop: spacing.xl, paddingBottom: spacing.xl, justifyContent: 'space-between' }}>
+                    {[
+                      { label: 'Problem Verdict',               bg: colors.primary   },
+                      { label: 'Evidence Level',                bg: '#B4C2D4'         },
+                      { label: 'Top 3 Pain Points with quotes', bg: colors.primaryMid },
+                      { label: 'Current Workarounds',           bg: '#ECC0C9'         },
+                      { label: 'Consequences',                  bg: colors.primaryEnd },
+                      { label: 'Next Actions',                  bg: '#E07268'         },
+                    ].map(({ label, bg }, i) => (
+                      <AnimatedSection key={i} delay={i * 0.1}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: bg, borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg }}>
+                          <Text style={{ fontSize: 20, color: colors.white, fontWeight: '700' }}>✓</Text>
+                          <Text style={{ fontSize: 18, fontWeight: '600', color: colors.white }}>{label}</Text>
+                        </View>
+                      </AnimatedSection>
+                    ))}
+                  </View>
+                ) : (
+                  <View style={{ flex: 1, justifyContent: 'center', gap: spacing.md, marginTop: spacing.lg }}>
+                    {['Problem Verdict', 'Evidence Level', 'Top 3 Pain Points with quotes', 'Current Workarounds', 'Consequences', 'Next Actions'].map((item, i) => (
+                      <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                        <Text style={{ fontSize: 16, color: colors.success, fontWeight: '700' }}>✓</Text>
+                        <Text style={{ fontSize: 17, color: colors.textSecondary }}>{item}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             </View>
           </AnimatedSection>
