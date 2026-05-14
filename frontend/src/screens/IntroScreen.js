@@ -1,10 +1,11 @@
 // frontend/src/screens/IntroScreen.js
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -14,6 +15,82 @@ import { colors, spacing, radius } from '../theme';
 
 const MOBILE_BP = 700;
 const MAX_W     = 1100;
+const GRAD      = ['#A8BAD9', '#E0B7C6', '#FF8A80'];
+
+// ─────────────────────────────────────────────────────────────────
+// Scroll animation wrapper (web only via IntersectionObserver)
+// ─────────────────────────────────────────────────────────────────
+function AnimatedSection({ children, delay = 0, style }) {
+  const ref = useRef(null);
+
+  useLayoutEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const el = ref.current;
+    if (!el) return;
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(40px)';
+    el.style.transition = `opacity 0.6s ease-out ${delay}s, transform 0.6s ease-out ${delay}s`;
+  }, []);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return <View ref={ref} style={style}>{children}</View>;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Gradient headline text
+// ─────────────────────────────────────────────────────────────────
+function GradientText({ children, style }) {
+  if (Platform.OS === 'web') {
+    return (
+      <Text style={[style, {
+        backgroundImage: `linear-gradient(90deg, ${GRAD[0]}, ${GRAD[1]}, ${GRAD[2]})`,
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+      }]}>
+        {children}
+      </Text>
+    );
+  }
+  return <Text style={[style, { color: colors.primary }]}>{children}</Text>;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Neumorphic card
+// ─────────────────────────────────────────────────────────────────
+function NeuCard({ children, style }) {
+  return (
+    <View style={[{
+      backgroundColor: colors.surface,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+      shadowColor: '#000',
+      shadowOffset: { width: 4, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 2,
+    }, style]}>
+      {children}
+    </View>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────
 // Chat Mockup
@@ -70,46 +147,146 @@ function ReportCardMockup({ style }) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Full Report Mockup (section 4)
+// Full Mock Report (section 4)
 // ─────────────────────────────────────────────────────────────────
-function FullReportMockup() {
+const SAMPLE_REPORT = {
+  problem_verdict:    'confirmed',
+  evidence_level:     'high',
+  respondent_context: 'Product Manager at B2B SaaS, New York',
+  top_pains: [
+    { title: 'Communication clarity gap',           quote: 'I never know if they actually understood what I need',  frequency: 'high'   },
+    { title: 'Project delays from miscommunication', quote: 'Last quarter we delayed a launch by 3 weeks',           frequency: 'medium' },
+    { title: 'Cultural context lost in handoffs',    quote: 'They say yes but mean maybe',                           frequency: 'medium' },
+  ],
+  current_workarounds: [
+    'Hiring local project managers',
+    'Over-documenting every requirement',
+    'Scheduling extra review calls weekly',
+  ],
+  evidence_quotes: [
+    'I never know if they actually understood what I need, or if they are just saying yes to be polite.',
+    'We ended up redoing the entire feature because the brief was misunderstood from day one.',
+  ],
+  next_actions: [
+    'Focus messaging on async communication clarity',
+    'Build status visibility as core feature',
+    'Interview 3 more ops managers next week',
+  ],
+};
+
+function RVerdictBadge({ status }) {
+  const cfg = {
+    confirmed: { bg: '#E8F5E9', color: '#2E7D32', label: 'Confirmed' },
+    mixed:     { bg: '#FFF8E1', color: '#F57F17', label: 'Mixed'     },
+    rejected:  { bg: '#FFEBEE', color: '#C62828', label: 'Rejected'  },
+  };
+  const c = cfg[status] || cfg.mixed;
   return (
-    <View style={mock.fullReport}>
-      <View style={mock.infoRow}>
-        <Text style={mock.infoLabel}>Problem Verdict</Text>
-        <Text style={mock.verdictText}>✅ Confirmed</Text>
-      </View>
-      <View style={mock.infoRow}>
-        <Text style={mock.infoLabel}>Evidence Level</Text>
-        <Text style={mock.evidenceText}>High</Text>
-      </View>
-      <View style={mock.sep} />
-      <Text style={mock.groupHead}>Top Pain Points</Text>
-      {[
-        { quote: '"Never know if they understood"', meta: '— 3 of 5 respondents' },
-        { body: 'Communication delays causing project setbacks' },
-        { body: 'Cultural context lost in translation' },
-      ].map((p, i) => (
-        <View key={i} style={mock.painRow}>
-          <Text style={mock.painIdx}>{i + 1}.</Text>
-          <View style={{ flex: 1 }}>
-            {p.quote && <Text style={mock.painQuote}>{p.quote}</Text>}
-            {p.meta  && <Text style={mock.painMeta}>{p.meta}</Text>}
-            {p.body  && <Text style={mock.painBody}>{p.body}</Text>}
-          </View>
-        </View>
-      ))}
-      <View style={mock.sep} />
-      <Text style={mock.groupHead}>Current Workarounds</Text>
-      {['Hiring local project managers', 'Over-documenting everything', 'Extra review calls weekly'].map((w, i) => (
-        <Text key={i} style={mock.bulletLine}>· {w}</Text>
-      ))}
-      <View style={mock.sep} />
-      <Text style={mock.groupHead}>Next Actions</Text>
-      {['Focus on async communication features', 'Build status visibility dashboard', 'Interview 3 more ops managers'].map((a, i) => (
-        <Text key={i} style={mock.actionLine}>→ {a}</Text>
-      ))}
+    <View style={{ backgroundColor: c.bg, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start' }}>
+      <Text style={{ fontSize: 11, fontWeight: '700', color: c.color }}>✓ {c.label}</Text>
     </View>
+  );
+}
+
+function RFreqBadge({ freq }) {
+  const high = freq === 'high';
+  return (
+    <View style={{ backgroundColor: high ? '#E8F5E9' : '#FFF8E1', borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start' }}>
+      <Text style={{ fontSize: 10, fontWeight: '600', color: high ? '#2E7D32' : '#F57F17' }}>{freq}</Text>
+    </View>
+  );
+}
+
+function RSection({ title, children }) {
+  return (
+    <View style={{ marginBottom: spacing.md }}>
+      <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.sm }}>
+        {title}
+      </Text>
+      {children}
+    </View>
+  );
+}
+
+function MockReport() {
+  return (
+    <NeuCard style={{ padding: 0, overflow: 'hidden' }}>
+      <ScrollView style={{ maxHeight: 560 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.lg }}>
+
+        {/* Header */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.md }}>
+          <View style={{ flex: 1, marginRight: spacing.md }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.textPrimary }}>Interview Report</Text>
+            <Text style={{ fontSize: 12, color: colors.textDisabled, marginTop: 2 }}>{SAMPLE_REPORT.respondent_context}</Text>
+          </View>
+          <RVerdictBadge status={SAMPLE_REPORT.problem_verdict} />
+        </View>
+
+        <View style={{ height: 1, backgroundColor: colors.border, marginBottom: spacing.md }} />
+
+        {/* Evidence Level */}
+        <RSection title="Evidence Level">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <View style={{ flex: 1, height: 6, backgroundColor: colors.border, borderRadius: 3 }}>
+              <View style={{ width: '88%', height: '100%', borderRadius: 3, backgroundColor: colors.success }} />
+            </View>
+            <Text style={{ fontSize: 11, fontWeight: '600', color: colors.success }}>High</Text>
+          </View>
+        </RSection>
+
+        {/* Top Pain Points */}
+        <RSection title="Top Pain Points">
+          {SAMPLE_REPORT.top_pains.map((pain, i) => (
+            <View key={i} style={{
+              borderLeftWidth: 3, borderLeftColor: colors.primaryEnd,
+              paddingLeft: spacing.md, paddingVertical: spacing.sm,
+              marginBottom: spacing.sm, backgroundColor: colors.background,
+              borderRadius: radius.sm,
+            }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textPrimary, flex: 1, marginRight: spacing.sm }}>{pain.title}</Text>
+                <RFreqBadge freq={pain.frequency} />
+              </View>
+              <Text style={{ fontSize: 12, fontStyle: 'italic', color: colors.textSecondary, lineHeight: 18 }}>"{pain.quote}"</Text>
+            </View>
+          ))}
+        </RSection>
+
+        {/* Current Workarounds */}
+        <RSection title="Current Workarounds">
+          {SAMPLE_REPORT.current_workarounds.map((w, i) => (
+            <View key={i} style={{
+              borderLeftWidth: 3, borderLeftColor: colors.primary,
+              paddingLeft: spacing.md, paddingVertical: spacing.xs,
+              marginBottom: spacing.xs, backgroundColor: colors.background,
+              borderRadius: radius.sm,
+            }}>
+              <Text style={{ fontSize: 12, color: colors.textSecondary }}>{w}</Text>
+            </View>
+          ))}
+        </RSection>
+
+        {/* Evidence Quotes */}
+        <RSection title="Evidence Quotes">
+          {SAMPLE_REPORT.evidence_quotes.map((q, i) => (
+            <View key={i} style={{ marginBottom: spacing.sm }}>
+              <Text style={{ fontSize: 12, fontStyle: 'italic', color: colors.textSecondary, lineHeight: 18 }}>"{q}"</Text>
+            </View>
+          ))}
+        </RSection>
+
+        {/* Next Actions */}
+        <RSection title="Next Actions">
+          {SAMPLE_REPORT.next_actions.map((a, i) => (
+            <View key={i} style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xs }}>
+              <Text style={{ fontSize: 12, color: colors.primaryEnd, fontWeight: '700' }}>→</Text>
+              <Text style={{ fontSize: 12, color: colors.textSecondary, flex: 1, lineHeight: 18 }}>{a}</Text>
+            </View>
+          ))}
+        </RSection>
+
+      </ScrollView>
+    </NeuCard>
   );
 }
 
@@ -128,9 +305,9 @@ const FAQ_ITEMS = [
 // Main Component
 // ─────────────────────────────────────────────────────────────────
 export default function IntroScreen({ navigation }) {
-  const { width }    = useWindowDimensions();
-  const isDesktop    = width >= MOBILE_BP;
-  const setNavTitle  = useStore((s) => s.setNavTitle);
+  const { width, height } = useWindowDimensions();
+  const isDesktop   = width >= MOBILE_BP;
+  const setNavTitle = useStore((s) => s.setNavTitle);
   const [showBetaModal, setShowBetaModal] = useState(false);
   const [openFaq, setOpenFaq]             = useState(null);
 
@@ -186,7 +363,16 @@ export default function IntroScreen({ navigation }) {
     );
   }
 
-  const secPad = isDesktop ? 80 : 48;
+  const secPad = isDesktop ? 96 : 60;
+
+  const headlineStyle = (iD) => ({
+    fontSize: iD ? 44 : 32,
+    lineHeight: iD ? 54 : 42,
+    fontWeight: '900',
+    letterSpacing: -1.5,
+    marginBottom: spacing.md,
+    color: colors.textPrimary,
+  });
 
   return (
     <>
@@ -195,7 +381,13 @@ export default function IntroScreen({ navigation }) {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
           {/* ── 1. HERO ─────────────────────────────────────────── */}
-          <View style={{ paddingHorizontal: spacing.lg, paddingTop: secPad, paddingBottom: secPad }}>
+          <AnimatedSection style={{
+            paddingHorizontal: spacing.lg,
+            paddingTop: secPad,
+            paddingBottom: secPad,
+            minHeight: isDesktop ? height : undefined,
+            justifyContent: isDesktop ? 'center' : undefined,
+          }}>
             <View style={{
               maxWidth: MAX_W, width: '100%', alignSelf: 'center',
               flexDirection: isDesktop ? 'row' : 'column',
@@ -205,9 +397,16 @@ export default function IntroScreen({ navigation }) {
               {/* Left */}
               <View style={{ flex: 1 }}>
                 <Text style={lp.eyebrow}>AI customer interviews for non-English founders</Text>
-                <Text style={[lp.heroH, { fontSize: isDesktop ? 42 : 30, lineHeight: isDesktop ? 52 : 40 }]}>
+                <GradientText style={{
+                  fontSize: isDesktop ? 52 : 36,
+                  lineHeight: isDesktop ? 62 : 46,
+                  fontWeight: '900',
+                  letterSpacing: -1.5,
+                  marginBottom: spacing.md,
+                  color: colors.textPrimary,
+                }}>
                   Your customers speak English.{'\n'}You don't have to.
-                </Text>
+                </GradientText>
                 <Text style={lp.heroSub}>
                   Describe your product in your own language. Nitor8 runs the customer interview in English and gives you a Lean-style report back in your language.
                 </Text>
@@ -234,12 +433,10 @@ export default function IntroScreen({ navigation }) {
                 )}
               </View>
             </View>
-          </View>
-
-          <View style={lp.divider} />
+          </AnimatedSection>
 
           {/* ── 2. PROBLEM ──────────────────────────────────────── */}
-          <View style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
+          <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
             <View style={{
               maxWidth: MAX_W, width: '100%', alignSelf: 'center',
               flexDirection: isDesktop ? 'row' : 'column',
@@ -248,27 +445,31 @@ export default function IntroScreen({ navigation }) {
               {/* Left */}
               <View style={{ flex: 1 }}>
                 <Text style={lp.eyebrow}>Sound familiar?</Text>
-                <Text style={lp.headline}>
+                <GradientText style={headlineStyle(isDesktop)}>
                   You know you should talk to customers.{'\n'}But live English calls are a different story.
-                </Text>
+                </GradientText>
                 <Text style={lp.body}>
                   Every startup book says the same thing.{'\n'}Talk to your customers.{'\n\n'}But for non-English founders, that advice hides a very real blocker.
                 </Text>
               </View>
 
-              {/* Right: bullets */}
-              <View style={{ flex: 1, justifyContent: 'center', gap: spacing.lg, marginTop: isDesktop ? 0 : spacing.xl }}>
-                {[
-                  'Follow-up questions in real time',
-                  'Reading between the lines',
-                  'Knowing when to push deeper',
-                  'Not freezing mid-conversation',
-                ].map((txt, i) => (
-                  <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
-                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primaryEnd, marginTop: 9, flexShrink: 0 }} />
-                    <Text style={{ fontSize: 18, color: colors.textSecondary, lineHeight: 28, flex: 1 }}>{txt}</Text>
+              {/* Right: bullets in NeuCard */}
+              <View style={{ flex: 1, justifyContent: 'center', marginTop: isDesktop ? 0 : spacing.xl }}>
+                <NeuCard>
+                  <View style={{ gap: spacing.lg }}>
+                    {[
+                      'Follow-up questions in real time',
+                      'Reading between the lines',
+                      'Knowing when to push deeper',
+                      'Not freezing mid-conversation',
+                    ].map((txt, i) => (
+                      <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
+                        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primaryEnd, marginTop: 9, flexShrink: 0 }} />
+                        <Text style={{ fontSize: 18, color: colors.textSecondary, lineHeight: 28, flex: 1 }}>{txt}</Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
+                </NeuCard>
               </View>
             </View>
 
@@ -280,52 +481,64 @@ export default function IntroScreen({ navigation }) {
                 </Text>
               </View>
             </View>
-          </View>
-
-          <View style={lp.divider} />
+          </AnimatedSection>
 
           {/* ── 3. HOW IT WORKS ─────────────────────────────────── */}
-          <View style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad, backgroundColor: colors.surface }}>
+          <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad, backgroundColor: colors.surface }}>
             <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center' }}>
               <Text style={lp.eyebrow}>Simple by design</Text>
-              <Text style={lp.headline}>Three steps. No English required.</Text>
+              <GradientText style={headlineStyle(isDesktop)}>
+                Three steps. No English required.
+              </GradientText>
 
-              <View style={{ marginTop: spacing.xxl, gap: spacing.xxl }}>
+              <View style={{ marginTop: spacing.xxl, gap: spacing.xl }}>
                 {[
                   { num: '01', title: 'Describe', body: 'Write about your product in your own language. Nitor8 generates Lean-style interview questions.' },
                   { num: '02', title: 'Share',    body: 'Send an interview link to your target customer. Nitor8 handles the full English conversation for you.' },
                   { num: '03', title: 'Learn',    body: 'Get a structured Lean-style report back in your language. Problem verdict, key pains, quotes, next actions.' },
                 ].map((step, i) => (
-                  <View key={i} style={{ flexDirection: isDesktop ? 'row' : 'column', gap: spacing.xl, alignItems: 'flex-start' }}>
-                    <View style={{ width: 52, height: 52, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1.5 }}>{step.num}</Text>
+                  <NeuCard key={i}>
+                    <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: spacing.xl, alignItems: 'flex-start' }}>
+                      <LinearGradient
+                        colors={GRAD}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{ width: 56, height: 56, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                      >
+                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.white, letterSpacing: 1.5 }}>{step.num}</Text>
+                      </LinearGradient>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs }}>
+                          Step {i + 1} — {step.title}
+                        </Text>
+                        <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26 }}>{step.body}</Text>
+                      </View>
                     </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 20, fontWeight: '600', color: colors.textPrimary, marginBottom: spacing.xs }}>
-                        Step {i + 1} — {step.title}
-                      </Text>
-                      <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26 }}>{step.body}</Text>
-                    </View>
-                  </View>
+                  </NeuCard>
                 ))}
               </View>
             </View>
-          </View>
-
-          <View style={lp.divider} />
+          </AnimatedSection>
 
           {/* ── 4. REPORT PREVIEW ───────────────────────────────── */}
-          <View style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
+          <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
             <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center' }}>
               <Text style={lp.eyebrow}>What you actually get</Text>
-              <Text style={lp.headline}>Not just a transcript. A decision.</Text>
+              <GradientText style={headlineStyle(isDesktop)}>
+                Not just a transcript. A decision.
+              </GradientText>
               <Text style={lp.body}>
                 Every interview generates a structured Lean-style report so you know exactly what to do next.
               </Text>
 
-              <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: spacing.xxl, marginTop: spacing.xxl, alignItems: isDesktop ? 'flex-start' : 'stretch' }}>
+              <View style={{
+                flexDirection: isDesktop ? 'row' : 'column',
+                gap: spacing.xxl,
+                marginTop: spacing.xxl,
+                alignItems: isDesktop ? 'flex-start' : 'stretch',
+              }}>
                 <View style={{ flex: isDesktop ? 1.4 : 1 }}>
-                  <FullReportMockup />
+                  <MockReport />
                 </View>
                 <View style={{ flex: 1, justifyContent: 'center', gap: spacing.md, marginTop: isDesktop ? 0 : spacing.lg }}>
                   {['Problem Verdict', 'Evidence Level', 'Top 3 Pain Points with quotes', 'Current Workarounds', 'Consequences', 'Next Actions'].map((item, i) => (
@@ -337,12 +550,10 @@ export default function IntroScreen({ navigation }) {
                 </View>
               </View>
             </View>
-          </View>
-
-          <View style={lp.divider} />
+          </AnimatedSection>
 
           {/* ── 5. WHY NITOR8 ───────────────────────────────────── */}
-          <View style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad, backgroundColor: colors.surface }}>
+          <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad, backgroundColor: colors.surface }}>
             <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center' }}>
               <Text style={lp.eyebrow}>Built for founders like you</Text>
               <View style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryMid, paddingLeft: spacing.lg, marginBottom: spacing.xxl }}>
@@ -351,58 +562,55 @@ export default function IntroScreen({ navigation }) {
                 </Text>
               </View>
 
-              <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: spacing.xxl }}>
+              <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: spacing.xl }}>
                 {[
-                  { title: 'Not a translation tool',       body: "Nitor8 doesn't just translate. It runs the full interview — questions, follow-ups, and all." },
-                  { title: 'Lean methodology built in',    body: 'Every interview follows proven Lean Customer Development. Not generic questions. Real signal.' },
-                  { title: '8 interviews is enough',       body: 'Focused validation, not endless interviewing. Nitor8 is built around that belief.' },
+                  { title: 'Not a translation tool',    body: "Nitor8 doesn't just translate. It runs the full interview — questions, follow-ups, and all." },
+                  { title: 'Lean methodology built in', body: 'Every interview follows proven Lean Customer Development. Not generic questions. Real signal.' },
+                  { title: '8 interviews is enough',    body: 'Focused validation, not endless interviewing. Nitor8 is built around that belief.' },
                 ].map((item, i) => (
-                  <View key={i} style={{ flex: 1, borderTopWidth: 2, borderTopColor: colors.border, paddingTop: spacing.lg }}>
+                  <NeuCard key={i} style={{ flex: 1 }}>
                     <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.sm }}>{item.title}</Text>
                     <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26 }}>{item.body}</Text>
-                  </View>
+                  </NeuCard>
                 ))}
               </View>
             </View>
-          </View>
-
-          <View style={lp.divider} />
+          </AnimatedSection>
 
           {/* ── 6. FAQ ──────────────────────────────────────────── */}
-          <View style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
+          <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
             <View style={{ maxWidth: isDesktop ? 720 : MAX_W, width: '100%', alignSelf: 'center' }}>
               <Text style={lp.eyebrow}>Questions</Text>
-              <Text style={lp.headline}>FAQ</Text>
+              <GradientText style={headlineStyle(isDesktop)}>FAQ</GradientText>
 
-              <View style={{ marginTop: spacing.lg }}>
+              <View style={{ marginTop: spacing.lg, gap: spacing.sm }}>
                 {FAQ_ITEMS.map((item, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    onPress={() => setOpenFaq(openFaq === i ? null : i)}
-                    activeOpacity={0.7}
-                    style={{ borderBottomWidth: 1, borderBottomColor: colors.border, paddingVertical: spacing.md }}
-                  >
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 17, fontWeight: '600', color: colors.textPrimary, flex: 1, paddingRight: spacing.md }}>{item.q}</Text>
-                      <Text style={{ fontSize: 22, color: colors.textDisabled, lineHeight: 26 }}>{openFaq === i ? '−' : '+'}</Text>
-                    </View>
-                    {openFaq === i && (
-                      <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26, marginTop: spacing.sm }}>{item.a}</Text>
-                    )}
-                  </TouchableOpacity>
+                  <NeuCard key={i} style={{ padding: 0 }}>
+                    <TouchableOpacity
+                      onPress={() => setOpenFaq(openFaq === i ? null : i)}
+                      activeOpacity={0.7}
+                      style={{ padding: spacing.md }}
+                    >
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 17, fontWeight: '600', color: colors.textPrimary, flex: 1, paddingRight: spacing.md }}>{item.q}</Text>
+                        <Text style={{ fontSize: 22, color: colors.textDisabled, lineHeight: 26 }}>{openFaq === i ? '−' : '+'}</Text>
+                      </View>
+                      {openFaq === i && (
+                        <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26, marginTop: spacing.sm }}>{item.a}</Text>
+                      )}
+                    </TouchableOpacity>
+                  </NeuCard>
                 ))}
               </View>
             </View>
-          </View>
-
-          <View style={lp.divider} />
+          </AnimatedSection>
 
           {/* ── 7. FINAL CTA ────────────────────────────────────── */}
-          <View style={{ paddingHorizontal: spacing.lg, paddingVertical: isDesktop ? 96 : 64, alignItems: 'center' }}>
+          <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: isDesktop ? 96 : 64, alignItems: 'center' }}>
             <View style={{ maxWidth: 600, width: '100%', alignItems: 'center' }}>
-              <Text style={[lp.headline, { textAlign: 'center' }]}>
+              <GradientText style={[headlineStyle(isDesktop), { textAlign: 'center' }]}>
                 Your first 8 interviews start here.
-              </Text>
+              </GradientText>
               <Text style={[lp.body, { textAlign: 'center', marginTop: spacing.sm }]}>
                 Free during beta. No account needed.{'\n'}Just describe your product and go.
               </Text>
@@ -415,7 +623,7 @@ export default function IntroScreen({ navigation }) {
                 Free beta · No credit card needed
               </Text>
             </View>
-          </View>
+          </AnimatedSection>
 
         </ScrollView>
       </SafeAreaView>
@@ -435,12 +643,6 @@ const lp = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: spacing.sm,
   },
-  heroH: {
-    fontWeight: '700',
-    color: colors.textPrimary,
-    letterSpacing: -0.8,
-    marginBottom: spacing.md,
-  },
   heroSub: {
     fontSize: 18,
     color: colors.textSecondary,
@@ -451,22 +653,10 @@ const lp = StyleSheet.create({
     color: colors.textDisabled,
     marginTop: spacing.sm,
   },
-  headline: {
-    fontSize: 30,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    letterSpacing: -0.5,
-    lineHeight: 40,
-    marginBottom: spacing.md,
-  },
   body: {
     fontSize: 17,
     color: colors.textSecondary,
     lineHeight: 28,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
   },
 });
 
@@ -544,14 +734,6 @@ const mock = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.xs,
   },
-  fullReport: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -579,23 +761,6 @@ const mock = StyleSheet.create({
     backgroundColor: colors.border,
     marginVertical: 2,
   },
-  groupHead: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    letterSpacing: 0.3,
-    marginTop: 2,
-  },
-  painRow: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  painIdx: {
-    fontSize: 12,
-    color: colors.textDisabled,
-    fontWeight: '600',
-    width: 18,
-  },
   painQuote: {
     fontSize: 12,
     color: colors.textPrimary,
@@ -605,17 +770,6 @@ const mock = StyleSheet.create({
   painMeta: {
     fontSize: 10,
     color: colors.textDisabled,
-  },
-  painBody: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    lineHeight: 18,
-    flex: 1,
-  },
-  bulletLine: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    lineHeight: 20,
   },
   actionLine: {
     fontSize: 12,
