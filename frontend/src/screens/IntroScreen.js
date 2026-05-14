@@ -536,68 +536,94 @@ export default function IntroScreen({ navigation }) {
 
           {/* ── 2. PROBLEM ──────────────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
-            <View style={{
-              maxWidth: MAX_W, width: '100%', alignSelf: 'center',
-              flexDirection: isDesktop ? 'row' : 'column',
-              gap: spacing.xxl,
-            }}>
-              {/* Left */}
-              <View style={{ flex: 1 }}>
-                <Text style={lp.eyebrow}>Sound familiar?</Text>
-                <GradientText style={headlineStyle(isDesktop)}>
-                  You know you should talk to customers.{'\n'}But live English calls are a different story.
-                </GradientText>
-                <Text style={lp.body}>
-                  Every startup book says the same thing.{'\n'}Talk to your customers.{'\n\n'}But for non-English founders, that advice hides a very real blocker.
-                </Text>
-              </View>
+            {isDesktop ? (
+              /* Desktop: single column, full width */
+              <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center', gap: spacing.xxl }}>
+                {/* Header */}
+                <View>
+                  <Text style={lp.eyebrow}>Sound familiar?</Text>
+                  <GradientText style={headlineStyle(true)}>
+                    You know you should talk to customers.{'\n'}But live English calls are a different story.
+                  </GradientText>
+                  <Text style={lp.body}>
+                    Every startup book says the same thing.{'\n'}Talk to your customers.{'\n\n'}But for non-English founders, that advice hides a very real blocker.
+                  </Text>
+                </View>
 
-              {/* Right: bullets */}
-              <View style={{ flex: 1, justifyContent: 'center', marginTop: isDesktop ? 0 : spacing.xl }}>
-                {isDesktop ? (
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md }}>
-                    {[
-                      { Icon: AlarmClock,     text: 'Follow-up questions in real time' },
-                      { Icon: EyeOff,         text: 'Reading between the lines' },
-                      { Icon: Shovel,         text: 'Knowing when to push deeper' },
-                      { Icon: MessageCircleX, text: 'Not freezing mid-conversation' },
-                    ].map(({ Icon, text }, i) => (
-                      <View key={i} style={{ flex: 1, alignItems: 'center' }}>
-                        <View style={{ width: 64, height: 64, backgroundColor: colors.primaryEnd, borderRadius: radius.md, padding: spacing.md, alignItems: 'center', justifyContent: 'center' }}>
-                          <Icon size={32} color={colors.white} />
-                        </View>
-                        <Text style={{ marginTop: spacing.sm, textAlign: 'center', fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>{text}</Text>
+                {/* Quote */}
+                <View style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryEnd, paddingLeft: spacing.lg }}>
+                  <Text style={{ fontSize: 21, fontStyle: 'italic', color: colors.textSecondary, lineHeight: 32 }}>
+                    "So you delay. And delay. Until you realize you've built without really talking to anyone."
+                  </Text>
+                </View>
+
+                {/* Bullets — 4-column horizontal */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md }}>
+                  {[
+                    { Icon: AlarmClock,     text: 'Follow-up questions in real time' },
+                    { Icon: EyeOff,         text: 'Reading between the lines' },
+                    { Icon: Shovel,         text: 'Knowing when to push deeper' },
+                    { Icon: MessageCircleX, text: 'Not freezing mid-conversation' },
+                  ].map(({ Icon, text }, i) => (
+                    <View key={i} style={{ flex: 1, alignItems: 'center' }}>
+                      <View style={[{
+                        width: 64, height: 64,
+                        backgroundColor: colors.primaryEnd,
+                        borderRadius: radius.md,
+                        padding: spacing.md,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }, Platform.OS === 'web'
+                        ? { boxShadow: '0 8px 24px rgba(255,138,128,0.35)' }
+                        : { shadowColor: colors.primaryEnd, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 8 }
+                      ]}>
+                        <Icon size={32} color={colors.white} />
                       </View>
-                    ))}
-                  </View>
-                ) : (
-                  <NeuCard>
-                    <View style={{ gap: spacing.lg }}>
-                      {[
-                        { Icon: AlarmClock,     text: 'Follow-up questions in real time' },
-                        { Icon: EyeOff,         text: 'Reading between the lines' },
-                        { Icon: Shovel,         text: 'Knowing when to push deeper' },
-                        { Icon: MessageCircleX, text: 'Not freezing mid-conversation' },
-                      ].map(({ Icon, text }, i) => (
-                        <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                          <Icon size={24} color={colors.error} style={{ flexShrink: 0 }} />
-                          <Text style={{ fontSize: 18, color: colors.textSecondary, lineHeight: 28, flex: 1 }}>{text}</Text>
-                        </View>
-                      ))}
+                      <Text style={{ marginTop: spacing.sm, textAlign: 'center', fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>{text}</Text>
                     </View>
-                  </NeuCard>
-                )}
+                  ))}
+                </View>
               </View>
-            </View>
-
-            {/* Bottom emphasis */}
-            <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center', marginTop: spacing.xxl }}>
-              <View style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryEnd, paddingLeft: spacing.lg }}>
-                <Text style={{ fontSize: isDesktop ? 21 : 17, fontStyle: 'italic', color: colors.textSecondary, lineHeight: isDesktop ? 32 : 26 }}>
-                  "So you delay. And delay. Until you realize you've built without really talking to anyone."
-                </Text>
-              </View>
-            </View>
+            ) : (
+              /* Mobile: keep existing 2-step layout */
+              <>
+                <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center', gap: spacing.xxl }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={lp.eyebrow}>Sound familiar?</Text>
+                    <GradientText style={headlineStyle(false)}>
+                      You know you should talk to customers.{'\n'}But live English calls are a different story.
+                    </GradientText>
+                    <Text style={lp.body}>
+                      Every startup book says the same thing.{'\n'}Talk to your customers.{'\n\n'}But for non-English founders, that advice hides a very real blocker.
+                    </Text>
+                  </View>
+                  <View style={{ marginTop: spacing.xl }}>
+                    <NeuCard>
+                      <View style={{ gap: spacing.lg }}>
+                        {[
+                          { Icon: AlarmClock,     text: 'Follow-up questions in real time' },
+                          { Icon: EyeOff,         text: 'Reading between the lines' },
+                          { Icon: Shovel,         text: 'Knowing when to push deeper' },
+                          { Icon: MessageCircleX, text: 'Not freezing mid-conversation' },
+                        ].map(({ Icon, text }, i) => (
+                          <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                            <Icon size={24} color={colors.error} style={{ flexShrink: 0 }} />
+                            <Text style={{ fontSize: 18, color: colors.textSecondary, lineHeight: 28, flex: 1 }}>{text}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </NeuCard>
+                  </View>
+                </View>
+                <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center', marginTop: spacing.xxl }}>
+                  <View style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryEnd, paddingLeft: spacing.lg }}>
+                    <Text style={{ fontSize: 17, fontStyle: 'italic', color: colors.textSecondary, lineHeight: 26 }}>
+                      "So you delay. And delay. Until you realize you've built without really talking to anyone."
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
           </AnimatedSection>
 
           {/* ── 3. HOW IT WORKS ─────────────────────────────────── */}
@@ -670,16 +696,9 @@ export default function IntroScreen({ navigation }) {
                 </View>
                 {isDesktop ? (
                   <View style={{ flex: 1, alignSelf: 'stretch', paddingTop: spacing.xl, paddingBottom: spacing.xl, justifyContent: 'space-between' }}>
-                    {[
-                      { label: 'Problem Verdict',               bg: colors.primary   },
-                      { label: 'Evidence Level',                bg: '#B4C2D4'         },
-                      { label: 'Top 3 Pain Points with quotes', bg: colors.primaryMid },
-                      { label: 'Current Workarounds',           bg: '#ECC0C9'         },
-                      { label: 'Consequences',                  bg: colors.primaryEnd },
-                      { label: 'Next Actions',                  bg: '#E07268'         },
-                    ].map(({ label, bg }, i) => (
+                    {['Problem Verdict', 'Evidence Level', 'Top 3 Pain Points with quotes', 'Current Workarounds', 'Consequences', 'Next Actions'].map((label, i) => (
                       <AnimatedSection key={i} delay={i * 0.1}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: bg, borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.primary, borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg }}>
                           <Text style={{ fontSize: 20, color: colors.white, fontWeight: '700' }}>✓</Text>
                           <Text style={{ fontSize: 18, fontWeight: '600', color: colors.white }}>{label}</Text>
                         </View>
