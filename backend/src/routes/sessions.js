@@ -15,7 +15,7 @@ const VALID_SECTIONS = new Set([
 ]);
 
 const VALID_INTENTS = new Set([
-  'rapport_building', 'role_context', 'recent_workflow',
+  'rapport_building', 'role_context', 'transition', 'recent_workflow',
   'recent_pain_event', 'pain_frequency', 'pain_severity',
   'current_workaround', 'alternative_usage', 'switch_trigger',
   'decision_process', 'value_perception', 'budget_signal',
@@ -30,6 +30,7 @@ const VALID_BUCKETS = new Set([
 const INTENT_TO_SECTION = {
   rapport_building:  'icebreaker',
   role_context:      'icebreaker',
+  transition:        'icebreaker',
   recent_workflow:   'context',
   recent_pain_event: 'problems',
   pain_frequency:    'problems',
