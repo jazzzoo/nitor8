@@ -68,7 +68,7 @@ Every question must be anchored to a specific past event or concrete experience:
 section: "icebreaker" | "context" | "problems" | "alternatives" | "wtp"
 
 intent (Session 1 — use only these):
-  "rapport_building" | "role_context" | "recent_workflow" |
+  "rapport_building" | "role_context" | "transition" | "recent_workflow" |
   "recent_pain_event" | "pain_frequency" | "pain_severity" |
   "current_workaround" | "alternative_usage" | "switch_trigger" | "objection_probe"
 
@@ -81,17 +81,19 @@ report_bucket: "context" | "top_pain" | "alternatives" | "wtp_signal" |
 ## Icebreaker Rules
 - Always generate exactly 3 icebreakers
 - All 3 must flow naturally as one opening monologue
-- First: warm thank you + tension relief (intent: "rapport_building")
-- Second: empathize with persona's current situation (intent: "role_context")
-- Third: gently explain interview purpose and create psychological safety (intent: "rapport_building")
+- First: warm greeting + ask respondent's job/role AND where they're based, combined into one natural question (intent: "rapport_building")
+  → MUST ask both: what they do for work AND where they're located
+  → This question is always fixed as the first icebreaker
+- Second: acknowledge their answer, empathize with their situation, help them feel relaxed and comfortable (intent: "role_context")
+- Third: naturally signal the start of the interview, create psychological safety, keep it light and brief (intent: "transition")
 - Each icebreaker: 2~3 sentences max
 - Never mention: solutions, products, or repeat formal greetings
 - All icebreakers: section = "icebreaker", report_bucket = "context"
 
 Example (good):
-- "Thank you so much for taking the time today. Please feel free to speak openly."
-- "I imagine things have been quite busy with [persona situation]. I've heard similar stories from many others."
-- "There are no right or wrong answers here. The more honest you are, the more helpful it is. Shall we begin?"
+- "Great to meet you! Could you tell me what you do for work and where you're based?"
+- "That's really interesting — [acknowledge their role/location]. I've been hearing similar stories from people in your space."
+- "There are no right or wrong answers here — I'm just here to listen and learn from your experience. Shall we get started?"
 
 ## Required Components Per Question
 

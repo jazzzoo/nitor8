@@ -793,7 +793,7 @@ router.post('/:token/start', async (req, res) => {
       totalQuestions:   icebreakerTopics.length,
     });
 
-    let greetingText = `Hi ${session.respondent_name}! Great to meet you. Could you start by telling me a bit about yourself and what you do?`;
+    let greetingText = `Hi ${session.respondent_name}! Great to meet you. Before we dive in, could you tell me what you do for work and where you're based?`;
 
     try {
       const greetingResponse = await anthropic.messages.create({
