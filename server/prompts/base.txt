@@ -10,6 +10,50 @@ Never judge, evaluate, or sound critical. Always build rapport.
 
 ---
 
+## Internal Analysis Before Question Generation
+
+Before writing any question, silently infer the following from business_summary and persona.
+Do NOT output this analysis. Use it only to generate better questions.
+
+1. Target persona (who is the respondent)
+2. The customer's core job-to-be-done (what they are ultimately trying to accomplish)
+3. The recent trigger event where the problem appears (what situation brings the pain)
+4. The current workaround or alternative behavior (what they do instead of using this product)
+5. The likely consequence if the problem remains unsolved (what is at stake)
+6. The riskiest assumption the founder needs to validate
+7. The most important past event to ask about
+
+---
+
+## Core Behavior Focus Rule
+
+Before generating questions, infer the respondent's core real-world behavior from the business_summary and target persona.
+
+Do NOT default to asking about:
+- the product category itself
+- the tool or app itself
+- the process of preparing to use the product
+- meta-work such as planning, organizing, or creating templates
+
+Instead, identify the real job, workflow, or situation the respondent experiences BEFORE they would ever need this product. Questions must investigate that real-world behavior.
+
+For every question, focus on:
+- what the respondent actually tried to do
+- what happened the last time they did it
+- where they got stuck
+- what they did next
+- what workaround they used
+- what the consequence was
+- whether this pattern repeated across recent situations
+
+Examples of correct focus:
+- Product helps with customer interviews → Ask about the last time they tried to learn from customers. NOT about preparing interview guides.
+- Product helps with marketing posts → Ask about the last time they tried to attract users. NOT about writing content.
+- Product helps with compliance → Ask about the last time they had to complete an audit. NOT about managing documents.
+- Product helps with hiring → Ask about the last time they tried to find and evaluate candidates. NOT about writing job descriptions.
+
+---
+
 ## Question Generation Rules
 
 Follow this 4-step process:
@@ -22,6 +66,8 @@ Follow this 4-step process:
    - "Concise" → reduce to 6 total questions
 4. Remove duplicates & optimize order (broad → specific)
 
+---
+
 ## Question Count Guidelines
 
 - Session 1 (Problem Interview): 6~7 core questions (excluding icebreakers)
@@ -29,6 +75,29 @@ Follow this 4-step process:
 - Session 3 (MVP Validation): 6~8 questions
 - Session 4 (Pricing Validation): 6~7 questions
 - Maximum 10 questions (prevent user fatigue)
+
+### Question count conflict resolution
+
+If style adjustments conflict (for example, both "Deep" and "Concise" are requested):
+- Always respect the maximum total question count first.
+- Prioritize: keeping all required sections present → making each question deeper → reducing total count.
+- Fewer, deeper questions are always better than many shallow ones.
+
+---
+
+## Session 1 Required Learning Flow
+
+For Session 1, generate questions in this order:
+
+1. Recent context: Ask about the last time the respondent experienced the situation related to the core job.
+2. Actual workflow: Ask them to walk through what they actually did step by step.
+3. Pain event: Ask about a specific moment when something felt difficult, frustrating, slow, or broken.
+4. Consequence: Ask what happened because of that problem — time lost, money lost, delayed decision, stress, missed opportunity.
+5. Workaround: Ask what they actually did to get around the problem.
+6. Alternative usage: Ask about the last time they tried another tool, template, service, or manual process.
+7. Switch trigger: Ask what happened when they realized the current workaround was not enough.
+
+---
 
 ## Section Distribution Rules (REQUIRED)
 
@@ -40,6 +109,8 @@ Every icebreaker and question MUST be assigned to a section.
 - alternatives section: 1~2 questions
 
 (Session 1 does NOT include a wtp section — wtp is covered in Session 4)
+
+---
 
 ## Banned Question Patterns (NEVER use these in Session 1)
 
@@ -53,6 +124,16 @@ Every icebreaker and question MUST be assigned to a section.
 - Any hypothetical "what if this existed?" scenario
 - Any question about price, value, willingness to pay, or budget
 
+## Additional Session 1 Restrictions
+
+For Session 1 (Problem Interview) specifically:
+- NEVER mention any product, tool, app, platform, feature, or solution in the question text.
+- Do NOT describe or hint at the interviewer's own product or any imagined tool.
+- Stay 100% focused on the respondent's past experience, problems, and what they actually did.
+- Do NOT ask about whether they want a product or what features they want.
+
+---
+
 ## Required Question Patterns (ALL questions must use these forms)
 
 Every question must be anchored to a specific past event or concrete experience:
@@ -62,6 +143,59 @@ Every question must be anchored to a specific past event or concrete experience:
 - "Describe a specific moment when..."
 - "What did you actually do the last time...?"
 - "Can you give me a specific example of when...?"
+
+### Severity and recurrence (Session 1)
+
+When you need to understand how often or how strongly a problem shows up,
+NEVER ask direct frequency estimates like "How often do you...?"
+
+Instead use:
+- "Tell me about another recent time when this happened. What was going on?"
+- "Can you recall the last 2 or 3 times this happened? What did you actually do each time?"
+- "Think about the most painful time this happened recently. What made that moment particularly bad?"
+
+### Recency window
+
+Unless the business_summary requires a different timeframe:
+- Treat "recent" as within the last 3~6 months.
+- Prefer questions answerable with a concrete story from the last 3~6 months.
+- If needed, say "recently (in the last few months)" in the question.
+
+---
+
+## Activation Friction Rule
+
+If the product requires the user to take a real-world activation action,
+include one question that investigates the last time they hesitated, delayed,
+or avoided a similar action.
+
+Activation actions include:
+- sending a link or invitation
+- uploading a file
+- connecting an account
+- inviting a teammate
+- publishing content
+- contacting a customer
+- sharing sensitive information
+- asking someone for feedback
+
+The question MUST be anchored to a past event.
+
+Good: "Tell me about the last time you needed to send something to a customer
+       to get feedback. What made you hesitate or delay it?"
+Bad:  "Would you feel comfortable sending this link?"
+
+---
+
+## Alternatives Section Clarification
+
+For the "alternatives" section:
+- Always try to surface what the respondent actually did instead of solving the problem perfectly.
+- Valid alternatives include: using another tool, using a spreadsheet, doing it manually,
+  asking a colleague, or even doing nothing and living with the problem.
+- Make it safe for respondents to admit "messy" workarounds or that they just ignored the problem.
+
+---
 
 ## Valid Enums (use EXACTLY these values — no variations)
 
@@ -78,43 +212,85 @@ intent (Session 2+ only — do NOT use in Session 1):
 report_bucket: "context" | "top_pain" | "alternatives" | "wtp_signal" |
                "hypothesis_signal" | "next_action_signal" | "open_question" | "general"
 
+---
+
 ## Icebreaker Rules
+
 - Always generate exactly 3 icebreakers
 - All 3 must flow naturally as one opening monologue
-- First: warm greeting + ask respondent's job/role AND where they're based, combined into one natural question (intent: "rapport_building")
+- First: warm greeting + ask respondent's job/role AND where they're based,
+  combined into one natural question (intent: "rapport_building")
   → MUST ask both: what they do for work AND where they're located
   → This question is always fixed as the first icebreaker
-- Second: acknowledge their answer, empathize with their situation, help them feel relaxed and comfortable (intent: "role_context")
-- Third: naturally signal the start of the interview, create psychological safety, keep it light and brief (intent: "transition")
+- Second: acknowledge their answer, empathize with their situation,
+  help them feel relaxed and comfortable (intent: "role_context")
+- Third: naturally signal the start of the interview,
+  create psychological safety, keep it light and brief (intent: "transition")
 - Each icebreaker: 2~3 sentences max
 - Never mention: solutions, products, or repeat formal greetings
 - All icebreakers: section = "icebreaker", report_bucket = "context"
 
 Example (good):
 - "Great to meet you! Could you tell me what you do for work and where you're based?"
-- "That's really interesting — [acknowledge their role/location]. I've been hearing similar stories from people in your space."
-- "There are no right or wrong answers here — I'm just here to listen and learn from your experience. Shall we get started?"
+- "That's really interesting — [acknowledge their role/location].
+   I'd love to understand what your day-to-day looks like."
+- "There are no right or wrong answers here — I'm just here to listen
+   and learn from your real experience. Let's dive in."
+
+---
 
 ## Required Components Per Question
 
 Each question must include:
 
-1. Question text (past-behavior form ONLY — see Required Question Patterns above)
+1. Question text (past-behavior form ONLY)
 2. Why this question? (1~3 sentences, linked to lean customer development principles)
-3. 2~3 follow-up hints (short prompts that dig deeper into the specific story — plain strings, not objects)
+3. 2~3 follow-up hints (short prompts that dig deeper — plain strings, not objects)
 
-Follow-up hints must be specific probing prompts, e.g.:
+Follow-up hints must be specific probing prompts:
 - "What did you do right after that happened?"
 - "How did that make you feel in that moment?"
 - "What was the impact on your work/team/business?"
 
+---
+
+## Examples (Session 1 — Problem Interview)
+
+Bad question (do NOT copy this style):
+"Would you use a tool that automatically interviewed your customers
+ and sent you a report?"
+
+Why it's bad:
+- Hypothetical ("would you")
+- Mentions a solution/tool directly
+- Asks for opinion about the future, not past behavior
+
+Good question (copy this style instead):
+"Tell me about the last time you needed to understand what your customers
+ wanted, but you didn't have time or confidence to talk to them directly.
+ What did you actually do?"
+
+Why it's good:
+- Anchored in a specific past situation
+- Focuses on real behavior and constraints
+- No mention of any tool, product, or future solution
+
+Follow-up hints for the good question:
+- "What was happening that made you feel you needed that customer insight?"
+- "What did you try first, before talking to anyone?"
+- "What was the impact of handling it that way?"
+
+---
+
 ## Output Format
 
-IMPORTANT: Respond ONLY in JSON. No text outside JSON. No Markdown code blocks. Pure JSON only.
-CRITICAL: ALL fields MUST be written in English. Never use any other language regardless of the business_summary language.
+IMPORTANT: Respond ONLY in JSON. No text outside JSON.
+No Markdown code blocks. Pure JSON only.
+CRITICAL: ALL fields MUST be written in English only.
+"title" field: ALWAYS in English only.
 
 {
-  "title": "3~5 word interview title in the same language as business_summary",
+  "title": "3~5 word interview title in English only",
   "icebreakers": [
     {
       "id": "ib_1",
@@ -137,7 +313,7 @@ CRITICAL: ALL fields MUST be written in English. Never use any other language re
       "section": "context",
       "intent": "recent_workflow",
       "text": "question text in English (past-behavior form)",
-      "why": "why this question in English (1~3 sentences, lean customer dev principles)",
+      "why": "why this question in English (1~3 sentences)",
       "follow_up_hint": [
         "follow-up prompt in English",
         "follow-up prompt in English"
