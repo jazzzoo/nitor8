@@ -19,6 +19,7 @@ import GradientButton from './GradientButton';
 import ModalDialog from './ModalDialog';
 import useStore from '../store/useStore';
 import { questionListsApi, interviewSessionsApi, reportsApi } from '../api/client';
+import ShareGuideModal from './ShareGuideModal';
 import { colors, gradientColors, spacing, radius, textStyles, shadows } from '../theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Copy, Share2, List } from 'lucide-react-native';
@@ -39,6 +40,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [shareLink, setShareLink] = useState('');
+  const [showShareGuide, setShowShareGuide] = useState(false);
   const [isLoadingLink, setIsLoadingLink] = useState(false);
   const [interviewSessions, setInterviewSessions] = useState([]);
   const [reports, setReports] = useState({});
@@ -476,6 +478,13 @@ export default function QuestionsPanel({ scrollRef, style }) {
               <Text style={styles.modalBtnPrimaryText}>Copy Link</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.modalBtnSecondary}
+              onPress={() => setShowShareGuide(true)}
+            >
+              <Text style={styles.modalBtnSecondaryText}>How to share →</Text>
+            </TouchableOpacity>
+
             {Platform.OS !== 'web' && (
               <TouchableOpacity
                 style={styles.modalBtnSecondary}
@@ -529,6 +538,12 @@ export default function QuestionsPanel({ scrollRef, style }) {
         visible={linkModal.visible}
         url={linkModal.url}
         onClose={() => setLinkModal({ visible: false, url: null })}
+      />
+
+      <ShareGuideModal
+        visible={showShareGuide}
+        onClose={() => setShowShareGuide(false)}
+        shareLink={shareLink}
       />
 
       <ModalDialog

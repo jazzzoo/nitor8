@@ -258,6 +258,15 @@ export const feedbackApi = {
   createFeedbackSession: () => apiPost('/api/interview-sessions/feedback', { respondent_name: '(beta tester)' }),
 };
 
+// 애널리틱스 이벤트 (fire-and-forget)
+export const analyticsApi = {
+  track: async (eventType, eventData = {}) => {
+    try {
+      await apiPost('/api/analytics/events', { event_type: eventType, event_data: eventData });
+    } catch (_) {}
+  },
+};
+
 // 헬스체크
 export const healthApi = {
   check: () => apiGet('/health'),
