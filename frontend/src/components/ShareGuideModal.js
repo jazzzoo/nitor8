@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, Modal,
-  StyleSheet, Platform, Clipboard, Alert,
+  StyleSheet, Platform, Clipboard, Alert, useWindowDimensions,
 } from 'react-native';
 import { UserCheck, Target, UserX, MessageCircle, Briefcase, Users, Mail } from 'lucide-react-native';
 import GradientButton from './GradientButton';
-import { colors, spacing, radius, textStyles } from '../theme';
+import { colors, spacing, radius } from '../theme';
 import { analyticsApi } from '../api/client';
 
 const TABS = ['Warm DM', 'LinkedIn', 'Community'];
@@ -23,7 +23,22 @@ const CHECKLIST_ITEMS = [
   'Set a follow-up reminder (24–48 h)',
 ];
 
+function Divider() {
+  return (
+    <View style={{
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.lg,
+      marginVertical: spacing.lg,
+    }} />
+  );
+}
+
 export default function ShareGuideModal({ visible, onClose, shareLink }) {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 700;
+  const sc = isDesktop ? 1.25 : 1;
+
   const [activeTab, setActiveTab] = useState(0);
   const [checked, setChecked] = useState([false, false, false, false]);
   const [sent, setSent] = useState(false);
@@ -56,6 +71,19 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
     analyticsApi.track('share_guide_opened');
   }
 
+  const sectionStyle = {
+    paddingVertical: spacing.xl * sc,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md * sc,
+  };
+
+  const labelStyle = {
+    fontSize: 11 * sc,
+    fontWeight: '700',
+    color: colors.textDisabled,
+    letterSpacing: 1,
+  };
+
   return (
     <Modal
       visible={visible}
@@ -66,92 +94,218 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
     >
       <View style={styles.overlay}>
         <View style={styles.sheet}>
+
+          {/* Header */}
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>How to Share</Text>
+            <Text style={{ fontSize: 20 * sc, fontWeight: '700', color: colors.textPrimary }}>
+              How to Share
+            </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>✕</Text>
+              <Text style={{ fontSize: 16 * sc, color: colors.textSecondary }}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={{ paddingBottom: spacing.xxl }}
+            showsVerticalScrollIndicator={false}
+          >
 
             {/* Section 1: Who to send */}
-            <Text style={styles.sectionLabel}>WHO TO SEND IT TO</Text>
-            {[
-              { Icon: UserCheck, color: colors.success, text: 'Early adopters who already told you they have this problem' },
-              { Icon: Target,    color: colors.primary, text: 'People matching your Ideal Customer Profile (ICP)' },
-              { Icon: UserX,     color: colors.error,   text: 'Friends & family who haven\'t experienced the problem', strike: true },
-            ].map(({ Icon, color, text, strike }, i) => (
-              <View key={i} style={styles.bulletRow}>
-                <View style={[styles.iconBox, { backgroundColor: color + '22' }]}>
-                  <Icon size={18} color={color} />
-                </View>
-                <Text style={[styles.bulletText, strike && styles.bulletStrike]}>{text}</Text>
-              </View>
-            ))}
-
-            {/* Section 2: Best channels */}
-            <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>BEST CHANNELS</Text>
-            <View style={styles.channelGrid}>
+            <View style={sectionStyle}>
+              <Text style={labelStyle}>WHO TO SEND IT TO</Text>
               {[
-                { Icon: MessageCircle, label: 'Warm DM',   desc: 'Prior conversations' },
-                { Icon: Briefcase,     label: 'LinkedIn',  desc: 'ICP job titles' },
-                { Icon: Users,         label: 'Community', desc: 'Slack / Discord' },
-                { Icon: Mail,          label: 'Email',     desc: 'Cold + personal' },
-              ].map(({ Icon, label, desc }, i) => (
-                <View key={i} style={styles.channelCard}>
-                  <Icon size={20} color={colors.primary} />
-                  <Text style={styles.channelLabel}>{label}</Text>
-                  <Text style={styles.channelDesc}>{desc}</Text>
+                { Icon: UserCheck, color: colors.success, text: 'Early adopters who already told you they have this problem' },
+                { Icon: Target,    color: colors.primary, text: 'People matching your Ideal Customer Profile (ICP)' },
+                { Icon: UserX,     color: colors.error,   text: "Friends & family who haven't experienced the problem", strike: true },
+              ].map(({ Icon, color, text, strike }, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm * sc }}>
+                  <View style={{
+                    width: 32 * sc,
+                    height: 32 * sc,
+                    borderRadius: radius.sm,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: color + '22',
+                    flexShrink: 0,
+                  }}>
+                    <Icon size={18 * sc} color={color} />
+                  </View>
+                  <Text style={{
+                    flex: 1,
+                    fontSize: 14 * sc,
+                    color: strike ? colors.textDisabled : colors.textSecondary,
+                    lineHeight: 20 * sc,
+                    textDecorationLine: strike ? 'line-through' : 'none',
+                  }}>
+                    {text}
+                  </Text>
                 </View>
               ))}
             </View>
 
+            <Divider />
+
+            {/* Section 2: Best channels */}
+            <View style={sectionStyle}>
+              <Text style={labelStyle}>BEST CHANNELS</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm * sc }}>
+                {[
+                  { Icon: MessageCircle, label: 'Warm DM',   desc: 'Prior conversations' },
+                  { Icon: Briefcase,     label: 'LinkedIn',  desc: 'ICP job titles' },
+                  { Icon: Users,         label: 'Community', desc: 'Slack / Discord' },
+                  { Icon: Mail,          label: 'Email',     desc: 'Cold + personal' },
+                ].map(({ Icon, label, desc }, i) => (
+                  <View key={i} style={{
+                    flex: 1,
+                    minWidth: '44%',
+                    backgroundColor: colors.background,
+                    borderRadius: radius.md,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    padding: spacing.md * sc,
+                    gap: 4 * sc,
+                  }}>
+                    <Icon size={20 * sc} color={colors.primary} />
+                    <Text style={{ fontSize: 13 * sc, fontWeight: '600', color: colors.textPrimary, marginTop: 4 * sc }}>
+                      {label}
+                    </Text>
+                    <Text style={{ fontSize: 11 * sc, color: colors.textDisabled }}>{desc}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <Divider />
+
             {/* Section 3: Message examples */}
-            <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>MESSAGE EXAMPLES</Text>
-            <View style={styles.tabRow}>
-              {TABS.map((tab, i) => (
+            <View style={sectionStyle}>
+              <Text style={labelStyle}>MESSAGE EXAMPLES</Text>
+              <View style={{ flexDirection: 'row', gap: spacing.xs * sc }}>
+                {TABS.map((tab, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={{
+                      paddingVertical: 6 * sc,
+                      paddingHorizontal: spacing.md * sc,
+                      borderRadius: radius.sm,
+                      borderWidth: 1,
+                      borderColor: activeTab === i ? colors.primary : colors.border,
+                      backgroundColor: activeTab === i ? colors.primary : colors.background,
+                    }}
+                    onPress={() => setActiveTab(i)}
+                  >
+                    <Text style={{
+                      fontSize: 13 * sc,
+                      color: activeTab === i ? colors.white : colors.textSecondary,
+                      fontWeight: activeTab === i ? '600' : '500',
+                    }}>
+                      {tab}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View style={{
+                backgroundColor: colors.background,
+                borderRadius: radius.md,
+                borderWidth: 1,
+                borderColor: colors.border,
+                padding: spacing.md * sc,
+                gap: spacing.sm * sc,
+              }}>
+                <Text style={{
+                  fontSize: 13 * sc,
+                  color: colors.textSecondary,
+                  lineHeight: 20 * sc,
+                  fontStyle: 'italic',
+                }}>
+                  {MESSAGES[activeTab].replace('{link}', shareLink)}
+                </Text>
+                <TouchableOpacity
+                  style={{
+                    alignSelf: 'flex-end',
+                    backgroundColor: colors.surface,
+                    borderRadius: radius.sm,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    paddingVertical: 6 * sc,
+                    paddingHorizontal: spacing.md * sc,
+                  }}
+                  onPress={handleCopyMessage}
+                >
+                  <Text style={{ fontSize: 13 * sc, fontWeight: '600', color: colors.textSecondary }}>Copy</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <Divider />
+
+            {/* Section 4: Checklist */}
+            <View style={sectionStyle}>
+              <Text style={labelStyle}>BEFORE YOU SEND</Text>
+              {CHECKLIST_ITEMS.map((item, i) => (
                 <TouchableOpacity
                   key={i}
-                  style={[styles.tab, activeTab === i && styles.tabActive]}
-                  onPress={() => setActiveTab(i)}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm * sc, paddingVertical: 6 * sc }}
+                  onPress={() => toggleCheck(i)}
+                  activeOpacity={0.7}
                 >
-                  <Text style={[styles.tabText, activeTab === i && styles.tabTextActive]}>{tab}</Text>
+                  <View style={{
+                    width: 22 * sc,
+                    height: 22 * sc,
+                    borderRadius: 6 * sc,
+                    borderWidth: 2,
+                    borderColor: checked[i] ? colors.success : colors.border,
+                    backgroundColor: checked[i] ? colors.success : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    {checked[i] && (
+                      <Text style={{ fontSize: 13 * sc, color: colors.white, fontWeight: '700' }}>✓</Text>
+                    )}
+                  </View>
+                  <Text style={{
+                    flex: 1,
+                    fontSize: 14 * sc,
+                    color: checked[i] ? colors.textDisabled : colors.textSecondary,
+                    lineHeight: 20 * sc,
+                    textDecorationLine: checked[i] ? 'line-through' : 'none',
+                  }}>
+                    {item}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
-            <View style={styles.messageBox}>
-              <Text style={styles.messageText}>
-                {MESSAGES[activeTab].replace('{link}', shareLink)}
-              </Text>
-              <TouchableOpacity style={styles.copyMsgBtn} onPress={handleCopyMessage}>
-                <Text style={styles.copyMsgBtnText}>Copy</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Section 4: Checklist */}
-            <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>BEFORE YOU SEND</Text>
-            {CHECKLIST_ITEMS.map((item, i) => (
-              <TouchableOpacity key={i} style={styles.checkRow} onPress={() => toggleCheck(i)} activeOpacity={0.7}>
-                <View style={[styles.checkbox, checked[i] && styles.checkboxChecked]}>
-                  {checked[i] && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-                <Text style={[styles.checkText, checked[i] && styles.checkTextDone]}>{item}</Text>
-              </TouchableOpacity>
-            ))}
 
           </ScrollView>
 
           {/* Footer */}
-          <View style={styles.footer}>
+          <View style={{
+            flexDirection: 'row',
+            gap: spacing.sm,
+            padding: spacing.lg * sc,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+          }}>
             <GradientButton label="Copy Interview Link" onPress={handleCopyLink} style={{ flex: 1 }} />
             <TouchableOpacity
-              style={[styles.sentBtn, sent && { backgroundColor: colors.success }]}
+              style={{
+                backgroundColor: sent ? colors.success : colors.textSecondary,
+                borderRadius: radius.sm,
+                paddingVertical: 12 * sc,
+                paddingHorizontal: spacing.lg,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
               onPress={handleSent}
             >
-              <Text style={styles.sentBtnText}>{sent ? 'Sent! ✓' : 'I sent it ✓'}</Text>
+              <Text style={{ fontSize: 15 * sc, fontWeight: '600', color: colors.white }}>
+                {sent ? 'Sent! ✓' : 'I sent it ✓'}
+              </Text>
             </TouchableOpacity>
           </View>
+
         </View>
       </View>
     </Modal>
@@ -183,102 +337,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  sheetTitle: { fontSize: 20, fontWeight: '700', color: colors.textPrimary },
   closeBtn: { padding: 8 },
-  closeBtnText: { fontSize: 16, color: colors.textSecondary },
   scroll: { flex: 1 },
-  scrollContent: { padding: spacing.lg, paddingBottom: spacing.xl, gap: spacing.xs },
-
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textDisabled,
-    letterSpacing: 1,
-    marginBottom: spacing.sm,
-  },
-
-  bulletRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs },
-  iconBox: { width: 32, height: 32, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  bulletText: { flex: 1, fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
-  bulletStrike: { textDecorationLine: 'line-through', color: colors.textDisabled },
-
-  channelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  channelCard: {
-    flex: 1,
-    minWidth: '44%',
-    backgroundColor: colors.background,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    gap: 4,
-  },
-  channelLabel: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, marginTop: 4 },
-  channelDesc: { fontSize: 11, color: colors.textDisabled },
-
-  tabRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.sm },
-  tab: {
-    paddingVertical: 6,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  tabActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  tabText: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
-  tabTextActive: { color: colors.white, fontWeight: '600' },
-
-  messageBox: {
-    backgroundColor: colors.background,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  messageText: { fontSize: 13, color: colors.textSecondary, lineHeight: 20, fontStyle: 'italic' },
-  copyMsgBtn: {
-    alignSelf: 'flex-end',
-    backgroundColor: colors.surface,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: 6,
-    paddingHorizontal: spacing.md,
-  },
-  copyMsgBtnText: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
-
-  checkRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 6 },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  checkboxChecked: { backgroundColor: colors.success, borderColor: colors.success },
-  checkmark: { fontSize: 13, color: colors.white, fontWeight: '700' },
-  checkText: { flex: 1, fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
-  checkTextDone: { textDecorationLine: 'line-through', color: colors.textDisabled },
-
-  footer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    padding: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  sentBtn: {
-    backgroundColor: colors.textSecondary,
-    borderRadius: radius.sm,
-    paddingVertical: 12,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sentBtnText: { fontSize: 15, fontWeight: '600', color: colors.white },
 });
