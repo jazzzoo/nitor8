@@ -507,24 +507,32 @@ export default function IntroScreen({ navigation }) {
                   <Text style={lp.eyebrow}>AI customer interviews for non-English founders</Text>
                 )}
                 <GradientText style={{
-                  fontSize: isDesktop ? 52 : 36,
-                  lineHeight: isDesktop ? 62 : 46,
+                  fontSize: isDesktop ? 72 : 36,
+                  lineHeight: isDesktop ? 76 : 46,
                   fontWeight: '900',
-                  letterSpacing: -1.5,
-                  marginBottom: spacing.md,
+                  letterSpacing: isDesktop ? -2 : -1.5,
+                  marginBottom: isDesktop ? spacing.xxl * 1.5 : spacing.md,
                   color: colors.textPrimary,
                 }}>
                   Your customers speak English.{'\n'}You don't have to.
                 </GradientText>
-                <Text style={lp.heroSub}>
+                <Text style={[lp.heroSub, isDesktop && {
+                  fontSize: 22,
+                  lineHeight: 35,
+                  marginBottom: spacing.xxl,
+                }]}>
                   Describe your product in your own language. Nitor8 runs the customer interview in English and gives you a Lean-style report back in your language.
                 </Text>
                 <GradientButton
                   label="Start your first interview →"
                   onPress={handleCTA}
-                  style={{ alignSelf: 'flex-start', marginTop: spacing.lg }}
+                  style={{ alignSelf: 'flex-start', marginTop: isDesktop ? spacing.xxl : spacing.lg }}
                 />
-                <Text style={lp.trust}>No account needed · Free beta</Text>
+                <Text style={[lp.trust, isDesktop && {
+                  marginTop: spacing.lg,
+                  fontSize: 16,
+                  color: colors.textSecondary,
+                }]}>No account needed · Free beta</Text>
               </View>
 
               {/* Right: phone frame + report card */}
