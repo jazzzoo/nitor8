@@ -491,14 +491,14 @@ export default function IntroScreen({ navigation }) {
             minHeight: isDesktop ? height : undefined,
             justifyContent: isDesktop ? 'center' : undefined,
           }}>
-            <View style={{
-              maxWidth: MAX_W, width: '100%', alignSelf: 'center',
-              flexDirection: isDesktop ? 'row' : 'column',
-              gap: isDesktop ? 80 : spacing.xxl,
-              alignItems: isDesktop ? 'center' : 'flex-start',
-            }}>
+            <View style={[
+              { maxWidth: MAX_W, width: '100%', alignSelf: 'center' },
+              isDesktop
+                ? { position: 'relative' }
+                : { flexDirection: 'column', gap: spacing.xxl, alignItems: 'flex-start' },
+            ]}>
               {/* Left */}
-              <View style={{ flex: 1 }}>
+              <View style={isDesktop ? { paddingRight: '45%', zIndex: 2 } : {}}>
                 {isDesktop ? (
                   <AnimatedSection delay={0}>
                     <Text style={desktopEyebrowStyle}>AI customer interviews for non-English founders</Text>
@@ -507,8 +507,8 @@ export default function IntroScreen({ navigation }) {
                   <Text style={lp.eyebrow}>AI customer interviews for non-English founders</Text>
                 )}
                 <GradientText style={{
-                  fontSize: isDesktop ? 72 : 36,
-                  lineHeight: isDesktop ? 76 : 46,
+                  fontSize: isDesktop ? 52 : 36,
+                  lineHeight: isDesktop ? 56 : 46,
                   fontWeight: '900',
                   letterSpacing: isDesktop ? -2 : -1.5,
                   marginBottom: isDesktop ? spacing.xxl * 1.5 : spacing.md,
@@ -536,8 +536,8 @@ export default function IntroScreen({ navigation }) {
               </View>
 
               {/* Right: phone frame + report card */}
-              <View style={{ flex: isDesktop ? 1.2 : undefined, width: isDesktop ? undefined : '100%', marginTop: isDesktop ? 0 : spacing.xl }}>
-                {isDesktop ? (
+              {isDesktop ? (
+                <View style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '45%', zIndex: 1, justifyContent: 'center' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'flex-start', position: 'relative' }}>
                     <PhoneFrame />
                     <HeroReportCard style={{ marginLeft: -20, marginTop: 50 }} />
@@ -550,13 +550,13 @@ export default function IntroScreen({ navigation }) {
                       }} />
                     )}
                   </View>
-                ) : (
-                  <View style={{ gap: spacing.md, alignItems: 'center' }}>
-                    <PhoneFrame />
-                    <HeroReportCard />
-                  </View>
-                )}
-              </View>
+                </View>
+              ) : (
+                <View style={{ gap: spacing.md, alignItems: 'center', width: '100%', marginTop: spacing.xl }}>
+                  <PhoneFrame />
+                  <HeroReportCard />
+                </View>
+              )}
             </View>
           </AnimatedSection>
 
