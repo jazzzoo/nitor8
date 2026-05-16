@@ -458,6 +458,16 @@ export default function IntroScreen({ navigation }) {
 
   const secPad = isDesktop ? 96 : 60;
 
+  const desktopEyebrowStyle = {
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 2,
+    color: colors.primary,
+    textTransform: 'uppercase',
+    marginTop: spacing.xxl,
+    marginBottom: spacing.xl,
+  };
+
   const headlineStyle = (iD) => ({
     fontSize: iD ? 44 : 32,
     lineHeight: iD ? 54 : 42,
@@ -489,7 +499,13 @@ export default function IntroScreen({ navigation }) {
             }}>
               {/* Left */}
               <View style={{ flex: 1 }}>
-                <Text style={lp.eyebrow}>AI customer interviews for non-English founders</Text>
+                {isDesktop ? (
+                  <AnimatedSection delay={0}>
+                    <Text style={desktopEyebrowStyle}>AI customer interviews for non-English founders</Text>
+                  </AnimatedSection>
+                ) : (
+                  <Text style={lp.eyebrow}>AI customer interviews for non-English founders</Text>
+                )}
                 <GradientText style={{
                   fontSize: isDesktop ? 52 : 36,
                   lineHeight: isDesktop ? 62 : 46,
@@ -543,10 +559,14 @@ export default function IntroScreen({ navigation }) {
               <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center', gap: spacing.xxl }}>
                 {/* Header */}
                 <View>
-                  <Text style={lp.eyebrow}>Sound familiar?</Text>
-                  <GradientText style={headlineStyle(true)}>
-                    You know you should talk to customers.{'\n'}But live English calls are a different story.
-                  </GradientText>
+                  <AnimatedSection delay={0}>
+                    <Text style={desktopEyebrowStyle}>Sound familiar?</Text>
+                  </AnimatedSection>
+                  <AnimatedSection delay={0.15}>
+                    <GradientText style={headlineStyle(true)}>
+                      You know you should talk to customers.{'\n'}But live English calls are a different story.
+                    </GradientText>
+                  </AnimatedSection>
                   <Text style={lp.body}>
                     Every startup book says the same thing.{'\n'}Talk to your customers.{'\n\n'}But for non-English founders, that advice hides a very real blocker.
                   </Text>
@@ -631,10 +651,14 @@ export default function IntroScreen({ navigation }) {
           {/* ── 3. HOW IT WORKS ─────────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad, backgroundColor: colors.surface }}>
             <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center' }}>
-              <Text style={lp.eyebrow}>Simple by design</Text>
-              <GradientText style={headlineStyle(isDesktop)}>
-                Three steps. No English required.
-              </GradientText>
+              {isDesktop
+                ? <AnimatedSection delay={0}><Text style={desktopEyebrowStyle}>Simple by design</Text></AnimatedSection>
+                : <Text style={lp.eyebrow}>Simple by design</Text>
+              }
+              {isDesktop
+                ? <AnimatedSection delay={0.15}><GradientText style={headlineStyle(isDesktop)}>Three steps. No English required.</GradientText></AnimatedSection>
+                : <GradientText style={headlineStyle(isDesktop)}>Three steps. No English required.</GradientText>
+              }
 
               <View style={{ marginTop: spacing.xxl, gap: spacing.xl }}>
                 {[
@@ -679,10 +703,14 @@ export default function IntroScreen({ navigation }) {
           {/* ── 4. REPORT PREVIEW ───────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
             <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center' }}>
-              <Text style={lp.eyebrow}>What you actually get</Text>
-              <GradientText style={headlineStyle(isDesktop)}>
-                Not just a transcript. A decision.
-              </GradientText>
+              {isDesktop
+                ? <AnimatedSection delay={0}><Text style={desktopEyebrowStyle}>What you actually get</Text></AnimatedSection>
+                : <Text style={lp.eyebrow}>What you actually get</Text>
+              }
+              {isDesktop
+                ? <AnimatedSection delay={0.15}><GradientText style={headlineStyle(isDesktop)}>Not just a transcript. A decision.</GradientText></AnimatedSection>
+                : <GradientText style={headlineStyle(isDesktop)}>Not just a transcript. A decision.</GradientText>
+              }
               <Text style={lp.body}>
                 Every interview generates a structured Lean-style report so you know exactly what to do next.
               </Text>
@@ -724,7 +752,10 @@ export default function IntroScreen({ navigation }) {
           {/* ── 5. WHY NITOR8 ───────────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad, backgroundColor: colors.surface }}>
             <View style={{ maxWidth: MAX_W, width: '100%', alignSelf: 'center' }}>
-              <Text style={lp.eyebrow}>Built for founders like you</Text>
+              {isDesktop
+                ? <AnimatedSection delay={0}><Text style={desktopEyebrowStyle}>Built for founders like you</Text></AnimatedSection>
+                : <Text style={lp.eyebrow}>Built for founders like you</Text>
+              }
               <View style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryMid, paddingLeft: spacing.lg, marginBottom: spacing.xxl }}>
                 <Text style={{ fontSize: isDesktop ? 21 : 17, fontStyle: 'italic', color: colors.textSecondary, lineHeight: isDesktop ? 32 : 26 }}>
                   "The alternative wasn't better interviews. It was zero interviews."
@@ -749,8 +780,14 @@ export default function IntroScreen({ navigation }) {
           {/* ── 6. FAQ ──────────────────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: secPad }}>
             <View style={{ maxWidth: isDesktop ? 720 : MAX_W, width: '100%', alignSelf: 'center' }}>
-              <Text style={lp.eyebrow}>Questions</Text>
-              <GradientText style={headlineStyle(isDesktop)}>FAQ</GradientText>
+              {isDesktop
+                ? <AnimatedSection delay={0}><Text style={desktopEyebrowStyle}>Questions</Text></AnimatedSection>
+                : <Text style={lp.eyebrow}>Questions</Text>
+              }
+              {isDesktop
+                ? <AnimatedSection delay={0.15}><GradientText style={headlineStyle(isDesktop)}>FAQ</GradientText></AnimatedSection>
+                : <GradientText style={headlineStyle(isDesktop)}>FAQ</GradientText>
+              }
 
               <View style={{ marginTop: spacing.lg, gap: spacing.sm }}>
                 {FAQ_ITEMS.map((item, i) => (
