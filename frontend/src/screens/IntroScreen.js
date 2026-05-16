@@ -42,7 +42,9 @@ function AnimatedSection({ children, delay = 0, style }) {
         if (entry.isIntersecting) {
           el.style.opacity = '1';
           el.style.transform = 'translateY(0)';
-          obs.disconnect();
+        } else {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(40px)';
         }
       },
       { threshold: 0.1 }

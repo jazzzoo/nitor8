@@ -144,6 +144,7 @@ export default function CreateScreen({ navigation }) {
   const panelWidth = useRef(new Animated.Value(400)).current;
   const [statusMessage, setStatusMessage] = useState('');
   const tokenReceivedRef = useRef(false);
+  const selectedFromHistory = useRef(false);
 
   // ── 카드 큐 (500ms 간격 순차 표시) ──────────────────────────
   const itemQueueRef = useRef([]);
@@ -224,6 +225,10 @@ export default function CreateScreen({ navigation }) {
 
   useFocusEffect(
     React.useCallback(() => {
+      if (selectedFromHistory.current) {
+        selectedFromHistory.current = false;
+        return;
+      }
       setNavTitle('Preparing interview...');
       // 새로고침 후 복원
       if (currentListId && questionListCache[currentListId]) {
@@ -380,6 +385,7 @@ export default function CreateScreen({ navigation }) {
         {isDesktop && (
           <HistorySidebar
             onSelect={(listId) => {
+              selectedFromHistory.current = true;
               setCurrentListId(listId);
               setMode('questions');
             }}
