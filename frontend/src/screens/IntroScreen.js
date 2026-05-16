@@ -485,17 +485,17 @@ export default function IntroScreen({ navigation }) {
 
           {/* ── 1. HERO ─────────────────────────────────────────── */}
           <AnimatedSection style={{
-            paddingHorizontal: isDesktop ? spacing.xxl : spacing.lg,
+            paddingHorizontal: isDesktop ? spacing.lg : spacing.lg,
             paddingTop: secPad,
             paddingBottom: secPad,
             minHeight: isDesktop ? height : undefined,
             justifyContent: isDesktop ? 'center' : undefined,
           }}>
             <View style={[
-              { width: '100%', maxWidth: 1400, alignSelf: 'center' },
+              { width: '100%' },
               isDesktop
                 ? { position: 'relative' }
-                : { flexDirection: 'column', gap: spacing.xxl, alignItems: 'flex-start', maxWidth: MAX_W },
+                : { flexDirection: 'column', gap: spacing.xxl, alignItems: 'flex-start', maxWidth: MAX_W, alignSelf: 'center' },
             ]}>
               {/* Left */}
               <View style={isDesktop ? { paddingRight: '45%', zIndex: 2 } : {}}>
