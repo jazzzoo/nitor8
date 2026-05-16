@@ -572,7 +572,7 @@ export default function IntroScreen({ navigation }) {
                   </AnimatedSection>
                   <AnimatedSection delay={0.15}>
                     <GradientText style={headlineStyle(true)}>
-                      You know you should talk to customers.{'\n'}But live English calls are a different story.
+                      You know you should talk to customers.{'\n'}But real-time English is a different story.
                     </GradientText>
                   </AnimatedSection>
                   <Text style={lp.body}>
@@ -621,7 +621,7 @@ export default function IntroScreen({ navigation }) {
                   <View style={{ flex: 1 }}>
                     <Text style={lp.eyebrow}>Sound familiar?</Text>
                     <GradientText style={headlineStyle(false)}>
-                      You know you should talk to customers.{'\n'}But live English calls are a different story.
+                      You know you should talk to customers.{'\n'}But real-time English is a different story.
                     </GradientText>
                     <Text style={lp.body}>
                       Every startup book says the same thing.{'\n'}Talk to your customers.{'\n\n'}But for non-English founders, that advice hides a very real blocker.
