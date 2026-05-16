@@ -485,17 +485,17 @@ export default function IntroScreen({ navigation }) {
 
           {/* ── 1. HERO ─────────────────────────────────────────── */}
           <AnimatedSection style={{
-            paddingHorizontal: spacing.lg,
+            paddingHorizontal: isDesktop ? spacing.xxl : spacing.lg,
             paddingTop: secPad,
             paddingBottom: secPad,
             minHeight: isDesktop ? height : undefined,
             justifyContent: isDesktop ? 'center' : undefined,
           }}>
             <View style={[
-              { maxWidth: MAX_W, width: '100%', alignSelf: 'center' },
+              { width: '100%' },
               isDesktop
                 ? { position: 'relative' }
-                : { flexDirection: 'column', gap: spacing.xxl, alignItems: 'flex-start' },
+                : { flexDirection: 'column', gap: spacing.xxl, alignItems: 'flex-start', maxWidth: MAX_W, alignSelf: 'center' },
             ]}>
               {/* Left */}
               <View style={isDesktop ? { paddingRight: '45%', zIndex: 2 } : {}}>
@@ -507,8 +507,8 @@ export default function IntroScreen({ navigation }) {
                   <Text style={lp.eyebrow}>AI customer interviews for non-English founders</Text>
                 )}
                 <GradientText style={{
-                  fontSize: isDesktop ? 52 : 36,
-                  lineHeight: isDesktop ? 56 : 46,
+                  fontSize: isDesktop ? 72 : 36,
+                  lineHeight: isDesktop ? 75 : 46,
                   fontWeight: '900',
                   letterSpacing: isDesktop ? -2 : -1.5,
                   marginBottom: isDesktop ? spacing.xxl * 1.5 : spacing.md,
@@ -538,17 +538,9 @@ export default function IntroScreen({ navigation }) {
               {/* Right: phone frame + report card */}
               {isDesktop ? (
                 <View style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '45%', zIndex: 1, justifyContent: 'center' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', position: 'relative' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
                     <PhoneFrame />
                     <HeroReportCard style={{ marginLeft: -20, marginTop: 50 }} />
-                    {Platform.OS === 'web' && (
-                      <View style={{
-                        position: 'absolute', right: 0, top: 0, bottom: 0, width: 80,
-                        backgroundImage: 'linear-gradient(to left, #E9EEF2 0%, transparent 100%)',
-                        pointerEvents: 'none',
-                        zIndex: 10,
-                      }} />
-                    )}
                   </View>
                 </View>
               ) : (
