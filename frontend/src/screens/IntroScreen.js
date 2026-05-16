@@ -485,20 +485,28 @@ export default function IntroScreen({ navigation }) {
 
           {/* ── 1. HERO ─────────────────────────────────────────── */}
           <AnimatedSection style={{
-            paddingHorizontal: isDesktop ? spacing.lg : spacing.lg,
+            paddingHorizontal: isDesktop ? spacing.xxl : spacing.lg,
             paddingTop: secPad,
             paddingBottom: secPad,
             minHeight: isDesktop ? height : undefined,
             justifyContent: isDesktop ? 'center' : undefined,
           }}>
-            <View style={[
-              { width: '100%' },
-              isDesktop
-                ? { position: 'relative' }
-                : { flexDirection: 'column', gap: spacing.xxl, alignItems: 'flex-start', maxWidth: MAX_W, alignSelf: 'center' },
-            ]}>
+            <View style={isDesktop ? {
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing.xxl,
+              maxWidth: 1400,
+              marginHorizontal: 'auto',
+              width: '100%',
+            } : {
+              flexDirection: 'column',
+              gap: spacing.xxl,
+              alignItems: 'flex-start',
+              maxWidth: MAX_W,
+              alignSelf: 'center',
+            }}>
               {/* Left */}
-              <View style={isDesktop ? { paddingRight: '45%', zIndex: 2 } : {}}>
+              <View style={isDesktop ? { flex: 1, paddingRight: spacing.xxl } : {}}>
                 {isDesktop ? (
                   <AnimatedSection delay={0}>
                     <Text style={desktopEyebrowStyle}>AI customer interviews for non-English founders</Text>
@@ -507,8 +515,8 @@ export default function IntroScreen({ navigation }) {
                   <Text style={lp.eyebrow}>AI customer interviews for non-English founders</Text>
                 )}
                 <GradientText style={{
-                  fontSize: isDesktop ? 72 : 36,
-                  lineHeight: isDesktop ? 75 : 46,
+                  fontSize: isDesktop ? 56 : 36,
+                  lineHeight: isDesktop ? 62 : 46,
                   fontWeight: '900',
                   letterSpacing: isDesktop ? -2 : -1.5,
                   marginBottom: isDesktop ? spacing.xxl * 1.5 : spacing.md,
@@ -537,7 +545,7 @@ export default function IntroScreen({ navigation }) {
 
               {/* Right: phone frame + report card */}
               {isDesktop ? (
-                <View style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '45%', zIndex: 1, justifyContent: 'center' }}>
+                <View style={{ flex: 1, alignItems: 'flex-start' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
                     <PhoneFrame />
                     <HeroReportCard style={{ marginLeft: -20, marginTop: 50 }} />
