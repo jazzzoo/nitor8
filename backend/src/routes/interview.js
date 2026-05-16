@@ -477,7 +477,12 @@ JSON SCHEMA:
     "most revealing quote 3"
   ],
   "next_actions": ["action 1", "action 2", "action 3"],
-  "next_questions": ["question 1", "question 2", "question 3"]
+  "next_questions": ["question 1", "question 2", "question 3"],
+  "decision_block": {
+    "verdict": "confirmed" | "mixed" | "rejected",
+    "confidence": "high" | "medium" | "low",
+    "recommended_move": "continue" | "narrow_icp" | "pivot" | "move_to_solution"
+  }
 }
 
 RULES — read carefully:
@@ -504,7 +509,12 @@ RULES — read carefully:
 
 8. top_pains: max 3, ranked by severity. current_workarounds: max 3. consequences: max 3. evidence_quotes: max 3. problem_situations: max 3.
 
-9. problem_situations: extract the specific trigger moment when the problem arises — "while doing X, Y happened". Focus on situational context ("what they were trying to do") and the triggering event. Leave as empty array [] if no concrete trigger is described in the transcript.`;
+9. problem_situations: extract the specific trigger moment when the problem arises — "while doing X, Y happened". Focus on situational context ("what they were trying to do") and the triggering event. Leave as empty array [] if no concrete trigger is described in the transcript.
+
+10. decision_block:
+    - verdict: confirmed = clear problem evidence found, mixed = some evidence but inconsistent, rejected = no meaningful problem signal
+    - confidence: high = respondent gave specific past examples with concrete detail, medium = some concrete examples but incomplete, low = vague or hypothetical answers only
+    - recommended_move: continue = keep interviewing same segment, narrow_icp = problem confirmed but need more specific segment, pivot = problem not validated, move_to_solution = strong signal, ready for solution interviews`;
 
     let result = null;
     let lastError = null;

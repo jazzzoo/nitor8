@@ -195,6 +195,8 @@ function CompletedReport({ report }) {
         )}
       </View>
 
+      {r?.decision_block && <DecisionBlock block={r.decision_block} />}
+
       {/* 1. Respondent Context */}
       {r?.respondent_context && (
         <Section title="Respondent">
@@ -399,6 +401,43 @@ function ConsequenceTypeBadge({ type }) {
   );
 }
 
+function DecisionBlock({ block }) {
+  const verdictMap = {
+    confirmed: { label: 'Confirmed',  bg: colors.success },
+    mixed:     { label: 'Mixed',      bg: '#FB8C00' },
+    rejected:  { label: 'Rejected',   bg: colors.error },
+  };
+  const moveMap = {
+    continue:         { label: 'Continue Interviewing',       desc: 'Keep interviewing this segment' },
+    narrow_icp:       { label: 'Narrow Your ICP',             desc: 'Problem confirmed — narrow your target' },
+    pivot:            { label: 'Consider a Pivot',            desc: 'Consider changing direction' },
+    move_to_solution: { label: 'Move to Solution Interviews', desc: 'Ready for solution interviews' },
+  };
+
+  const vCfg = verdictMap[block.verdict] || verdictMap.mixed;
+  const mCfg = moveMap[block.recommended_move] || { label: block.recommended_move || '', desc: '' };
+  const confidenceLabel = block.confidence
+    ? block.confidence.charAt(0).toUpperCase() + block.confidence.slice(1) + ' confidence'
+    : '';
+
+  return (
+    <View style={styles.decisionCard}>
+      <View style={styles.decisionBadgeRow}>
+        <View style={[styles.decisionBadge, { backgroundColor: vCfg.bg }]}>
+          <Text style={styles.decisionBadgeText}>{vCfg.label}</Text>
+        </View>
+        {confidenceLabel ? (
+          <View style={[styles.decisionBadge, { backgroundColor: colors.primary }]}>
+            <Text style={styles.decisionBadgeText}>{confidenceLabel}</Text>
+          </View>
+        ) : null}
+      </View>
+      <Text style={styles.decisionMove}>{mCfg.label}</Text>
+      {mCfg.desc ? <Text style={styles.decisionDesc}>{mCfg.desc}</Text> : null}
+    </View>
+  );
+}
+
 function Section({ title, children }) {
   return (
     <View style={styles.section}>
@@ -474,6 +513,25 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     opacity: 0.6,
   },
+
+  // ── Decision Block
+  decisionCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  decisionBadgeRow: { flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },
+  decisionBadge: {
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  decisionBadgeText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF' },
+  decisionMove: { fontSize: 20, fontWeight: '700', color: colors.textPrimary, lineHeight: 28 },
+  decisionDesc: { ...textStyles.bodyS, color: colors.textSecondary },
 
   // ── Report layout
   reportContainer: { gap: spacing.md },
