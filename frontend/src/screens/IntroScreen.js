@@ -492,10 +492,10 @@ export default function IntroScreen({ navigation }) {
             justifyContent: isDesktop ? 'center' : undefined,
           }}>
             <View style={[
-              { width: '100%' },
+              { width: '100%', maxWidth: 1400, alignSelf: 'center' },
               isDesktop
                 ? { position: 'relative' }
-                : { flexDirection: 'column', gap: spacing.xxl, alignItems: 'flex-start', maxWidth: MAX_W, alignSelf: 'center' },
+                : { flexDirection: 'column', gap: spacing.xxl, alignItems: 'flex-start', maxWidth: MAX_W },
             ]}>
               {/* Left */}
               <View style={isDesktop ? { paddingRight: '45%', zIndex: 2 } : {}}>
@@ -521,7 +521,7 @@ export default function IntroScreen({ navigation }) {
                   lineHeight: 35,
                   marginBottom: spacing.xxl,
                 }]}>
-                  Describe your product in your own language. Nitor8 runs the customer interview in English and gives you a Lean-style report back in your language.
+                  {'Describe your product in your own language.\nNitor8 runs the customer interview in English and gives you a Lean-style report back in your language.'}
                 </Text>
                 <GradientButton
                   label="Start your first interview →"
