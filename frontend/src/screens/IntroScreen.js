@@ -3,7 +3,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  useWindowDimensions,
+  useWindowDimensions, Modal, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import { AlarmClock, EyeOff, Shovel, MessageCircleX, BookOpenCheck, Link, FileCh
 import GradientButton from '../components/GradientButton';
 import useStore from '../store/useStore';
 import { colors, spacing, radius } from '../theme';
+import { analyticsApi } from '../api/client';
 
 const MOBILE_BP = 700;
 const MAX_W     = 1100;
@@ -403,6 +404,9 @@ export default function IntroScreen({ navigation }) {
   const setNavTitle = useStore((s) => s.setNavTitle);
   const [showBetaModal, setShowBetaModal] = useState(false);
   const [openFaq, setOpenFaq]             = useState(null);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [feedbackText, setFeedbackText]   = useState('');
+  const [feedbackSent, setFeedbackSent]   = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -422,9 +426,34 @@ export default function IntroScreen({ navigation }) {
     if (!seen) setShowBetaModal(true);
   }, []);
 
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const handler = (e) => {
+      if (e.clientY <= 0 && !localStorage.getItem('nitor8-exit-shown')) {
+        setShowExitModal(true);
+      }
+    };
+    document.addEventListener('mouseleave', handler);
+    return () => document.removeEventListener('mouseleave', handler);
+  }, []);
+
   function dismissBetaModal() {
     if (typeof localStorage !== 'undefined') localStorage.setItem('nitor8-beta-notice', 'true');
     setShowBetaModal(false);
+  }
+
+  async function handleExitChoice(choice) {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('nitor8-exit-shown', 'true');
+    setShowExitModal(false);
+    await analyticsApi.track('exit_intent_response', { choice });
+  }
+
+  async function handleFeedbackSubmit() {
+    if (!feedbackText.trim()) return;
+    await analyticsApi.track('intro_feedback', { message: feedbackText.trim() });
+    setFeedbackText('');
+    setFeedbackSent(true);
+    setTimeout(() => setFeedbackSent(false), 2000);
   }
 
   function handleCTA() { navigation.navigate('Create'); }
@@ -480,6 +509,44 @@ export default function IntroScreen({ navigation }) {
   return (
     <>
       {typeof document !== 'undefined' && <BetaModal />}
+
+      {/* Exit Intent Modal (web only) */}
+      {Platform.OS === 'web' && (
+        <Modal
+          visible={showExitModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowExitModal(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: spacing.lg }}>
+            <NeuCard style={{ maxWidth: 400, width: '100%' }}>
+              <Text style={{ fontSize: 22, fontWeight: '900', color: colors.textPrimary, marginBottom: spacing.xs }}>
+                Before you go —
+              </Text>
+              <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 24, marginBottom: spacing.xl }}>
+                {'Did you find what you were\nlooking for?'}
+              </Text>
+              {['Yes, but not ready yet', "No, this isn't for me", "I'm not sure what this does"].map((choice) => (
+                <TouchableOpacity
+                  key={choice}
+                  onPress={() => handleExitChoice(choice)}
+                  activeOpacity={0.7}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: radius.md,
+                    padding: spacing.md,
+                    marginBottom: spacing.sm,
+                  }}
+                >
+                  <Text style={{ fontSize: 15, color: colors.textSecondary }}>{choice}</Text>
+                </TouchableOpacity>
+              ))}
+            </NeuCard>
+          </View>
+        </Modal>
+      )}
+
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
@@ -836,6 +903,55 @@ export default function IntroScreen({ navigation }) {
               <Text style={[lp.trust, { marginTop: spacing.md, textAlign: 'center' }]}>
                 Free beta · No credit card needed
               </Text>
+            </View>
+          </AnimatedSection>
+
+          {/* ── 8. FEEDBACK INPUT ───────────────────────────────── */}
+          <AnimatedSection delay={0.1} style={{ paddingHorizontal: spacing.lg, paddingVertical: isDesktop ? 48 : 32, backgroundColor: colors.surface }}>
+            <View style={{ maxWidth: 600, width: '100%', alignSelf: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.textSecondary, marginBottom: spacing.md, textAlign: 'center' }}>
+                Have a question or feedback?
+              </Text>
+              <NeuCard>
+                <TextInput
+                  value={feedbackText}
+                  onChangeText={setFeedbackText}
+                  placeholder="Tell us what you think..."
+                  placeholderTextColor={colors.placeholder || colors.textDisabled}
+                  style={{
+                    fontSize: 15,
+                    color: colors.textSecondary,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: radius.md,
+                    paddingHorizontal: spacing.md,
+                    paddingVertical: 12,
+                    marginBottom: spacing.md,
+                    minHeight: 44,
+                    outlineStyle: 'none',
+                  }}
+                  multiline={false}
+                />
+                {feedbackSent ? (
+                  <Text style={{ fontSize: 14, color: colors.success, textAlign: 'center', paddingVertical: spacing.sm }}>
+                    Thanks! We'll get back to you.
+                  </Text>
+                ) : (
+                  <TouchableOpacity
+                    onPress={handleFeedbackSubmit}
+                    disabled={!feedbackText.trim()}
+                    activeOpacity={0.8}
+                    style={{
+                      backgroundColor: feedbackText.trim() ? colors.primary : colors.border,
+                      borderRadius: radius.md,
+                      paddingVertical: 12,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.white }}>Send →</Text>
+                  </TouchableOpacity>
+                )}
+              </NeuCard>
             </View>
           </AnimatedSection>
 

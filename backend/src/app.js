@@ -8,6 +8,7 @@ import interviewSessionsRouter from './routes/interviewSessions.js';
 import interviewRouter from './routes/interview.js';
 import reportsRouter from './routes/reports.js';
 import adminRouter from './routes/admin.js';
+import analyticsRouter from './routes/analytics.js';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -90,6 +91,7 @@ app.use('/api/interview-sessions', interviewSessionsRouter); // 창업자용 링
 app.use('/api/interview', interviewRouter);                  // 응답자용 공개 채팅
 app.use('/api/reports', reportsRouter);                     // 리포트 조회
 app.use('/api/admin', adminRouter);                         // 어드민 (Basic Auth)
+app.use('/api/analytics', analyticsRouter);                 // 애널리틱스 이벤트
 
 // ─────────────────────────────────────────
 // 헬스체크
