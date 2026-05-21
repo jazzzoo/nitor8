@@ -297,13 +297,30 @@ async function callClaudeForTurn(systemPrompt, recentTurns, retryCount = 0) {
     }
 
     const VALID_RESPONSE_TYPES = new Set(['normal', 'short_answer', 'off_topic', 'participant_question', 'discomfort']);
-    const rawType = String(parsed.response_type || 'normal');
+    const rawType = String(parsed.response_type || '');
+
+    let resolvedType;
+    if (VALID_RESPONSE_TYPES.has(rawType)) {
+      resolvedType = rawType;
+    } else {
+      // response_type 누락/미지값 → utterance 내용 기반 재판단
+      const u = parsed.utterance.trim();
+      if (u.includes('?') && u.length < 120) {
+        resolvedType = 'participant_question';
+      } else {
+        resolvedType = 'short_answer';
+      }
+      if (rawType) {
+        console.warn(`[Interview] Unknown response_type="${rawType}", inferred="${resolvedType}"`);
+      }
+    }
+
     return {
       utterance:                 parsed.utterance.trim(),
       answered_current_question: Boolean(parsed.answered_current_question),
       needs_probe:               Boolean(parsed.needs_probe),
       detected_exit_signal:      String(parsed.detected_exit_signal || 'none'),
-      response_type:             VALID_RESPONSE_TYPES.has(rawType) ? rawType : 'normal',
+      response_type:             resolvedType,
     };
   } catch (err) {
     if (retryCount < 1) {
@@ -1057,7 +1074,20 @@ router.post('/:token/chat', async (req, res) => {
       const claudeResult = await callClaudeForTurn(systemPrompt, recentTurns);
 
       // 2. response_type 예외 처리 (서버 오버라이드)
-      const responseType = claudeResult.response_type || 'normal';
+      let responseType = claudeResult.response_type || 'normal';
+
+      // 응답자 메시지가 명확한 의문문이면 participant_question으로 강제
+      const isUserQuestion = (
+        userAnswer.endsWith('?') ||
+        /^(what|how|why|when|where|who|can you|could you|is it|does it|will it|do you|are you)\b/i.test(userAnswer)
+      );
+      if (isUserQuestion && responseType !== 'discomfort') {
+        if (responseType !== 'participant_question') {
+          console.log(`[Interview] Server override: response_type "${responseType}" → "participant_question" (user asked a question)`);
+        }
+        responseType = 'participant_question';
+      }
+
       const recoveryCount = state.recovery_attempt_count || 0;
       const orderedSectionsForSkip = session.session_type === 1
         ? SECTION_ORDER.filter((s) => s !== 'wtp')
