@@ -25,6 +25,13 @@ const STYLE_MAP = { 'Neutral': 'neutral', 'Deep': 'deep', 'Soft': 'soft' };
 const MAX_SUMMARY = 1000;
 const MOBILE_BP = 700;
 
+const INSTRUCTION_CHIPS = [
+  'Focus on problem discovery',
+  'Ask deeper about workarounds',
+  'Avoid solution pitching',
+  'Keep interviews short',
+];
+
 // ── 점 애니메이션 (생성 중 표시) ─────────────────────────────
 function DotIndicator() {
   const anims = useRef([
@@ -138,6 +145,7 @@ export default function CreateScreen({ navigation }) {
   } = useStore();
 
   const [extraInstr, setExtraInstr] = useState('');
+  const [selectedChips, setSelectedChips] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [leftVisible, setLeftVisible] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
@@ -255,6 +263,22 @@ export default function CreateScreen({ navigation }) {
     }
   }, [mode, isDesktop]);
 
+  // ── 칩 토글 ─────────────────────────────────────────────
+  function toggleChip(chip) {
+    setSelectedChips((prev) => {
+      if (prev.includes(chip)) return prev.filter((c) => c !== chip);
+      return [...prev, chip];
+    });
+  }
+
+  // 칩 선택값 + 자유형 입력을 합쳐 API용 문자열 조립
+  function buildAdditionalInstructions() {
+    const chipPart = selectedChips.join('. ');
+    const freePart = extraInstr.trim();
+    if (chipPart && freePart) return `${chipPart}. ${freePart}`;
+    return chipPart || freePart || undefined;
+  }
+
   // ── 생성 시작 ────────────────────────────────────────────
   async function handleGenerate() {
     if (!canSubmit) {
@@ -271,7 +295,7 @@ export default function CreateScreen({ navigation }) {
         business_summary: businessSummary.trim(),
         persona: persona.trim() || undefined,
         style: STYLE_MAP[style] || '기본',
-        additional_instruction: extraInstr.trim() || undefined,
+        additional_instruction: buildAdditionalInstructions(),
       });
 
       // [수정] res.session (res.data?.session 아님)
@@ -511,11 +535,27 @@ export default function CreateScreen({ navigation }) {
 
                 {/* ⑤ 추가 지시 */}
                 <Field number="⑤" label="Additional Instructions" optional>
+                  <View style={styles.chipRow}>
+                    {INSTRUCTION_CHIPS.map((chip) => {
+                      const active = selectedChips.includes(chip);
+                      return (
+                        <TouchableOpacity
+                          key={chip}
+                          activeOpacity={0.8}
+                          onPress={() => toggleChip(chip)}
+                          style={[styles.chip, active && styles.chipActive]}
+                        >
+                          <Text style={[styles.chipText, active && styles.chipTextActive]}>{chip}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                  <Text style={styles.additionalNotesLabel}>Additional notes</Text>
                   <TextInput
                     style={[styles.insetBox, styles.textarea, { minHeight: 56 }]}
                     value={extraInstr}
                     onChangeText={setExtraInstr}
-                    placeholder='"SaaS B2B context, targeting budget decision makers"'
+                    placeholder={'(Optional) Add any specific focus for this interview...\ne.g. Focus on enterprise customers, Ask about budget approval process'}
                     placeholderTextColor={colors.placeholder}
                     multiline
                     textAlignVertical="top"
@@ -756,6 +796,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.sm },
+  chip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.full || 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    backgroundColor: colors.surface,
+  },
+  chipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  chipText: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
+  chipTextActive: { color: '#fff', fontWeight: '600' },
+  additionalNotesLabel: {
+    fontSize: 12,
+    color: colors.textDisabled,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
   },
 
   field: { gap: spacing.xs },
