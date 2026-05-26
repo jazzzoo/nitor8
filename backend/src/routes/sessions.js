@@ -409,10 +409,16 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
 
   // ── 프롬프트 조립 ──
   const inputContext = session.input_context;
-  const systemPrompt = assemblePrompt(
+  const systemPrompt = await assemblePrompt(
     session.session_type,
     inputContext,
     ''
+  );
+  console.log('[DEBUG] systemPrompt type:',
+    typeof systemPrompt,
+    'length:', systemPrompt?.length,
+    'isArray:', Array.isArray(systemPrompt),
+    'preview:', String(systemPrompt).slice(0, 100)
   );
 
   // ── 스트리밍 시작 ──
