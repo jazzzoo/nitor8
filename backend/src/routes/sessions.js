@@ -414,13 +414,6 @@ router.get('/:id/generate-stream', authenticateGuest, async (req, res) => {
     inputContext,
     ''
   );
-  console.log('[DEBUG] systemPrompt type:',
-    typeof systemPrompt,
-    'length:', systemPrompt?.length,
-    'isArray:', Array.isArray(systemPrompt),
-    'preview:', String(systemPrompt).slice(0, 100)
-  );
-
   // ── 스트리밍 시작 ──
   sendEvent('start', { session_id: sessionId, session_type: session.session_type });
 

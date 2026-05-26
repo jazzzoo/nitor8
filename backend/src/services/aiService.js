@@ -117,19 +117,6 @@ async function getSystemPrompt({ sessionType }) {
 
   const { prompt, rules } = PROMPT_CACHE.get(cacheKey);
 
-  // [PROMPT BUILD] 적용 규칙 로깅 (Step 6)
-  const sessionTag = `session_${sessionType}`;
-  const filteredRules = rules.filter(r =>
-    r.tags.includes('all') || r.tags.includes(sessionTag)
-  );
-  console.log('[PROMPT BUILD]', {
-    sessionType,
-    ruleCount: filteredRules.length,
-    ruleIds: filteredRules.map(r => r.line),
-    promptLength: prompt.length,
-    cacheHit: wasCacheHit,
-  });
-
   if (typeof prompt !== 'string') {
     throw new Error(`getSystemPrompt must return string, got: ${typeof prompt}`);
   }
@@ -176,43 +163,11 @@ async function assemblePrompt(sessionType, inputContext, dynamicInstructions = '
   }
 
   if (USE_MASTER_PROMPT) {
-    const result = await _assembleNewPath();
-
-    // [PROMPT DIFF] 개발 환경 diff 비교 (Step 5)
-    if (process.env.NODE_ENV === 'development') {
-      try {
-        const oldPrompt = _assembleOldPath();
-        if (oldPrompt !== result) {
-          console.warn('[PROMPT DIFF]', {
-            sessionType,
-            oldLength: oldPrompt.length,
-            newLength: result.length,
-          });
-        }
-      } catch (_) { /* session 2/3/4 는 old cache 미존재 */ }
-    }
-
-    return result;
+    return await _assembleNewPath();
   }
 
   // Default: 기존 방식
-  const result = _assembleOldPath();
-
-  // [PROMPT DIFF] 개발 환경 diff 비교 (Step 5)
-  if (process.env.NODE_ENV === 'development') {
-    try {
-      const newPrompt = await _assembleNewPath();
-      if (result !== newPrompt) {
-        console.warn('[PROMPT DIFF]', {
-          sessionType,
-          oldLength: result.length,
-          newLength: newPrompt.length,
-        });
-      }
-    } catch (_) { /* master.txt 미존재 또는 파싱 오류 */ }
-  }
-
-  return result;
+  return _assembleOldPath();
 }
 
 
