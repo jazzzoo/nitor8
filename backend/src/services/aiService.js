@@ -130,6 +130,13 @@ async function getSystemPrompt({ sessionType }) {
     cacheHit: wasCacheHit,
   });
 
+  if (typeof prompt !== 'string') {
+    throw new Error(`getSystemPrompt must return string, got: ${typeof prompt}`);
+  }
+  if (!prompt.trim()) {
+    throw new Error('getSystemPrompt returned empty string');
+  }
+
   return prompt;
 }
 
@@ -224,6 +231,10 @@ function calculateCost(model, inputTokens, outputTokens) {
 // Day 4: SSE 스트리밍 버전으로 교체 예정
 // ------------------------------------------------
 async function callClaude(systemPrompt, userMessage, model) {
+  if (typeof systemPrompt !== 'string') {
+    throw new Error(`Claude API system must be string, got: ${typeof systemPrompt}`);
+  }
+
   const startTime = Date.now();
 
   const response = await client.messages.create({
