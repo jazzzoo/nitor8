@@ -589,14 +589,14 @@ export default function IntroScreen({ navigation }) {
                   marginBottom: isDesktop ? spacing.xxl * 1.5 : spacing.md,
                   color: colors.textPrimary,
                 }}>
-                  Your customers speak English.{'\n'}You don't have to.
+                  Go from 'I should talk to customers'{'\n'}to a real interview link.
                 </GradientText>
                 <Text style={[lp.heroSub, isDesktop && {
                   fontSize: 22,
                   lineHeight: 35,
                   marginBottom: spacing.xxl,
                 }]}>
-                  {'Describe your product in your own language.\nNitor8 runs the customer interview in English and gives you a Lean-style report back in your language.'}
+                  {'Nitor8 helps you generate the right questions, send an interview link, let AI run the conversation in English, and get a clear report back in your language.\n\nBuilt especially for non-English founders who want to learn from English-speaking customers — without the pressure of live conversations.'}
                 </Text>
                 <GradientButton
                   label="Start your first interview →"
@@ -607,7 +607,7 @@ export default function IntroScreen({ navigation }) {
                   marginTop: spacing.lg,
                   fontSize: 16,
                   color: colors.textSecondary,
-                }]}>No account needed · Free beta</Text>
+                }]}>No account needed · Free beta · Text-based interviews</Text>
               </View>
 
               {/* Right: phone frame + report card */}
@@ -639,9 +639,12 @@ export default function IntroScreen({ navigation }) {
                   </AnimatedSection>
                   <AnimatedSection delay={0.15}>
                     <GradientText style={headlineStyle(true)}>
-                      You know you should talk to customers.{'\n'}But real-time English is a different story.
+                      You know you should talk to customers.{'\n'}Most founders never do.
                     </GradientText>
                   </AnimatedSection>
+                  <Text style={[lp.body, { marginBottom: spacing.md }]}>
+                    Finding the right people, knowing what to ask, and getting responses — it's harder than any book makes it sound.
+                  </Text>
                   <Text style={lp.body}>
                     Every startup book says the same thing.{'\n'}Talk to your customers.{'\n\n'}But for non-English founders, that advice hides a very real blocker.
                   </Text>
@@ -688,8 +691,11 @@ export default function IntroScreen({ navigation }) {
                   <View style={{ flex: 1 }}>
                     <Text style={lp.eyebrow}>Sound familiar?</Text>
                     <GradientText style={headlineStyle(false)}>
-                      You know you should talk to customers.{'\n'}But real-time English is a different story.
+                      You know you should talk to customers.{'\n'}Most founders never do.
                     </GradientText>
+                    <Text style={[lp.body, { marginBottom: spacing.md }]}>
+                      Finding the right people, knowing what to ask, and getting responses — it's harder than any book makes it sound.
+                    </Text>
                     <Text style={lp.body}>
                       Every startup book says the same thing.{'\n'}Talk to your customers.{'\n\n'}But for non-English founders, that advice hides a very real blocker.
                     </Text>
@@ -737,7 +743,7 @@ export default function IntroScreen({ navigation }) {
 
               <View style={{ marginTop: spacing.xxl, gap: spacing.xl }}>
                 {[
-                  { Icon: BookOpenCheck,   title: 'Describe', body: 'Write about your product in your own language. Nitor8 generates Lean-style interview questions.' },
+                  { Icon: BookOpenCheck,   title: 'Describe', body: 'Describe your product and target customer. Nitor8 generates Lean-style questions and guides you on who to interview.' },
                   { Icon: Link,            title: 'Share',    body: 'Send an interview link to your target customer. Nitor8 handles the full English conversation for you.' },
                   { Icon: FileChartColumn, title: 'Learn',    body: 'Get a structured Lean-style report back in your language. Problem verdict, key pains, quotes, next actions.' },
                 ].map(({ Icon, title, body }, i) => (
