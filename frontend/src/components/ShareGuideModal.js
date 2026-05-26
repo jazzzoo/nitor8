@@ -3,7 +3,6 @@ import {
   View, Text, TouchableOpacity, ScrollView, Modal,
   StyleSheet, Platform, Clipboard, Alert, useWindowDimensions,
 } from 'react-native';
-import { UserCheck, Target, UserX, MessageCircle, Briefcase, Users, Mail } from 'lucide-react-native';
 import GradientButton from './GradientButton';
 import { colors, spacing, radius } from '../theme';
 import { analyticsApi } from '../api/client';
@@ -23,21 +22,23 @@ const CHECKLIST_ITEMS = [
   'Set a follow-up reminder (24–48 h)',
 ];
 
-function Divider() {
-  return (
-    <View style={{
-      height: 1,
-      backgroundColor: colors.border,
-      marginHorizontal: spacing.lg,
-      marginVertical: spacing.lg,
-    }} />
-  );
-}
+const WHO_ITEMS = [
+  { type: 'check', text: '최근 이 문제를 겪었을 가능성이 있는 사람' },
+  { type: 'check', text: '타겟 고객군에 가까운 사람' },
+  { type: 'cross', text: '칭찬만 해줄 친구는 피하기' },
+];
+
+const CHANNEL_ITEMS = [
+  { num: '1', name: 'Warm DM',         desc: '지인이나 아는 사람부터 시작하세요.' },
+  { num: '2', name: 'LinkedIn / X DM', desc: '타겟 페르소나와 맞는 사람에게.' },
+  { num: '3', name: '커뮤니티 댓글',    desc: '최근 이 문제를 올린 사람에게 답글로.' },
+  { num: '4', name: '이메일',           desc: 'B2B나 공식적인 경우.' },
+];
 
 export default function ShareGuideModal({ visible, onClose, shareLink }) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 700;
-  const sc = isDesktop ? 1.25 : 1;
+  const sc = isDesktop ? 1.1 : 1;
 
   const [activeTab, setActiveTab] = useState(0);
   const [checked, setChecked] = useState([false, false, false, false]);
@@ -71,18 +72,16 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
     analyticsApi.track('share_guide_opened');
   }
 
-  const sectionStyle = {
-    paddingVertical: spacing.xl * sc,
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md * sc,
-  };
-
-  const labelStyle = {
+  const sectionLabel = {
     fontSize: 11 * sc,
     fontWeight: '700',
-    color: colors.textDisabled,
     letterSpacing: 1,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    marginBottom: spacing.sm * sc,
   };
+
+  const pad = spacing.lg * sc;
 
   return (
     <Modal
@@ -92,51 +91,48 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
       onRequestClose={onClose}
       onShow={handleShow}
     >
-      <View style={styles.overlay}>
-        <View style={styles.sheet}>
+      <View style={[styles.overlay, isDesktop && styles.overlayDesktop]}>
+        <View style={[styles.sheet, isDesktop && styles.sheetDesktop]}>
 
           {/* Header */}
-          <View style={styles.sheetHeader}>
-            <Text style={{ fontSize: 20 * sc, fontWeight: '700', color: colors.textPrimary }}>
-              How to Share
-            </Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={{ fontSize: 16 * sc, color: colors.textSecondary }}>✕</Text>
+          <View style={[styles.sheetHeader, { paddingHorizontal: pad, paddingTop: pad }]}>
+            <View style={{ flex: 1, paddingRight: spacing.lg }}>
+              <Text style={{ fontSize: 22 * sc, fontWeight: '700', color: colors.textPrimary, lineHeight: 28 * sc }}>
+                Share your interview
+              </Text>
+              <Text style={{ fontSize: 14 * sc, color: colors.textSecondary, marginTop: 4 * sc, lineHeight: 20 * sc }}>
+                Send to the right person, not everyone.
+              </Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={{ fontSize: 18 * sc, color: colors.textSecondary }}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView
             style={styles.scroll}
-            contentContainerStyle={{ paddingBottom: spacing.xxl }}
+            contentContainerStyle={{ paddingHorizontal: pad, paddingBottom: spacing.xxl }}
             showsVerticalScrollIndicator={false}
           >
 
             {/* Section 1: Who to send */}
-            <View style={sectionStyle}>
-              <Text style={labelStyle}>WHO TO SEND IT TO</Text>
-              {[
-                { Icon: UserCheck, color: colors.success, text: 'Early adopters who already told you they have this problem' },
-                { Icon: Target,    color: colors.primary, text: 'People matching your Ideal Customer Profile (ICP)' },
-                { Icon: UserX,     color: colors.error,   text: "Friends & family who haven't experienced the problem", strike: true },
-              ].map(({ Icon, color, text, strike }, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm * sc }}>
-                  <View style={{
-                    width: 32 * sc,
-                    height: 32 * sc,
-                    borderRadius: radius.sm,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: color + '22',
-                    flexShrink: 0,
+            <View style={{ marginTop: spacing.xl * sc }}>
+              {WHO_ITEMS.map(({ type, text }, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm * sc, paddingVertical: 6 * sc }}>
+                  <Text style={{
+                    fontSize: 15 * sc,
+                    fontWeight: '700',
+                    color: type === 'check' ? colors.success : colors.error,
+                    lineHeight: 22 * sc,
+                    width: 18 * sc,
                   }}>
-                    <Icon size={18 * sc} color={color} />
-                  </View>
+                    {type === 'check' ? '✓' : '✗'}
+                  </Text>
                   <Text style={{
                     flex: 1,
                     fontSize: 14 * sc,
-                    color: strike ? colors.textDisabled : colors.textSecondary,
-                    lineHeight: 20 * sc,
-                    textDecorationLine: strike ? 'line-through' : 'none',
+                    color: colors.textSecondary,
+                    lineHeight: 22 * sc,
                   }}>
                     {text}
                   </Text>
@@ -144,74 +140,66 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
               ))}
             </View>
 
-            <Divider />
-
             {/* Section 2: Best channels */}
-            <View style={sectionStyle}>
-              <Text style={labelStyle}>BEST CHANNELS</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm * sc }}>
-                {[
-                  { Icon: MessageCircle, label: 'Warm DM',   desc: 'Prior conversations' },
-                  { Icon: Briefcase,     label: 'LinkedIn',  desc: 'ICP job titles' },
-                  { Icon: Users,         label: 'Community', desc: 'Slack / Discord' },
-                  { Icon: Mail,          label: 'Email',     desc: 'Cold + personal' },
-                ].map(({ Icon, label, desc }, i) => (
-                  <View key={i} style={{
-                    flex: 1,
-                    minWidth: '44%',
-                    backgroundColor: colors.background,
-                    borderRadius: radius.md,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    padding: spacing.md * sc,
-                    gap: 4 * sc,
+            <View style={{ marginTop: spacing.xl * sc }}>
+              <Text style={sectionLabel}>채널 선택</Text>
+              {CHANNEL_ITEMS.map(({ num, name, desc }, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md * sc, paddingVertical: 8 * sc }}>
+                  <Text style={{
+                    fontSize: 14 * sc,
+                    fontWeight: '700',
+                    color: colors.primary,
+                    lineHeight: 20 * sc,
+                    width: 18 * sc,
                   }}>
-                    <Icon size={20 * sc} color={colors.primary} />
-                    <Text style={{ fontSize: 13 * sc, fontWeight: '600', color: colors.textPrimary, marginTop: 4 * sc }}>
-                      {label}
+                    {num}.
+                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14 * sc, fontWeight: '600', color: colors.textPrimary, lineHeight: 20 * sc }}>
+                      {name}
                     </Text>
-                    <Text style={{ fontSize: 11 * sc, color: colors.textDisabled }}>{desc}</Text>
+                    <Text style={{ fontSize: 13 * sc, color: colors.textSecondary, lineHeight: 18 * sc, marginTop: 2 * sc }}>
+                      {desc}
+                    </Text>
                   </View>
-                ))}
-              </View>
+                </View>
+              ))}
             </View>
 
-            <Divider />
-
             {/* Section 3: Message examples */}
-            <View style={sectionStyle}>
-              <Text style={labelStyle}>MESSAGE EXAMPLES</Text>
-              <View style={{ flexDirection: 'row', gap: spacing.xs * sc }}>
+            <View style={{ marginTop: spacing.xl * sc }}>
+              <Text style={sectionLabel}>메시지 예시</Text>
+
+              {/* Tabs — underline only */}
+              <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: spacing.md * sc }}>
                 {TABS.map((tab, i) => (
                   <TouchableOpacity
                     key={i}
                     style={{
-                      paddingVertical: 6 * sc,
+                      paddingVertical: 8 * sc,
                       paddingHorizontal: spacing.md * sc,
-                      borderRadius: radius.sm,
-                      borderWidth: 1,
-                      borderColor: activeTab === i ? colors.primary : colors.border,
-                      backgroundColor: activeTab === i ? colors.primary : colors.background,
+                      marginBottom: -1,
+                      borderBottomWidth: 2,
+                      borderBottomColor: activeTab === i ? colors.primary : 'transparent',
                     }}
                     onPress={() => setActiveTab(i)}
                   >
                     <Text style={{
                       fontSize: 13 * sc,
-                      color: activeTab === i ? colors.white : colors.textSecondary,
-                      fontWeight: activeTab === i ? '600' : '500',
+                      fontWeight: activeTab === i ? '600' : '400',
+                      color: activeTab === i ? colors.textPrimary : colors.textSecondary,
                     }}>
                       {tab}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {/* Message box */}
               <View style={{
                 backgroundColor: colors.background,
                 borderRadius: radius.md,
-                borderWidth: 1,
-                borderColor: colors.border,
                 padding: spacing.md * sc,
-                gap: spacing.sm * sc,
               }}>
                 <Text style={{
                   fontSize: 13 * sc,
@@ -224,29 +212,35 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
                 <TouchableOpacity
                   style={{
                     alignSelf: 'flex-end',
-                    backgroundColor: colors.surface,
+                    marginTop: spacing.sm * sc,
+                    backgroundColor: colors.primary + '33',
                     borderRadius: radius.sm,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    paddingVertical: 6 * sc,
-                    paddingHorizontal: spacing.md * sc,
+                    paddingVertical: spacing.xs * sc,
+                    paddingHorizontal: spacing.sm * sc,
                   }}
                   onPress={handleCopyMessage}
                 >
-                  <Text style={{ fontSize: 13 * sc, fontWeight: '600', color: colors.textSecondary }}>Copy</Text>
+                  <Text style={{ fontSize: 12 * sc, fontWeight: '600', color: colors.primary }}>Copy</Text>
                 </TouchableOpacity>
               </View>
+
+              <Text style={{
+                fontSize: 12 * sc,
+                color: colors.textDisabled,
+                fontStyle: 'italic',
+                marginTop: spacing.sm * sc,
+              }}>
+                Personalize before sending
+              </Text>
             </View>
 
-            <Divider />
-
             {/* Section 4: Checklist */}
-            <View style={sectionStyle}>
-              <Text style={labelStyle}>BEFORE YOU SEND</Text>
+            <View style={{ marginTop: spacing.xl * sc }}>
+              <Text style={sectionLabel}>Before you send</Text>
               {CHECKLIST_ITEMS.map((item, i) => (
                 <TouchableOpacity
                   key={i}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm * sc, paddingVertical: 6 * sc }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm * sc, paddingVertical: 8 * sc }}
                   onPress={() => toggleCheck(i)}
                   activeOpacity={0.7}
                 >
@@ -255,14 +249,14 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
                     height: 22 * sc,
                     borderRadius: 6 * sc,
                     borderWidth: 2,
-                    borderColor: checked[i] ? colors.success : colors.border,
-                    backgroundColor: checked[i] ? colors.success : 'transparent',
+                    borderColor: checked[i] ? colors.primary : colors.border,
+                    backgroundColor: checked[i] ? colors.primary : 'transparent',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
                   }}>
                     {checked[i] && (
-                      <Text style={{ fontSize: 13 * sc, color: colors.white, fontWeight: '700' }}>✓</Text>
+                      <Text style={{ fontSize: 12 * sc, color: colors.white, fontWeight: '700' }}>✓</Text>
                     )}
                   </View>
                   <Text style={{
@@ -281,26 +275,22 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
           </ScrollView>
 
           {/* Footer */}
-          <View style={{
-            flexDirection: 'row',
-            gap: spacing.sm,
-            padding: spacing.lg * sc,
-            borderTopWidth: 1,
-            borderTopColor: colors.border,
-          }}>
+          <View style={[styles.footer, { paddingHorizontal: pad, paddingTop: spacing.md * sc, paddingBottom: spacing.lg * sc }]}>
             <GradientButton label="Copy Interview Link" onPress={handleCopyLink} style={{ flex: 1 }} />
             <TouchableOpacity
               style={{
-                backgroundColor: sent ? colors.success : colors.textSecondary,
+                flex: 1,
+                marginLeft: spacing.sm,
+                backgroundColor: colors.success + '26',
                 borderRadius: radius.sm,
                 paddingVertical: 12 * sc,
-                paddingHorizontal: spacing.lg,
+                paddingHorizontal: spacing.md,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
               onPress={handleSent}
             >
-              <Text style={{ fontSize: 15 * sc, fontWeight: '600', color: colors.white }}>
+              <Text style={{ fontSize: 14 * sc, fontWeight: '600', color: colors.success }}>
                 {sent ? 'Sent! ✓' : 'I sent it ✓'}
               </Text>
             </TouchableOpacity>
@@ -315,10 +305,15 @@ export default function ShareGuideModal({ visible, onClose, shareLink }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  overlayDesktop: {
+    justifyContent: 'center',
   },
   sheet: {
+    width: '100%',
     backgroundColor: colors.surface,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
@@ -327,16 +322,23 @@ const styles = StyleSheet.create({
       ? { boxShadow: '0 -8px 32px rgba(0,0,0,0.15)' }
       : { shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 20 }),
   },
+  sheetDesktop: {
+    maxWidth: 560,
+    borderRadius: radius.xl,
+  },
   sheetHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   closeBtn: { padding: 8 },
   scroll: { flex: 1 },
+  footer: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
 });
