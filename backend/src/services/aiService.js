@@ -5,8 +5,11 @@
 // ================================================
 
 import Anthropic from '@anthropic-ai/sdk';
+import { createHash } from 'crypto';
 import fs from 'fs';
 import path from 'path';
+
+import { parseMasterPrompt, buildPromptForSession, validateFinalPrompt } from './promptParser.js';
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -26,11 +29,15 @@ const TOKEN_COST = {
   'claude-sonnet-4-6':         { input: 0.000003,   output: 0.000015 },
 };
 
+// Feature flag: master.txt 기반 프롬프트 사용 여부 (기본값 false)
+const USE_MASTER_PROMPT = process.env.USE_MASTER_PROMPT === 'true';
+
 
 // ------------------------------------------------
 // 프롬프트 파일 로드 (모듈 로드 시 1회 캐싱)
 // ------------------------------------------------
 const PROMPTS_DIR = path.join(new URL('.', import.meta.url).pathname, '../../../server/prompts');
+const MASTER_PROMPT_PATH = path.join(PROMPTS_DIR, 'master.txt');
 
 function readPromptFile(filename) {
   const filePath = path.join(PROMPTS_DIR, filename);
@@ -40,25 +47,21 @@ function readPromptFile(filename) {
   return fs.readFileSync(filePath, 'utf-8');
 }
 
+// 기존 방식 캐시 — 절대 제거 금지
 const CACHED_PROMPTS = {
   base:     readPromptFile('base.txt'),
   session1: readPromptFile('session1.txt'),
 };
 
+// master.txt 기반 파싱 캐시 (키: `${hash}:${sessionType}`)
+const PROMPT_CACHE = new Map();
+
 
 // ------------------------------------------------
-// 프롬프트 조립 (PRD 14.2 - 4단계 조립)
-// 1. 공통 베이스
-// 2. 세션별 규칙
-// 3. 유저 입력 컨텍스트
-// 4. 동적 지시 (재생성 시)
+// 컨텍스트 블록 빌더 (공통 유틸)
 // ------------------------------------------------
-function assemblePrompt(sessionType, inputContext, dynamicInstructions = '') {
-  const basePrompt    = CACHED_PROMPTS.base;
-  const sessionPrompt = CACHED_PROMPTS[`session${sessionType}`];
-  if (!sessionPrompt) throw new Error(`프롬프트 없음: session${sessionType}`);
-
-  const contextBlock = `
+function buildContextBlock(inputContext) {
+  return `
 <user_context>
 <business_summary>
 ${inputContext.business_summary}
@@ -78,14 +81,131 @@ ${inputContext.additional_instructions}
 </additional_instructions>
 ` : ''}
 </user_context>`.trim();
+}
 
+
+// ------------------------------------------------
+// master.txt 기반 시스템 프롬프트 조회 (캐시 포함)
+// 캐시 키: `${masterFileHash}:${sessionType}`
+// masterFileHash: sha256(master.txt) 앞 12자리
+// ------------------------------------------------
+async function getSystemPrompt({ sessionType }) {
+  if (!sessionType) {
+    throw new Error('[promptParser] getSystemPrompt: sessionType 누락');
+  }
+
+  if (!fs.existsSync(MASTER_PROMPT_PATH)) {
+    throw new Error(`master.txt 없음: ${MASTER_PROMPT_PATH}`);
+  }
+
+  const masterText = fs.readFileSync(MASTER_PROMPT_PATH, 'utf-8');
+
+  const masterFileHash = createHash('sha256')
+    .update(masterText)
+    .digest('hex')
+    .slice(0, 12);
+
+  const cacheKey = `${masterFileHash}:${sessionType}`;
+  const wasCacheHit = PROMPT_CACHE.has(cacheKey);
+
+  if (!wasCacheHit) {
+    const rules = parseMasterPrompt(masterText);
+    const prompt = buildPromptForSession(rules, sessionType);
+    validateFinalPrompt(prompt);
+    PROMPT_CACHE.set(cacheKey, { prompt, rules });
+  }
+
+  const { prompt, rules } = PROMPT_CACHE.get(cacheKey);
+
+  // [PROMPT BUILD] 적용 규칙 로깅 (Step 6)
+  const sessionTag = `session_${sessionType}`;
+  const filteredRules = rules.filter(r =>
+    r.tags.includes('all') || r.tags.includes(sessionTag)
+  );
+  console.log('[PROMPT BUILD]', {
+    sessionType,
+    ruleCount: filteredRules.length,
+    ruleIds: filteredRules.map(r => r.line),
+    promptLength: prompt.length,
+    cacheHit: wasCacheHit,
+  });
+
+  return prompt;
+}
+
+
+// ------------------------------------------------
+// 프롬프트 조립 (PRD 14.2 - 4단계 조립)
+// 1. 공통 베이스 (시스템 프롬프트)
+// 2. 세션별 규칙
+// 3. 유저 입력 컨텍스트
+// 4. 동적 지시 (재생성 시)
+//
+// USE_MASTER_PROMPT=true  → master.txt 기반
+// USE_MASTER_PROMPT=false → 기존 base.txt + sessionN.txt 방식 (기본값)
+// ------------------------------------------------
+async function assemblePrompt(sessionType, inputContext, dynamicInstructions = '') {
+  const contextBlock = buildContextBlock(inputContext);
   const dynamicBlock = dynamicInstructions
     ? `\n<dynamic_instructions>\n${dynamicInstructions}\n</dynamic_instructions>`
     : '';
 
-  return [basePrompt, sessionPrompt, contextBlock, dynamicBlock]
-    .filter(Boolean)
-    .join('\n\n---\n\n');
+  // 기존 방식 (old path) — 절대 제거 금지
+  function _assembleOldPath() {
+    const basePrompt    = CACHED_PROMPTS.base;
+    const sessionPrompt = CACHED_PROMPTS[`session${sessionType}`];
+    if (!sessionPrompt) throw new Error(`프롬프트 없음: session${sessionType}`);
+    return [basePrompt, sessionPrompt, contextBlock, dynamicBlock]
+      .filter(Boolean)
+      .join('\n\n---\n\n');
+  }
+
+  // 신규 방식 (new path)
+  async function _assembleNewPath() {
+    const systemPrompt = await getSystemPrompt({ sessionType });
+    return [systemPrompt, contextBlock, dynamicBlock]
+      .filter(Boolean)
+      .join('\n\n---\n\n');
+  }
+
+  if (USE_MASTER_PROMPT) {
+    const result = await _assembleNewPath();
+
+    // [PROMPT DIFF] 개발 환경 diff 비교 (Step 5)
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const oldPrompt = _assembleOldPath();
+        if (oldPrompt !== result) {
+          console.warn('[PROMPT DIFF]', {
+            sessionType,
+            oldLength: oldPrompt.length,
+            newLength: result.length,
+          });
+        }
+      } catch (_) { /* session 2/3/4 는 old cache 미존재 */ }
+    }
+
+    return result;
+  }
+
+  // Default: 기존 방식
+  const result = _assembleOldPath();
+
+  // [PROMPT DIFF] 개발 환경 diff 비교 (Step 5)
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      const newPrompt = await _assembleNewPath();
+      if (result !== newPrompt) {
+        console.warn('[PROMPT DIFF]', {
+          sessionType,
+          oldLength: result.length,
+          newLength: newPrompt.length,
+        });
+      }
+    } catch (_) { /* master.txt 미존재 또는 파싱 오류 */ }
+  }
+
+  return result;
 }
 
 
@@ -141,7 +261,7 @@ function parseJSON(rawText) {
 // 질문 생성 메인 함수 (폴백 포함, PRD 14.3)
 // ------------------------------------------------
 async function generateQuestions(sessionType, inputContext, dynamicInstructions = '') {
-  const systemPrompt  = assemblePrompt(sessionType, inputContext, dynamicInstructions);
+  const systemPrompt  = await assemblePrompt(sessionType, inputContext, dynamicInstructions);
   const userMessage = 'Generate interview questions following the instructions above. Output JSON only.';
 
   // 1차 시도: Primary 모델 (Haiku)
