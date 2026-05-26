@@ -442,7 +442,7 @@ export default function CreateScreen({ navigation }) {
             )}
             {/* 입력 폼 — 숨김 시 안 보임 */}
             {leftVisible && (
-              <View style={!isDesktop && { flex: 1 }}>
+              <View style={{ flex: 1 }}>
               {/* 모바일 전용: 아이콘 버튼 행 */}
               {!isDesktop && (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
@@ -457,9 +457,10 @@ export default function CreateScreen({ navigation }) {
                 </View>
               )}
               <ScrollView
-                contentContainerStyle={styles.formScroll}
+                contentContainerStyle={[styles.formScroll, { paddingBottom: spacing.xxl }]}
                 keyboardShouldPersistTaps="handled"
-                style={{ opacity: leftVisible ? 1 : 0 }}
+                showsVerticalScrollIndicator={isDesktop}
+                style={{ flex: 1, opacity: leftVisible ? 1 : 0 }}
               >
                 <View style={styles.formHeader}>
                   <Text style={styles.formTitle}>Interview Prep</Text>
@@ -562,27 +563,15 @@ export default function CreateScreen({ navigation }) {
                   />
                 </Field>
 
-                {/* CTA */}
-                {isDesktop && (
-                  <GradientButton
-                    label={isLoading ? 'Creating...' : mode === 'questions' ? '✦ Regenerate' : '✦ Generate Questions'}
-                    onPress={handleGenerate}
-                    disabled={!canSubmit || isLoading || isGenerating}
-                    loading={isLoading}
-                    style={{ marginTop: spacing.sm }}
-                  />
-                )}
               </ScrollView>
-              {!isDesktop && (
-                <View style={{ padding: spacing.lg, paddingTop: 0 }}>
-                  <GradientButton
-                    label={isLoading ? 'Creating...' : mode === 'questions' ? '✦ Regenerate' : '✦ Generate Questions'}
-                    onPress={handleGenerate}
-                    disabled={!canSubmit || isLoading || isGenerating}
-                    loading={isLoading}
-                  />
-                </View>
-              )}
+              <View style={{ padding: spacing.lg, paddingTop: 0 }}>
+                <GradientButton
+                  label={isLoading ? 'Creating...' : mode === 'questions' ? '✦ Regenerate' : '✦ Generate Questions'}
+                  onPress={handleGenerate}
+                  disabled={!canSubmit || isLoading || isGenerating}
+                  loading={isLoading}
+                />
+              </View>
               </View>
             )}
           </Animated.View>
