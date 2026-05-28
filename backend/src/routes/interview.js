@@ -1029,6 +1029,7 @@ router.post('/:token/chat', async (req, res) => {
     let isCompleted = false;
     let decision;
     let sectionSummaryForTransition = null; // transition 시 한 번만 조회
+    let responseType = 'normal';
 
     if (exitSignal === 'hard_stop' || state.current_section === 'wrap_up') {
       decision = { action: 'wrap_up' };
@@ -1074,7 +1075,7 @@ router.post('/:token/chat', async (req, res) => {
       const claudeResult = await callClaudeForTurn(systemPrompt, recentTurns);
 
       // 2. response_type 예외 처리 (서버 오버라이드)
-      let responseType = claudeResult.response_type || 'normal';
+      responseType = claudeResult.response_type || 'normal';
 
       // 응답자 메시지가 명확한 의문문이면 participant_question으로 강제
       const isUserQuestion = (
