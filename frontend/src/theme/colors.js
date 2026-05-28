@@ -2,8 +2,8 @@
 // Nitor8 디자인 시스템 — 컬러 토큰 (확정)
 
 export const lightColors = {
-  background:    '#E9EEF2',
-  surface:       '#F2FAFA',
+  background:    '#FAFBFC',
+  surface:       '#E9EEF2',
   textPrimary:   '#141924',
   textSecondary: '#49546B',
   primary:       '#A8BAD9',
@@ -15,15 +15,15 @@ export const lightColors = {
   white:         '#FFFFFF',
   overlay:       'rgba(0,0,0,0.4)',
 
-  // 시맨틱
-  error:   '#FF5252',
-  success: '#66BB6A',
-  warning: '#FFA726',
+  // 시맨틱 (브랜드 팔레트로 재매핑)
+  error:   '#E0B7C6',
+  success: '#FF8A80',
+  warning: '#A8BAD9',
 };
 
 export const darkColors = {
-  background:    '#1E1E1E',
-  surface:       '#2A2A2A',
+  background:    '#1A1C20',
+  surface:       '#1E1E1E',
   textPrimary:   '#F0F0F0',
   textSecondary: '#A0A0A0',
   primary:       '#7A8DB3',
@@ -35,9 +35,9 @@ export const darkColors = {
   white:         '#FFFFFF',
   overlay:       'rgba(0,0,0,0.6)',
 
-  error:   '#FF5252',
-  success: '#66BB6A',
-  warning: '#FFA726',
+  error:   '#C89EB0',
+  success: '#FFAAA0',
+  warning: '#7A8DB3',
 };
 
 // Phase 1: 라이트 모드만 사용

@@ -9,6 +9,7 @@ import interviewRouter from './routes/interview.js';
 import reportsRouter from './routes/reports.js';
 import adminRouter from './routes/admin.js';
 import analyticsRouter from './routes/analytics.js';
+import statsRouter from './routes/stats.js';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -92,6 +93,7 @@ app.use('/api/interview', interviewRouter);                  // 응답자용 공
 app.use('/api/reports', reportsRouter);                     // 리포트 조회
 app.use('/api/admin', adminRouter);                         // 어드민 (Basic Auth)
 app.use('/api/analytics', analyticsRouter);                 // 애널리틱스 이벤트
+app.use('/api/stats', statsRouter);                         // 공개 통계
 
 // ─────────────────────────────────────────
 // 헬스체크
