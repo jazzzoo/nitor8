@@ -233,44 +233,4 @@ router.get('/sessions', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────────
-// GET /api/admin/feedback-summary
-// exit_intent_response + intro_feedback 이벤트 집계
-// ─────────────────────────────────────────────────────────────────
-router.get('/feedback-summary', async (req, res) => {
-  try {
-    const exitIntentResult = await query(
-      `SELECT event_data->>'choice' AS choice, COUNT(*)::int AS count
-       FROM analytics_events
-       WHERE event_type = 'exit_intent_response'
-       GROUP BY event_data->>'choice'
-       ORDER BY count DESC`
-    );
-
-    const introFeedbackResult = await query(
-      `SELECT event_data->>'message' AS message, created_at
-       FROM analytics_events
-       WHERE event_type = 'intro_feedback'
-         AND event_data->>'message' IS NOT NULL
-         AND event_data->>'message' <> ''
-       ORDER BY created_at DESC
-       LIMIT 100`
-    );
-
-    return res.json({
-      success: true,
-      data: {
-        exit_intent: exitIntentResult.rows,
-        intro_feedback: introFeedbackResult.rows,
-      },
-    });
-  } catch (err) {
-    console.error('[Admin] GET /feedback-summary error:', err.message);
-    return res.status(500).json({
-      success: false,
-      error: { code: 'INTERNAL_ERROR', message: '요약 조회 중 오류가 발생했습니다.' },
-    });
-  }
-});
-
 export default router;

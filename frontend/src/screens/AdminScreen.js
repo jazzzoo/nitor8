@@ -40,7 +40,7 @@ async function adminGet(path, credentials) {
   return json;
 }
 
-const TABS = ['Interviews', 'Chat Logs', 'Report', 'Sessions', 'Feedback'];
+const TABS = ['Interviews', 'Chat Logs', 'Report', 'Sessions'];
 
 const STATUS_COLOR = {
   active:    colors.primary,
@@ -87,10 +87,6 @@ export default function AdminScreen({ navigation }) {
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionsError, setSessionsError]     = useState(null);
 
-  const [feedbackSummary, setFeedbackSummary]               = useState(null);
-  const [feedbackSummaryLoading, setFeedbackSummaryLoading] = useState(false);
-  const [feedbackSummaryError, setFeedbackSummaryError]     = useState(null);
-
   useFocusEffect(
     React.useCallback(() => {
       if (typeof document !== 'undefined') document.title = 'Nitor8 Admin';
@@ -104,7 +100,6 @@ export default function AdminScreen({ navigation }) {
   useEffect(() => {
     if (authed && activeTab === 'Report' && report === undefined) loadReport();
     if (authed && activeTab === 'Sessions' && sessions.length === 0 && !sessionsLoading) loadSessions();
-    if (authed && activeTab === 'Feedback' && !feedbackSummary && !feedbackSummaryLoading) loadFeedbackSummary();
   }, [activeTab, authed]);
 
   useEffect(() => {
@@ -232,19 +227,6 @@ export default function AdminScreen({ navigation }) {
       setSessionsError(err.message);
     } finally {
       setSessionsLoading(false);
-    }
-  }
-
-  async function loadFeedbackSummary() {
-    setFeedbackSummaryLoading(true);
-    setFeedbackSummaryError(null);
-    try {
-      const res = await adminGet('/api/admin/feedback-summary', credentials);
-      setFeedbackSummary(res.data || { exit_intent: [], intro_feedback: [] });
-    } catch (err) {
-      setFeedbackSummaryError(err.message);
-    } finally {
-      setFeedbackSummaryLoading(false);
     }
   }
 
@@ -444,70 +426,6 @@ export default function AdminScreen({ navigation }) {
             )}
             {!reportLoading && !reportError && report && (
               <CompletedAggregateReport report={report} />
-            )}
-          </View>
-        )}
-
-        {/* ── 탭 5: Feedback ── */}
-        {activeTab === 'Feedback' && (
-          <View>
-            <View style={styles.tabHeader}>
-              <Text style={styles.tabHeadline}>Intro Feedback</Text>
-              <TouchableOpacity onPress={() => { setFeedbackSummary(null); loadFeedbackSummary(); }} style={styles.refreshBtn}>
-                <Text style={styles.refreshText}>↻ Refresh</Text>
-              </TouchableOpacity>
-            </View>
-
-            {feedbackSummaryLoading && (
-              <View style={styles.centered}>
-                <ActivityIndicator color={colors.primary} />
-              </View>
-            )}
-            {feedbackSummaryError && (
-              <Text style={styles.errorText}>{feedbackSummaryError}</Text>
-            )}
-
-            {!feedbackSummaryLoading && !feedbackSummaryError && feedbackSummary && (
-              <View style={{ gap: spacing.md }}>
-                {/* Exit Intent 응답 */}
-                <View style={styles.listCard}>
-                  <Text style={[styles.respondentName, { marginBottom: spacing.sm }]}>Exit Intent Responses</Text>
-                  {feedbackSummary.exit_intent.length === 0 ? (
-                    <Text style={styles.dateText}>No responses yet.</Text>
-                  ) : (
-                    feedbackSummary.exit_intent.map((row, i) => {
-                      const total = feedbackSummary.exit_intent.reduce((s, r) => s + r.count, 0);
-                      const pct = total > 0 ? Math.round((row.count / total) * 100) : 0;
-                      return (
-                        <View key={i} style={{ marginBottom: spacing.sm }}>
-                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                            <Text style={[styles.dateText, { flex: 1 }]}>{row.choice}</Text>
-                            <Text style={[styles.metaText, { fontWeight: '700' }]}>{row.count} ({pct}%)</Text>
-                          </View>
-                          <View style={{ height: 6, backgroundColor: colors.border, borderRadius: 3 }}>
-                            <View style={{ width: `${pct}%`, height: '100%', backgroundColor: colors.primary, borderRadius: 3 }} />
-                          </View>
-                        </View>
-                      );
-                    })
-                  )}
-                </View>
-
-                {/* Intro Feedback 메시지 */}
-                <Text style={[styles.respondentName, { marginTop: spacing.sm }]}>
-                  Intro Feedback Messages ({feedbackSummary.intro_feedback.length})
-                </Text>
-                {feedbackSummary.intro_feedback.length === 0 ? (
-                  <Text style={styles.emptyText}>No feedback messages yet.</Text>
-                ) : (
-                  feedbackSummary.intro_feedback.map((row, i) => (
-                    <View key={i} style={styles.listCard}>
-                      <Text style={styles.dateText}>{row.message}</Text>
-                      <Text style={[styles.metaText, { marginTop: 4 }]}>{formatDate(row.created_at)}</Text>
-                    </View>
-                  ))
-                )}
-              </View>
             )}
           </View>
         )}
