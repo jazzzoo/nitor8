@@ -2,7 +2,7 @@
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  Platform, View, Text, ScrollView, TouchableOpacity,
+  Animated, Platform, PanResponder, View, Text, ScrollView, TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -94,11 +94,11 @@ function SurfaceCard({ children, style }) {
 // ─────────────────────────────────────────────────────────────────
 // Screenshot placeholder (빈 박스)
 // ─────────────────────────────────────────────────────────────────
-function ScreenshotPlaceholder({ label }) {
+function ScreenshotPlaceholder({ label, aspectRatio = 16 / 10 }) {
   return (
     <View style={{
       width: '100%',
-      aspectRatio: 16 / 10,
+      aspectRatio,
       backgroundColor: colors.surface,
       borderRadius: radius.xl,
       borderWidth: 1,
@@ -112,103 +112,106 @@ function ScreenshotPlaceholder({ label }) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Mock Report (Trust Section 전용)
+// How It Works 카드
 // ─────────────────────────────────────────────────────────────────
-const SAMPLE_REPORT = {
-  problem_verdict:    'confirmed',
-  respondent_context: 'Product Manager · B2B SaaS · New York',
-  top_pains: [
-    { title: 'Communication clarity gap',           quote: 'I never know if they actually understood what I need', frequency: 'high'   },
-    { title: 'Project delays from miscommunication', quote: 'Last quarter we delayed a launch by 3 weeks',          frequency: 'medium' },
-  ],
-  current_workarounds: ['Hiring local project managers', 'Over-documenting every requirement'],
-  next_actions: ['Focus messaging on async clarity', 'Build status visibility as core feature'],
-};
-
-function RVerdictBadge({ status }) {
-  const cfg = {
-    confirmed: { bg: colors.primary,    color: colors.white,         label: 'Confirmed' },
-    mixed:     { bg: colors.primaryMid, color: colors.white,         label: 'Mixed'     },
-    rejected:  { bg: colors.border,     color: colors.textSecondary, label: 'Rejected'  },
-  };
-  const c = cfg[status] || cfg.mixed;
+function StepCard({ step }) {
   return (
-    <View style={{ backgroundColor: c.bg, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start' }}>
-      <Text style={{ fontSize: 11, fontWeight: '700', color: c.color }}>✓ {c.label}</Text>
+    <View style={{
+      width: 200,
+      height: 280,
+      backgroundColor: colors.primaryEnd,
+      borderRadius: radius.xl,
+      position: 'relative',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      padding: spacing.md,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.12,
+      shadowRadius: 16,
+      elevation: 8,
+    }}>
+      {/* 숫자 배지 — 좌측 상단 */}
+      <View style={{
+        position: 'absolute',
+        top: 12,
+        left: 12,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: colors.white,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textPrimary }}>{step.num}</Text>
+      </View>
+
+      {/* 텍스트 — 하단 중앙 */}
+      <View style={{ width: '100%', alignItems: 'center' }}>
+        <Text style={{
+          fontSize: 14,
+          fontWeight: '700',
+          color: colors.white,
+          textAlign: 'center',
+          marginBottom: spacing.xs,
+        }}>
+          {step.title}
+        </Text>
+        <Text style={{
+          fontSize: 12,
+          color: colors.white,
+          lineHeight: 18,
+          textAlign: 'center',
+          opacity: 0.9,
+        }}>
+          {step.body}
+        </Text>
+      </View>
     </View>
   );
 }
 
-function RFreqBadge({ freq }) {
-  const isHigh = freq === 'high';
-  return (
-    <View style={{ backgroundColor: isHigh ? colors.primary : colors.surface, borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 2, borderWidth: 1, borderColor: isHigh ? colors.primary : colors.border, alignSelf: 'flex-start' }}>
-      <Text style={{ fontSize: 10, fontWeight: '600', color: isHigh ? colors.white : colors.textSecondary }}>{freq}</Text>
-    </View>
-  );
-}
+// ─────────────────────────────────────────────────────────────────
+// Data
+// ─────────────────────────────────────────────────────────────────
+const HOW_IT_WORKS = [
+  {
+    num: '1',
+    title: 'Describe your product',
+    body: 'Enter your product and target customer in your own language.',
+  },
+  {
+    num: '2',
+    title: 'Generate & share',
+    body: 'Get AI questions and share your link with potential customers.',
+  },
+  {
+    num: '3',
+    title: 'Get your report',
+    body: 'Nitor runs the English interview. You get a structured report.',
+  },
+];
 
-function MockReport() {
-  return (
-    <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
-      <ScrollView style={{ maxHeight: 460 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.md }}>
-
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm }}>
-          <View style={{ flex: 1, marginRight: spacing.sm }}>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>Interview Report</Text>
-            <Text style={{ fontSize: 11, color: colors.textDisabled, marginTop: 2 }}>{SAMPLE_REPORT.respondent_context}</Text>
-          </View>
-          <RVerdictBadge status={SAMPLE_REPORT.problem_verdict} />
-        </View>
-
-        <View style={{ height: 1, backgroundColor: colors.border, marginBottom: spacing.sm }} />
-
-        <View style={{ marginBottom: spacing.sm }}>
-          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>Evidence Level</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-            <View style={{ flex: 1, height: 5, backgroundColor: colors.border, borderRadius: 3 }}>
-              <View style={{ width: '88%', height: '100%', borderRadius: 3, backgroundColor: colors.primary }} />
-            </View>
-            <Text style={{ fontSize: 10, fontWeight: '600', color: colors.primary }}>High</Text>
-          </View>
-        </View>
-
-        <View style={{ marginBottom: spacing.sm }}>
-          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>Top Pain Points</Text>
-          {SAMPLE_REPORT.top_pains.map((pain, i) => (
-            <View key={i} style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryEnd, paddingLeft: spacing.sm, paddingVertical: spacing.xs, marginBottom: spacing.xs, backgroundColor: colors.background, borderRadius: radius.sm }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, flex: 1, marginRight: spacing.xs }}>{pain.title}</Text>
-                <RFreqBadge freq={pain.frequency} />
-              </View>
-              <Text style={{ fontSize: 11, fontStyle: 'italic', color: colors.textSecondary, lineHeight: 16 }}>"{pain.quote}"</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={{ marginBottom: spacing.sm }}>
-          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>Current Workarounds</Text>
-          {SAMPLE_REPORT.current_workarounds.map((w, i) => (
-            <View key={i} style={{ borderLeftWidth: 2, borderLeftColor: colors.primary, paddingLeft: spacing.sm, paddingVertical: 2, marginBottom: 4 }}>
-              <Text style={{ fontSize: 11, color: colors.textSecondary }}>{w}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View>
-          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>Next Actions</Text>
-          {SAMPLE_REPORT.next_actions.map((a, i) => (
-            <View key={i} style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: 4 }}>
-              <Text style={{ fontSize: 11, color: colors.primaryEnd, fontWeight: '700' }}>→</Text>
-              <Text style={{ fontSize: 11, color: colors.textSecondary, flex: 1, lineHeight: 16 }}>{a}</Text>
-            </View>
-          ))}
-        </View>
-
-      </ScrollView>
-    </SurfaceCard>
-  );
-}
+const PRODUCT_TABS = [
+  {
+    title: 'Question List',
+    desc: 'Describe your product and target customer. Get AI-generated Lean-style interview questions.',
+    link: 'Try it yourself →',
+    placeholder: '[ Question List Screenshot ]',
+  },
+  {
+    title: 'AI Interview',
+    desc: 'Share the link. Nitor conducts the English interview automatically. No live call needed.',
+    link: 'See how it works →',
+    placeholder: '[ Interview Screenshot ]',
+  },
+  {
+    title: 'Your Report',
+    desc: 'Receive a structured Lean-style report in your language. Problem verdict, pain points, evidence quotes.',
+    link: 'View sample report →',
+    placeholder: '[ Report Screenshot ]',
+  },
+];
 
 // ─────────────────────────────────────────────────────────────────
 // Main Component
@@ -220,15 +223,39 @@ export default function IntroScreen({ navigation }) {
 
   const [showBetaModal, setShowBetaModal] = useState(false);
   const [stats, setStats]                 = useState({ questionLists: null, interviews: null, reports: null, betaUsers: null });
-  const [activeTab, setActiveTab]         = useState('Question List');
+  const [activeTab, setActiveTab]         = useState(0);
 
   const scrollRef     = useRef(null);
   const howItWorksRef = useRef(null);
   const [howItWorksY, setHowItWorksY] = useState(0);
 
-  // 내비게이션 헤더 숨김 (이중 NavBar 방지)
+  // 섹션3 슬라이드 애니메이션
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+
+  // PanResponder — 드래그 50px 이상이면 탭 전환
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderRelease: (_, g) => {
+        if (Math.abs(g.dx) <= 50) return;
+        const dir = g.dx < 0 ? 1 : 2;
+        Animated.timing(tabOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+          setActiveTab(prev => (prev + dir) % 3);
+          Animated.timing(tabOpacity, { toValue: 1, duration: 400, useNativeDriver: true }).start();
+        });
+      },
+    })
+  ).current;
+
+  // 3초 자동 슬라이드
   useEffect(() => {
-    navigation.setOptions({ headerShown: false });
+    const id = setInterval(() => {
+      Animated.timing(tabOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+        setActiveTab(prev => (prev + 1) % 3);
+        Animated.timing(tabOpacity, { toValue: 1, duration: 400, useNativeDriver: true }).start();
+      });
+    }, 3000);
+    return () => clearInterval(id);
   }, []);
 
   useFocusEffect(
@@ -316,21 +343,6 @@ export default function IntroScreen({ navigation }) {
     );
   }
 
-  const PRODUCT_TABS = {
-    'Question List': {
-      desc: 'Describe your product and target customer. Get AI-generated Lean-style interview questions. Edit and regenerate until they feel right.',
-      placeholder: '[ Question List Screenshot ]',
-    },
-    'Interview': {
-      desc: "Share a unique link with your customer. Nitor runs the full English interview — questions, follow-ups, probing deeper — so you don't have to.",
-      placeholder: '[ Interview Screenshot ]',
-    },
-    'Report': {
-      desc: 'Every completed interview generates a structured report: problem verdict, evidence level, top pain points with quotes, and next actions.',
-      placeholder: '[ Report Screenshot ]',
-    },
-  };
-
   const betaProgress = stats.betaUsers !== null
     ? Math.min(Math.round((stats.betaUsers / 100) * 100), 100)
     : 0;
@@ -348,27 +360,9 @@ export default function IntroScreen({ navigation }) {
           contentContainerStyle={{ paddingBottom: 0 }}
         >
 
-          {/* ── 1. NAVBAR ─────────────────────────────────────── */}
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
-            paddingVertical: spacing.md,
-            backgroundColor: colors.background,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-              <LogoMark size={26} />
-              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.3 }}>
-                Nitor8
-              </Text>
-            </View>
-          </View>
-
-          {/* ── 2. HERO ───────────────────────────────────────── */}
+          {/* ── 1. HERO ───────────────────────────────────────── */}
           <AnimatedSection style={{
-            paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
+            paddingHorizontal: isDesktop ? spacing.lg : spacing.sm,
             paddingTop: isDesktop ? 96 : 64,
             paddingBottom: isDesktop ? 96 : 64,
             maxWidth: MAX_W + 200,
@@ -378,7 +372,7 @@ export default function IntroScreen({ navigation }) {
             <View style={{
               flexDirection: isDesktop ? 'row' : 'column',
               alignItems: isDesktop ? 'center' : 'flex-start',
-              gap: isDesktop ? spacing.xxl : spacing.xl,
+              gap: isDesktop ? spacing.xl : spacing.xl,
             }}>
               {/* Copy */}
               <View style={{ flex: 1 }}>
@@ -398,7 +392,7 @@ export default function IntroScreen({ navigation }) {
                   marginBottom: spacing.xl,
                   color: colors.textPrimary,
                 }}>
-                  {"Go from 'I should\ntalk to customers'\nto a real interview link."}
+                  {"Go from 'I should talk to customers'\nto a real interview link."}
                 </GradientText>
 
                 <Text style={{
@@ -425,11 +419,11 @@ export default function IntroScreen({ navigation }) {
                       borderWidth: 1,
                       borderColor: colors.border,
                       borderRadius: radius.md,
-                      paddingVertical: 12,
-                      paddingHorizontal: spacing.lg,
+                      paddingVertical: 16,
+                      paddingHorizontal: 24,
                     }}
                   >
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
+                    <Text style={{ fontSize: 22, fontWeight: '600', color: colors.textSecondary }}>
                       See how it works
                     </Text>
                   </TouchableOpacity>
@@ -440,17 +434,20 @@ export default function IntroScreen({ navigation }) {
                 </Text>
               </View>
 
-              {/* Visual: 빈 박스 플레이스홀더 */}
+              {/* Visual: 1.5× 높이 플레이스홀더 */}
               <View style={{
                 flex: isDesktop ? 1 : undefined,
                 width: isDesktop ? undefined : '100%',
               }}>
-                <ScreenshotPlaceholder label="[ Interview Questions Preview ]" />
+                <ScreenshotPlaceholder
+                  label="[ Interview Questions Preview ]"
+                  aspectRatio={16 / 15}
+                />
               </View>
             </View>
           </AnimatedSection>
 
-          {/* ── 3. BETA TRUST STRIP ───────────────────────────── */}
+          {/* ── 2. BETA TRUST STRIP ───────────────────────────── */}
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
             paddingVertical: isDesktop ? 80 : 64,
@@ -495,7 +492,7 @@ export default function IntroScreen({ navigation }) {
             </View>
           </AnimatedSection>
 
-          {/* ── 4. HOW IT WORKS ───────────────────────────────── */}
+          {/* ── 3. HOW IT WORKS ───────────────────────────────── */}
           <View
             ref={howItWorksRef}
             onLayout={e => setHowItWorksY(e.nativeEvent.layout.y)}
@@ -506,136 +503,108 @@ export default function IntroScreen({ navigation }) {
             }}>
               <View style={{ maxWidth: MAX_W, alignSelf: 'center', width: '100%' }}>
                 <Text style={{
-                  fontSize: isDesktop ? 40 : 28,
+                  fontSize: isDesktop ? 28 : 22,
                   fontWeight: '700',
                   color: colors.textPrimary,
-                  textAlign: 'center',
-                  marginBottom: spacing.sm,
+                  marginBottom: spacing.xxl,
                 }}>
-                  How it works
-                </Text>
-                <Text style={{ fontSize: 18, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xxl }}>
-                  Three steps. No English required.
+                  Just Three Steps. No English Required.
                 </Text>
 
-                <View style={{
-                  flexDirection: isDesktop ? 'row' : 'column',
-                  gap: isDesktop ? 0 : spacing.xl,
-                  alignItems: 'flex-start',
-                }}>
-                  {[
-                    {
-                      accent: colors.primary,
-                      title: 'Describe your product',
-                      body:  'Enter your product and target customer in your own language.',
-                    },
-                    {
-                      accent: colors.primaryMid,
-                      title: 'Generate & share',
-                      body:  'Get AI interview questions and share your link with potential customers.',
-                    },
-                    {
-                      accent: colors.primaryEnd,
-                      title: 'Get your report',
-                      body:  'Nitor conducts the English interview. You receive a structured report.',
-                    },
-                  ].map((step, i) => (
-                    <View key={i} style={{ flex: 1, alignItems: 'center', paddingHorizontal: isDesktop ? spacing.xl : 0 }}>
-                      {isDesktop && i < 2 && (
-                        <View style={{ position: 'absolute', top: 22, right: -spacing.sm, left: '50%', height: 1, backgroundColor: colors.border }} />
-                      )}
-                      <View style={{ width: 44, height: 44, borderRadius: radius.full, backgroundColor: step.accent, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md }}>
-                        <Text style={{ fontSize: 18, color: colors.white, fontWeight: '700' }}>✦</Text>
-                      </View>
-                      <Text style={{ fontSize: 18, fontWeight: '600', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.xs }}>
-                        {step.title}
-                      </Text>
-                      <Text style={{ fontSize: 15, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 }}>
-                        {step.body}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
+                {isDesktop ? (
+                  <View style={{ flexDirection: 'row', gap: spacing.xl, alignItems: 'flex-start' }}>
+                    {HOW_IT_WORKS.map((step, i) => (
+                      <StepCard key={i} step={step} />
+                    ))}
+                  </View>
+                ) : (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: spacing.md, paddingRight: spacing.md }}
+                  >
+                    {HOW_IT_WORKS.map((step, i) => (
+                      <StepCard key={i} step={step} />
+                    ))}
+                  </ScrollView>
+                )}
               </View>
             </AnimatedSection>
           </View>
 
-          {/* ── 5. PRODUCT PREVIEW ────────────────────────────── */}
+          {/* ── 4. PRODUCT PREVIEW ────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
             paddingVertical: isDesktop ? 80 : 64,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.background,
           }}>
             <View style={{ maxWidth: MAX_W, alignSelf: 'center', width: '100%' }}>
               <Text style={{
-                fontSize: isDesktop ? 40 : 28,
+                fontSize: isDesktop ? 28 : 22,
                 fontWeight: '700',
                 color: colors.textPrimary,
-                textAlign: 'center',
-                marginBottom: spacing.sm,
+                marginBottom: spacing.xxl,
               }}>
-                See it in action
-              </Text>
-              <Text style={{ fontSize: 18, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl }}>
                 From questions to report — in minutes.
               </Text>
 
-              {/* Tab bar */}
-              <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: spacing.xl }}>
-                {['Question List', 'Interview', 'Report'].map(tab => (
-                  <TouchableOpacity
-                    key={tab}
-                    onPress={() => setActiveTab(tab)}
-                    activeOpacity={0.7}
-                    style={{
-                      paddingVertical: spacing.sm,
-                      paddingHorizontal: isDesktop ? spacing.lg : spacing.md,
-                      borderBottomWidth: 2,
-                      borderBottomColor: activeTab === tab ? colors.primary : 'transparent',
-                      marginBottom: -1,
-                    }}
-                  >
-                    <Text style={{
-                      fontSize: 14,
-                      fontWeight: activeTab === tab ? '600' : '400',
-                      color: activeTab === tab ? colors.textPrimary : colors.textSecondary,
-                    }}>
-                      {tab}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {/* Tab content */}
               <View style={{
                 flexDirection: isDesktop ? 'row' : 'column',
                 gap: isDesktop ? spacing.xxl : spacing.xl,
                 alignItems: isDesktop ? 'center' : 'stretch',
               }}>
-                {/* Left: description */}
+                {/* 좌측: 설명 텍스트 */}
                 <View style={{ flex: 1, justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.sm }}>
-                    {activeTab}
-                  </Text>
-                  <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 28, marginBottom: spacing.lg }}>
-                    {PRODUCT_TABS[activeTab]?.desc}
-                  </Text>
-                  <TouchableOpacity onPress={handleCTA} activeOpacity={0.8} style={{ alignSelf: 'flex-start' }}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.primary }}>
-                      Try it yourself →
+                  <Animated.View style={{ opacity: tabOpacity }}>
+                    <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.sm }}>
+                      {PRODUCT_TABS[activeTab].title}
                     </Text>
-                  </TouchableOpacity>
+                    <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 28, marginBottom: spacing.lg }}>
+                      {PRODUCT_TABS[activeTab].desc}
+                    </Text>
+                    <TouchableOpacity onPress={handleCTA} activeOpacity={0.8} style={{ alignSelf: 'flex-start' }}>
+                      <Text style={{ fontSize: 14, fontWeight: '600', color: colors.primary }}>
+                        {PRODUCT_TABS[activeTab].link}
+                      </Text>
+                    </TouchableOpacity>
+                  </Animated.View>
                 </View>
 
-                {/* Right: 빈 박스 플레이스홀더 */}
-                <View style={{ flex: isDesktop ? 1.4 : 1 }}>
-                  <ScreenshotPlaceholder label={PRODUCT_TABS[activeTab]?.placeholder} />
+                {/* 우측: 카드 스택 */}
+                <View style={{ flex: isDesktop ? 1.4 : 1, paddingRight: 28, paddingBottom: 20 }}>
+                  <View style={{ position: 'relative' }} {...panResponder.panHandlers}>
+                    {/* 뒤 카드 2 */}
+                    <View style={{
+                      position: 'absolute', top: 0, left: 0, right: 0,
+                      zIndex: 1,
+                      transform: [{ translateX: 24 }, { translateY: 16 }],
+                      opacity: 0.35,
+                    }}>
+                      <ScreenshotPlaceholder label="" aspectRatio={1} />
+                    </View>
+                    {/* 가운데 카드 */}
+                    <View style={{
+                      position: 'absolute', top: 0, left: 0, right: 0,
+                      zIndex: 2,
+                      transform: [{ translateX: 12 }, { translateY: 8 }],
+                      opacity: 0.6,
+                    }}>
+                      <ScreenshotPlaceholder label="" aspectRatio={1} />
+                    </View>
+                    {/* 앞 카드 (활성) */}
+                    <Animated.View style={{ zIndex: 3, opacity: tabOpacity }}>
+                      <ScreenshotPlaceholder
+                        label={PRODUCT_TABS[activeTab].placeholder}
+                        aspectRatio={1}
+                      />
+                    </Animated.View>
+                  </View>
                 </View>
               </View>
             </View>
           </AnimatedSection>
 
-          {/* ── 6. TRUST SECTION ──────────────────────────────── */}
+          {/* ── 5. TRUST SECTION ──────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
             paddingVertical: isDesktop ? 80 : 64,
@@ -650,9 +619,22 @@ export default function IntroScreen({ navigation }) {
                   What a real report looks like
                 </Text>
 
-                <MockReport />
+                {/* 리포트 플레이스홀더 */}
+                <View style={{
+                  width: '100%',
+                  minHeight: 400,
+                  backgroundColor: colors.surface,
+                  borderRadius: radius.xl,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: spacing.lg,
+                }}>
+                  <Text style={{ fontSize: 14, color: colors.placeholder }}>[ Report Screenshot ]</Text>
+                </View>
 
-                <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.lg }} />
+                <View style={{ height: 1, backgroundColor: colors.border, marginBottom: spacing.lg }} />
 
                 <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26, marginBottom: spacing.md }}>
                   <Text style={{ fontWeight: '700', color: colors.textPrimary }}>Lean-style interview questions </Text>
@@ -686,7 +668,7 @@ export default function IntroScreen({ navigation }) {
             </View>
           </AnimatedSection>
 
-          {/* ── 7. PRICING ────────────────────────────────────── */}
+          {/* ── 6. PRICING ────────────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
             paddingVertical: isDesktop ? 80 : 64,
@@ -710,7 +692,6 @@ export default function IntroScreen({ navigation }) {
 
               <SurfaceCard style={{ width: '100%', maxWidth: 560 }}>
 
-                {/* Feature grid */}
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.xl }}>
                   {[
                     'AI interview questions in English',
@@ -729,7 +710,6 @@ export default function IntroScreen({ navigation }) {
 
                 <View style={{ height: 1, backgroundColor: colors.border, marginBottom: spacing.lg }} />
 
-                {/* Beta counter */}
                 <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.sm }}>
                   {stats.betaUsers !== null
                     ? `${stats.betaUsers} / 100 beta spots taken`
@@ -748,17 +728,17 @@ export default function IntroScreen({ navigation }) {
             </View>
           </AnimatedSection>
 
-          {/* ── 8. FINAL CTA ──────────────────────────────────── */}
+          {/* ── 7. FINAL CTA ──────────────────────────────────── */}
           <AnimatedSection delay={0.1}>
             <View style={{
               backgroundColor: colors.textPrimary,
-              paddingVertical: 80,
+              paddingVertical: isDesktop ? 140 : 100,
               paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
               alignItems: 'center',
             }}>
               <Text style={{
-                fontSize: isDesktop ? 36 : 26,
-                fontWeight: '700',
+                fontSize: isDesktop ? 52 : 36,
+                fontWeight: '800',
                 color: colors.white,
                 textAlign: 'center',
                 marginBottom: spacing.sm,
@@ -774,7 +754,7 @@ export default function IntroScreen({ navigation }) {
             </View>
           </AnimatedSection>
 
-          {/* ── 9. FOOTER ─────────────────────────────────────── */}
+          {/* ── 8. FOOTER ─────────────────────────────────────── */}
           <View style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
             paddingVertical: spacing.xl,
