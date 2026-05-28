@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
 import GradientButton from '../components/GradientButton';
+import LegalModal from '../components/LegalModal';
 import LogoMark from '../components/LogoMark';
 import useStore from '../store/useStore';
 import { colors, spacing, radius } from '../theme';
@@ -226,6 +227,7 @@ export default function IntroScreen({ navigation }) {
   const [showBetaModal, setShowBetaModal] = useState(false);
   const [stats, setStats]                 = useState({ questionLists: null, interviews: null, reports: null, betaUsers: null });
   const [activeTab, setActiveTab]         = useState(0);
+  const [legalModal, setLegalModal]       = useState(null); // null | 'privacy' | 'terms'
 
   const scrollRef      = useRef(null);
   const howItWorksRef  = useRef(null);
@@ -414,7 +416,7 @@ export default function IntroScreen({ navigation }) {
 
           {/* ── 1. HERO ───────────────────────────────────────── */}
           <AnimatedSection style={{
-            paddingHorizontal: isDesktop ? spacing.xl : spacing.md,
+            paddingHorizontal: isDesktop ? spacing.md : spacing.sm,
             paddingTop: isDesktop ? 96 : 64,
             paddingBottom: isDesktop ? 96 : 64,
             maxWidth: MAX_W + 200,
@@ -453,7 +455,7 @@ export default function IntroScreen({ navigation }) {
                   lineHeight: 28,
                   marginBottom: spacing.xl,
                 }}>
-                  {'Describe your product. Get AI-generated interview questions. Share a link. Let Nitor run the English interview. Receive a report in your language.'}
+                  {'Describe your product. Get AI-generated interview questions. Share a link.\nLet Nitor run the English interview. Receive a report in your language.'}
                 </Text>
 
                 <View style={{
@@ -491,10 +493,18 @@ export default function IntroScreen({ navigation }) {
                 flex: isDesktop ? 0.8 : undefined,
                 width: isDesktop ? undefined : '100%',
               }}>
-                <ScreenshotPlaceholder
-                  label="[ Interview Questions Preview ]"
-                  aspectRatio={16 / 15}
-                />
+                <View style={{
+                  width: '100%',
+                  minHeight: 480,
+                  backgroundColor: colors.surface,
+                  borderRadius: radius.xl,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Text style={{ fontSize: 14, color: colors.placeholder }}>[ Interview Questions Preview ]</Text>
+                </View>
               </View>
             </View>
           </AnimatedSection>
@@ -685,7 +695,7 @@ export default function IntroScreen({ navigation }) {
               <View style={{ maxWidth: 720, alignSelf: 'center', width: '100%' }}>
                 <View style={{
                   width: '100%',
-                  minHeight: 500,
+                  minHeight: 700,
                   backgroundColor: colors.surface,
                   borderRadius: radius.xl,
                   borderWidth: 1,
@@ -811,11 +821,25 @@ export default function IntroScreen({ navigation }) {
               <LogoMark size={20} />
               <Text style={{ fontSize: 13, color: colors.textSecondary }}>Nitor8 © 2026</Text>
             </View>
-            <Text style={{ fontSize: 13, color: colors.textSecondary }}>@nitor8_hq on X</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, flexWrap: 'wrap' }}>
+              <TouchableOpacity onPress={() => setLegalModal('privacy')} activeOpacity={0.7}>
+                <Text style={{ fontSize: 13, color: colors.textSecondary }}>Privacy Policy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setLegalModal('terms')} activeOpacity={0.7}>
+                <Text style={{ fontSize: 13, color: colors.textSecondary }}>Terms of Service</Text>
+              </TouchableOpacity>
+              <Text style={{ fontSize: 13, color: colors.textSecondary }}>@nitor8_hq on X</Text>
+            </View>
           </View>
 
         </ScrollView>
       </SafeAreaView>
+
+      <LegalModal
+        visible={!!legalModal}
+        type={legalModal}
+        onClose={() => setLegalModal(null)}
+      />
     </>
   );
 }
