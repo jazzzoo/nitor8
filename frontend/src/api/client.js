@@ -238,7 +238,10 @@ export const interviewApi = {
     const res = await fetch(`${BASE_URL}/api/interview/${token}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({
+        content,
+        client_message_id: `${token}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      }),
     });
     return parseResponse(res);
   },

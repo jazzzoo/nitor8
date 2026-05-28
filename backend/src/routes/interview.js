@@ -354,7 +354,7 @@ function makeServerDecision(state, claudeResult, wordCount, sessionType, totalQu
   const candidateTurnCount = (state.section_turn_count || 0) + 1;
   const followupCount = state.followup_count || 0;
   const canFollowup = followupCount < config.maxFollowups;
-  const forceProbe = wordCount < 15;
+  const forceProbe = wordCount < 15 && section !== 'icebreaker';
 
   // hard_max_turns → 강제 섹션 전환
   if (candidateTurnCount >= config.hard_max_turns) {
