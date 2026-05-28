@@ -420,6 +420,7 @@ export default function IntroScreen({ navigation }) {
             maxWidth: MAX_W + 200,
             alignSelf: 'center',
             width: '100%',
+            marginTop: 32,
           }}>
             <View style={{
               flexDirection: isDesktop ? 'row' : 'column',
@@ -430,8 +431,8 @@ export default function IntroScreen({ navigation }) {
               <View style={{
                 flex: isDesktop ? 1.2 : 1,
                 paddingVertical: isDesktop ? 80 : 48,
-                paddingLeft: spacing.xl,
-                paddingRight: spacing.md,
+                paddingLeft: spacing.md,
+                paddingRight: 0,
               }}>
                 <Text style={{
                   fontSize: 11, fontWeight: '600', letterSpacing: 1.5,
@@ -452,43 +453,45 @@ export default function IntroScreen({ navigation }) {
                   {"Real customer interviews.\nNo English required."}
                 </GradientText>
 
-                <Text style={{
-                  fontSize: 16,
-                  color: colors.textSecondary,
-                  lineHeight: 28,
-                  marginBottom: spacing.xl,
-                }}>
-                  {'Describe your product. Get AI-generated interview questions. Share a link.\nLet Nitor run the English interview. Receive a report in your language.'}
-                </Text>
+                <View style={{ paddingLeft: spacing.md }}>
+                  <Text style={{
+                    fontSize: 16,
+                    color: colors.textSecondary,
+                    lineHeight: 28,
+                    marginBottom: spacing.xl,
+                  }}>
+                    {'Describe your product. Get AI-generated interview questions. Share a link.\nLet Nitor run the English interview. Receive a report in your language.'}
+                  </Text>
 
-                <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: spacing.md,
-                  flexWrap: 'wrap',
-                  marginBottom: spacing.lg,
-                }}>
-                  <GradientButton label="Start for Free →" onPress={handleCTA} />
-                  <TouchableOpacity
-                    onPress={scrollToHowItWorks}
-                    activeOpacity={0.7}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      borderRadius: radius.md,
-                      paddingVertical: 16,
-                      paddingHorizontal: 24,
-                    }}
-                  >
-                    <Text style={{ fontSize: 22, fontWeight: '600', color: colors.textSecondary }}>
-                      See how it works
-                    </Text>
-                  </TouchableOpacity>
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: spacing.md,
+                    flexWrap: 'wrap',
+                    marginBottom: spacing.lg,
+                  }}>
+                    <GradientButton label="Start for Free →" onPress={handleCTA} />
+                    <TouchableOpacity
+                      onPress={scrollToHowItWorks}
+                      activeOpacity={0.7}
+                      style={{
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        borderRadius: radius.md,
+                        paddingVertical: 16,
+                        paddingHorizontal: 24,
+                      }}
+                    >
+                      <Text style={{ fontSize: 22, fontWeight: '600', color: colors.textSecondary }}>
+                        See how it works
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                    Free beta · No account needed · Text-based interviews
+                  </Text>
                 </View>
-
-                <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-                  Free beta · No account needed · Text-based interviews
-                </Text>
               </View>
 
               {/* Visual */}
