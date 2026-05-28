@@ -8,6 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
+import { SquarePen, SendHorizontal, MessageCircleWarning } from 'lucide-react-native';
 import GradientButton from '../components/GradientButton';
 import LegalModal from '../components/LegalModal';
 import LogoMark from '../components/LogoMark';
@@ -116,6 +117,8 @@ function ScreenshotPlaceholder({ label, aspectRatio = 16 / 10 }) {
 // How It Works 카드
 // ─────────────────────────────────────────────────────────────────
 function StepCard({ step, color, isDesktop }) {
+  const Icon = step.icon;
+  const iconSize = isDesktop ? 280 - spacing.md : 240;
   return (
     <View style={{
       width: isDesktop ? 280 : '100%',
@@ -123,7 +126,7 @@ function StepCard({ step, color, isDesktop }) {
       backgroundColor: color,
       borderRadius: radius.xl,
       position: 'relative',
-      justifyContent: 'flex-end',
+      justifyContent: 'space-between',
       alignItems: 'center',
       padding: spacing.md,
       shadowColor: '#000',
@@ -145,6 +148,11 @@ function StepCard({ step, color, isDesktop }) {
         justifyContent: 'center',
       }}>
         <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textPrimary }}>{step.num}</Text>
+      </View>
+
+      {/* 아이콘 — 상단 중앙 */}
+      <View style={{ alignItems: 'center', marginBottom: spacing.md }}>
+        {Icon && <Icon size={iconSize} color={colors.white} />}
       </View>
 
       {/* 텍스트 — 하단 중앙 */}
@@ -182,16 +190,19 @@ const HOW_IT_WORKS = [
     num: '1',
     title: 'Describe your product',
     body: 'Enter your product and target customer in your own language.',
+    icon: SquarePen,
   },
   {
     num: '2',
     title: 'Generate & share',
     body: 'Get AI questions and share your link with potential customers.',
+    icon: SendHorizontal,
   },
   {
     num: '3',
     title: 'Get your report',
     body: 'Nitor runs the English interview. You get a structured report.',
+    icon: MessageCircleWarning,
   },
 ];
 
