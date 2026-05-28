@@ -118,7 +118,7 @@ function ScreenshotPlaceholder({ label, aspectRatio = 16 / 10 }) {
 // ─────────────────────────────────────────────────────────────────
 function StepCard({ step, color, isDesktop }) {
   const Icon = step.icon;
-  const iconSize = isDesktop ? 280 - spacing.md : 240;
+  const iconSize = isDesktop ? Math.round((280 - spacing.md) * 0.7) : Math.round(240 * 0.7);
   return (
     <View style={{
       width: isDesktop ? 280 : '100%',
