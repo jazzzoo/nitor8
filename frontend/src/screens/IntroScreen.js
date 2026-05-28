@@ -217,6 +217,51 @@ const PRODUCT_TABS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────
+// Counting animation stat item
+// ─────────────────────────────────────────────────────────────────
+function StatCounter({ value, label, isDesktop }) {
+  const [display, setDisplay] = useState(null);
+
+  useEffect(() => {
+    if (value === null || value === undefined) return;
+    if (value === 0) { setDisplay(0); return; }
+
+    let count = 0;
+    const duration = 1500;
+    const intervalMs = 50;
+    const steps = duration / intervalMs;
+
+    const timer = setInterval(() => {
+      count++;
+      if (count >= steps) {
+        setDisplay(value);
+        clearInterval(timer);
+      } else {
+        setDisplay(Math.floor(Math.random() * value * 2));
+      }
+    }, intervalMs);
+
+    return () => clearInterval(timer);
+  }, [value]);
+
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <Text style={{
+        fontSize: isDesktop ? 56 : 44,
+        fontWeight: '800',
+        color: colors.textPrimary,
+        lineHeight: isDesktop ? 66 : 54,
+      }}>
+        {display !== null ? display : '—'}
+      </Text>
+      <Text style={{ fontSize: 20, color: colors.textSecondary, textAlign: 'center', marginTop: 6 }}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────────
 export default function IntroScreen({ navigation }) {
@@ -526,28 +571,12 @@ export default function IntroScreen({ navigation }) {
             <View style={{
               flexDirection: 'row',
               justifyContent: 'center',
-              gap: spacing.xxl,
+              gap: spacing.xxl + spacing.xl,
               flexWrap: 'wrap',
             }}>
-              {[
-                { value: stats.questionLists, label: 'Question lists generated' },
-                { value: stats.interviews,    label: 'Interviews conducted'     },
-                { value: stats.reports,       label: 'Reports delivered'        },
-              ].map((item, i) => (
-                <View key={i} style={{ alignItems: 'center' }}>
-                  <Text style={{
-                    fontSize: isDesktop ? 48 : 36,
-                    fontWeight: '800',
-                    color: colors.textPrimary,
-                    lineHeight: isDesktop ? 58 : 46,
-                  }}>
-                    {item.value !== null ? item.value : '—'}
-                  </Text>
-                  <Text style={{ fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginTop: 6 }}>
-                    {item.label}
-                  </Text>
-                </View>
-              ))}
+              <StatCounter value={stats.questionLists} label="Question lists generated" isDesktop={isDesktop} />
+              <StatCounter value={stats.interviews}    label="Interviews conducted"     isDesktop={isDesktop} />
+              <StatCounter value={stats.reports}       label="Reports delivered"        isDesktop={isDesktop} />
             </View>
           </AnimatedSection>
 
