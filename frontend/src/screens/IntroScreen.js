@@ -420,7 +420,7 @@ export default function IntroScreen({ navigation }) {
             maxWidth: 1600,
             alignSelf: 'center',
             width: '100%',
-            marginTop: 32,
+            marginTop: 48,
           }}>
             <View style={{
               flexDirection: isDesktop ? 'row' : 'column',
@@ -453,7 +453,7 @@ export default function IntroScreen({ navigation }) {
                   {"Real customer interviews.\nNo English required."}
                 </GradientText>
 
-                <View style={{ paddingLeft: spacing.md }}>
+                <View style={{ paddingLeft: spacing.xl }}>
                   <Text style={{
                     fontSize: 16,
                     color: colors.textSecondary,
@@ -521,31 +521,20 @@ export default function IntroScreen({ navigation }) {
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xl : spacing.md,
             paddingVertical: isDesktop ? 80 : 64,
+            marginTop: spacing.md,
           }}>
             <View style={{
-              backgroundColor: colors.surface,
-              borderRadius: radius.xl,
-              borderWidth: 1,
-              borderColor: colors.border,
-              padding: spacing.xl,
-              maxWidth: MAX_W,
-              alignSelf: 'center',
-              width: '100%',
-              flexDirection: isDesktop ? 'row' : 'column',
-              gap: isDesktop ? 0 : spacing.xl,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: spacing.xxl,
+              flexWrap: 'wrap',
             }}>
               {[
                 { value: stats.questionLists, label: 'Question lists generated' },
                 { value: stats.interviews,    label: 'Interviews conducted'     },
                 { value: stats.reports,       label: 'Reports delivered'        },
               ].map((item, i) => (
-                <View key={i} style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  paddingHorizontal: spacing.md,
-                  borderRightWidth: isDesktop && i < 2 ? 1 : 0,
-                  borderRightColor: colors.border,
-                }}>
+                <View key={i} style={{ alignItems: 'center' }}>
                   <Text style={{
                     fontSize: isDesktop ? 48 : 36,
                     fontWeight: '800',
