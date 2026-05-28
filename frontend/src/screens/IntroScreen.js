@@ -2,7 +2,7 @@
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  Platform, View, Text, ScrollView, TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -75,7 +75,7 @@ function GradientText({ children, style }) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Surface card (border style, radius.xl)
+// Surface card
 // ─────────────────────────────────────────────────────────────────
 function SurfaceCard({ children, style }) {
   return (
@@ -92,142 +92,27 @@ function SurfaceCard({ children, style }) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Mock: Question List screen
+// Screenshot placeholder (빈 박스)
 // ─────────────────────────────────────────────────────────────────
-function MockQuestionList() {
-  const questions = [
-    "What's the biggest challenge with cross-border communication?",
-    'Can you describe a recent situation where this caused a real problem?',
-    'How are you currently solving this? What tools do you use?',
-    'How much time do you spend dealing with this each week?',
-    'What would the ideal solution look like for you?',
-  ];
+function ScreenshotPlaceholder({ label }) {
   return (
     <View style={{
-      backgroundColor: colors.background,
+      width: '100%',
+      aspectRatio: 16 / 10,
+      backgroundColor: colors.surface,
       borderRadius: radius.xl,
       borderWidth: 1,
       borderColor: colors.border,
-      overflow: 'hidden',
-      width: '100%',
-      maxWidth: 480,
+      alignItems: 'center',
+      justifyContent: 'center',
     }}>
-      {/* Title bar */}
-      <View style={{
-        backgroundColor: colors.surface,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.xs,
-      }}>
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primaryEnd }} />
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primaryMid }} />
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
-        <Text style={{ fontSize: 11, color: colors.textSecondary, marginLeft: spacing.xs, fontWeight: '600' }}>
-          Interview Questions · Session 1
-        </Text>
-      </View>
-
-      {/* Questions */}
-      <View style={{ padding: spacing.md, gap: spacing.sm }}>
-        {questions.map((q, i) => (
-          <View key={i} style={{
-            flexDirection: 'row',
-            gap: spacing.sm,
-            backgroundColor: colors.surface,
-            borderRadius: radius.md,
-            padding: spacing.sm,
-            borderWidth: 1,
-            borderColor: colors.border,
-            alignItems: 'flex-start',
-          }}>
-            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primary, width: 18, marginTop: 1 }}>
-              {i + 1}
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.textSecondary, flex: 1, lineHeight: 18 }}>{q}</Text>
-          </View>
-        ))}
-
-        {/* CTA row */}
-        <View style={{
-          backgroundColor: colors.primary,
-          borderRadius: radius.md,
-          padding: spacing.sm,
-          alignItems: 'center',
-          marginTop: spacing.xs,
-        }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.white }}>
-            Share Interview Link →
-          </Text>
-        </View>
-      </View>
+      <Text style={{ fontSize: 14, color: colors.placeholder }}>{label}</Text>
     </View>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Mock: Interview chat (phone frame)
-// ─────────────────────────────────────────────────────────────────
-function PhoneFrame() {
-  const shadow = Platform.OS === 'web'
-    ? { boxShadow: '0 20px 56px rgba(0,0,0,0.14), 0 4px 14px rgba(0,0,0,0.08)' }
-    : { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.16, shadowRadius: 20, elevation: 10 };
-
-  return (
-    <View style={[{
-      width: 260,
-      backgroundColor: colors.textPrimary,
-      borderRadius: 40,
-      padding: 12,
-      borderWidth: 2,
-      borderColor: colors.border,
-    }, shadow]}>
-      <View style={{ backgroundColor: colors.background, borderRadius: 28, overflow: 'hidden', height: 460 }}>
-        {/* Notch */}
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center', zIndex: 20, paddingTop: 12 }}>
-          <View style={{ width: 50, height: 13, backgroundColor: colors.textPrimary, borderRadius: 7 }} />
-        </View>
-
-        <View style={{ flex: 1, padding: 14, paddingTop: 36 }}>
-          {/* Header */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingBottom: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: spacing.sm }}>
-            <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.primary }} />
-            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textPrimary }}>Nitor</Text>
-          </View>
-
-          {/* Nitor bubble */}
-          <View style={{ alignSelf: 'flex-start', backgroundColor: colors.surface, borderRadius: radius.md, borderTopLeftRadius: 4, paddingVertical: 8, paddingHorizontal: 11, maxWidth: '88%', marginBottom: 8 }}>
-            <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 0.5, marginBottom: 2 }}>Nitor</Text>
-            <Text style={{ fontSize: 12, color: colors.textSecondary, lineHeight: 18 }}>
-              {"Hi Sarah! What do you do for work?"}
-            </Text>
-          </View>
-
-          {/* User bubble */}
-          <View style={{ alignSelf: 'flex-end', backgroundColor: colors.primary, borderRadius: radius.md, borderBottomRightRadius: 4, paddingVertical: 8, paddingHorizontal: 11, maxWidth: '88%', marginBottom: 8 }}>
-            <Text style={{ fontSize: 12, color: colors.white, lineHeight: 18 }}>
-              {"I'm a PM at a B2B SaaS in New York."}
-            </Text>
-          </View>
-
-          {/* Nitor bubble */}
-          <View style={{ alignSelf: 'flex-start', backgroundColor: colors.surface, borderRadius: radius.md, borderTopLeftRadius: 4, paddingVertical: 8, paddingHorizontal: 11, maxWidth: '88%' }}>
-            <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 0.5, marginBottom: 2 }}>Nitor</Text>
-            <Text style={{ fontSize: 12, color: colors.textSecondary, lineHeight: 18 }}>
-              {"Tell me about a time this caused a real problem?"}
-            </Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────
-// Mock: Report
+// Mock Report (Trust Section 전용)
 // ─────────────────────────────────────────────────────────────────
 const SAMPLE_REPORT = {
   problem_verdict:    'confirmed',
@@ -266,9 +151,8 @@ function RFreqBadge({ freq }) {
 function MockReport() {
   return (
     <SurfaceCard style={{ padding: 0, overflow: 'hidden' }}>
-      <ScrollView style={{ maxHeight: 500 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.md }}>
+      <ScrollView style={{ maxHeight: 460 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.md }}>
 
-        {/* Header */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm }}>
           <View style={{ flex: 1, marginRight: spacing.sm }}>
             <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>Interview Report</Text>
@@ -279,11 +163,8 @@ function MockReport() {
 
         <View style={{ height: 1, backgroundColor: colors.border, marginBottom: spacing.sm }} />
 
-        {/* Evidence Level */}
         <View style={{ marginBottom: spacing.sm }}>
-          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>
-            Evidence Level
-          </Text>
+          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>Evidence Level</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
             <View style={{ flex: 1, height: 5, backgroundColor: colors.border, borderRadius: 3 }}>
               <View style={{ width: '88%', height: '100%', borderRadius: 3, backgroundColor: colors.primary }} />
@@ -292,11 +173,8 @@ function MockReport() {
           </View>
         </View>
 
-        {/* Top Pain Points */}
         <View style={{ marginBottom: spacing.sm }}>
-          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>
-            Top Pain Points
-          </Text>
+          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>Top Pain Points</Text>
           {SAMPLE_REPORT.top_pains.map((pain, i) => (
             <View key={i} style={{ borderLeftWidth: 3, borderLeftColor: colors.primaryEnd, paddingLeft: spacing.sm, paddingVertical: spacing.xs, marginBottom: spacing.xs, backgroundColor: colors.background, borderRadius: radius.sm }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
@@ -308,11 +186,8 @@ function MockReport() {
           ))}
         </View>
 
-        {/* Current Workarounds */}
         <View style={{ marginBottom: spacing.sm }}>
-          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>
-            Current Workarounds
-          </Text>
+          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>Current Workarounds</Text>
           {SAMPLE_REPORT.current_workarounds.map((w, i) => (
             <View key={i} style={{ borderLeftWidth: 2, borderLeftColor: colors.primary, paddingLeft: spacing.sm, paddingVertical: 2, marginBottom: 4 }}>
               <Text style={{ fontSize: 11, color: colors.textSecondary }}>{w}</Text>
@@ -320,11 +195,8 @@ function MockReport() {
           ))}
         </View>
 
-        {/* Next Actions */}
         <View>
-          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>
-            Next Actions
-          </Text>
+          <Text style={{ fontSize: 9, fontWeight: '700', color: colors.textDisabled, letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.xs }}>Next Actions</Text>
           {SAMPLE_REPORT.next_actions.map((a, i) => (
             <View key={i} style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: 4 }}>
               <Text style={{ fontSize: 11, color: colors.primaryEnd, fontWeight: '700' }}>→</Text>
@@ -350,9 +222,14 @@ export default function IntroScreen({ navigation }) {
   const [stats, setStats]                 = useState({ questionLists: null, interviews: null, reports: null, betaUsers: null });
   const [activeTab, setActiveTab]         = useState('Question List');
 
-  const scrollRef      = useRef(null);
-  const howItWorksRef  = useRef(null);
+  const scrollRef     = useRef(null);
+  const howItWorksRef = useRef(null);
   const [howItWorksY, setHowItWorksY] = useState(0);
+
+  // 내비게이션 헤더 숨김 (이중 NavBar 방지)
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -442,15 +319,15 @@ export default function IntroScreen({ navigation }) {
   const PRODUCT_TABS = {
     'Question List': {
       desc: 'Describe your product and target customer. Get AI-generated Lean-style interview questions. Edit and regenerate until they feel right.',
-      visual: <MockQuestionList />,
+      placeholder: '[ Question List Screenshot ]',
     },
     'Interview': {
       desc: "Share a unique link with your customer. Nitor runs the full English interview — questions, follow-ups, probing deeper — so you don't have to.",
-      visual: <PhoneFrame />,
+      placeholder: '[ Interview Screenshot ]',
     },
     'Report': {
       desc: 'Every completed interview generates a structured report: problem verdict, evidence level, top pain points with quotes, and next actions.',
-      visual: <MockReport />,
+      placeholder: '[ Report Screenshot ]',
     },
   };
 
@@ -468,7 +345,7 @@ export default function IntroScreen({ navigation }) {
         <ScrollView
           ref={scrollRef}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 60 }}
+          contentContainerStyle={{ paddingBottom: 0 }}
         >
 
           {/* ── 1. NAVBAR ─────────────────────────────────────── */}
@@ -492,8 +369,8 @@ export default function IntroScreen({ navigation }) {
           {/* ── 2. HERO ───────────────────────────────────────── */}
           <AnimatedSection style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
-            paddingTop: isDesktop ? 80 : 48,
-            paddingBottom: isDesktop ? 80 : 48,
+            paddingTop: isDesktop ? 96 : 64,
+            paddingBottom: isDesktop ? 96 : 64,
             maxWidth: MAX_W + 200,
             alignSelf: 'center',
             width: '100%',
@@ -514,26 +391,32 @@ export default function IntroScreen({ navigation }) {
                 </Text>
 
                 <GradientText style={{
-                  fontSize: isDesktop ? 40 : 28,
-                  lineHeight: isDesktop ? 52 : 38,
-                  fontWeight: '700',
-                  letterSpacing: -1,
-                  marginBottom: spacing.lg,
+                  fontSize: isDesktop ? 64 : 40,
+                  lineHeight: isDesktop ? 76 : 50,
+                  fontWeight: '800',
+                  letterSpacing: -1.5,
+                  marginBottom: spacing.xl,
                   color: colors.textPrimary,
                 }}>
-                  {"Go from 'I should talk\nto customers'\nto a real interview link."}
+                  {"Go from 'I should\ntalk to customers'\nto a real interview link."}
                 </GradientText>
 
                 <Text style={{
-                  fontSize: 15,
+                  fontSize: 16,
                   color: colors.textSecondary,
-                  lineHeight: 26,
+                  lineHeight: 28,
                   marginBottom: spacing.xl,
                 }}>
                   {'Describe your product. Get AI-generated interview questions. Share a link. Let Nitor run the English interview. Receive a report in your language.'}
                 </Text>
 
-                <View style={{ flexDirection: 'row', gap: spacing.md, flexWrap: 'wrap', marginBottom: spacing.lg }}>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: spacing.md,
+                  flexWrap: 'wrap',
+                  marginBottom: spacing.lg,
+                }}>
                   <GradientButton label="Start for Free →" onPress={handleCTA} />
                   <TouchableOpacity
                     onPress={scrollToHowItWorks}
@@ -557,13 +440,12 @@ export default function IntroScreen({ navigation }) {
                 </Text>
               </View>
 
-              {/* Visual */}
+              {/* Visual: 빈 박스 플레이스홀더 */}
               <View style={{
                 flex: isDesktop ? 1 : undefined,
-                alignItems: 'center',
                 width: isDesktop ? undefined : '100%',
               }}>
-                <MockQuestionList />
+                <ScreenshotPlaceholder label="[ Interview Questions Preview ]" />
               </View>
             </View>
           </AnimatedSection>
@@ -571,7 +453,7 @@ export default function IntroScreen({ navigation }) {
           {/* ── 3. BETA TRUST STRIP ───────────────────────────── */}
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
-            paddingVertical: spacing.xl,
+            paddingVertical: isDesktop ? 80 : 64,
           }}>
             <View style={{
               backgroundColor: colors.surface,
@@ -583,7 +465,7 @@ export default function IntroScreen({ navigation }) {
               alignSelf: 'center',
               width: '100%',
               flexDirection: isDesktop ? 'row' : 'column',
-              gap: isDesktop ? 0 : spacing.lg,
+              gap: isDesktop ? 0 : spacing.xl,
             }}>
               {[
                 { value: stats.questionLists, label: 'Question lists generated' },
@@ -597,10 +479,15 @@ export default function IntroScreen({ navigation }) {
                   borderRightWidth: isDesktop && i < 2 ? 1 : 0,
                   borderRightColor: colors.border,
                 }}>
-                  <Text style={{ fontSize: 32, fontWeight: '700', color: colors.textPrimary, lineHeight: 40 }}>
+                  <Text style={{
+                    fontSize: isDesktop ? 48 : 36,
+                    fontWeight: '800',
+                    color: colors.textPrimary,
+                    lineHeight: isDesktop ? 58 : 46,
+                  }}>
                     {item.value !== null ? item.value : '—'}
                   </Text>
-                  <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: 'center', marginTop: 4 }}>
+                  <Text style={{ fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginTop: 6 }}>
                     {item.label}
                   </Text>
                 </View>
@@ -615,11 +502,20 @@ export default function IntroScreen({ navigation }) {
           >
             <AnimatedSection delay={0.1} style={{
               paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
-              paddingVertical: isDesktop ? 80 : 56,
+              paddingVertical: isDesktop ? 80 : 64,
             }}>
               <View style={{ maxWidth: MAX_W, alignSelf: 'center', width: '100%' }}>
-                <Text style={{ fontSize: 28, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.xxl }}>
+                <Text style={{
+                  fontSize: isDesktop ? 40 : 28,
+                  fontWeight: '700',
+                  color: colors.textPrimary,
+                  textAlign: 'center',
+                  marginBottom: spacing.sm,
+                }}>
                   How it works
+                </Text>
+                <Text style={{ fontSize: 18, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xxl }}>
+                  Three steps. No English required.
                 </Text>
 
                 <View style={{
@@ -645,17 +541,16 @@ export default function IntroScreen({ navigation }) {
                     },
                   ].map((step, i) => (
                     <View key={i} style={{ flex: 1, alignItems: 'center', paddingHorizontal: isDesktop ? spacing.xl : 0 }}>
-                      {/* Connector */}
                       {isDesktop && i < 2 && (
                         <View style={{ position: 'absolute', top: 22, right: -spacing.sm, left: '50%', height: 1, backgroundColor: colors.border }} />
                       )}
                       <View style={{ width: 44, height: 44, borderRadius: radius.full, backgroundColor: step.accent, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md }}>
                         <Text style={{ fontSize: 18, color: colors.white, fontWeight: '700' }}>✦</Text>
                       </View>
-                      <Text style={{ fontSize: 16, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.xs }}>
+                      <Text style={{ fontSize: 18, fontWeight: '600', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.xs }}>
                         {step.title}
                       </Text>
-                      <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 }}>
+                      <Text style={{ fontSize: 15, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 }}>
                         {step.body}
                       </Text>
                     </View>
@@ -668,12 +563,21 @@ export default function IntroScreen({ navigation }) {
           {/* ── 5. PRODUCT PREVIEW ────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
-            paddingVertical: isDesktop ? 80 : 56,
+            paddingVertical: isDesktop ? 80 : 64,
             backgroundColor: colors.surface,
           }}>
             <View style={{ maxWidth: MAX_W, alignSelf: 'center', width: '100%' }}>
-              <Text style={{ fontSize: 28, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.xl }}>
+              <Text style={{
+                fontSize: isDesktop ? 40 : 28,
+                fontWeight: '700',
+                color: colors.textPrimary,
+                textAlign: 'center',
+                marginBottom: spacing.sm,
+              }}>
                 See it in action
+              </Text>
+              <Text style={{ fontSize: 18, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl }}>
+                From questions to report — in minutes.
               </Text>
 
               {/* Tab bar */}
@@ -706,14 +610,14 @@ export default function IntroScreen({ navigation }) {
               <View style={{
                 flexDirection: isDesktop ? 'row' : 'column',
                 gap: isDesktop ? spacing.xxl : spacing.xl,
-                alignItems: isDesktop ? 'flex-start' : 'stretch',
+                alignItems: isDesktop ? 'center' : 'stretch',
               }}>
                 {/* Left: description */}
                 <View style={{ flex: 1, justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.sm }}>
+                  <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.sm }}>
                     {activeTab}
                   </Text>
-                  <Text style={{ fontSize: 15, color: colors.textSecondary, lineHeight: 26, marginBottom: spacing.lg }}>
+                  <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 28, marginBottom: spacing.lg }}>
                     {PRODUCT_TABS[activeTab]?.desc}
                   </Text>
                   <TouchableOpacity onPress={handleCTA} activeOpacity={0.8} style={{ alignSelf: 'flex-start' }}>
@@ -723,9 +627,9 @@ export default function IntroScreen({ navigation }) {
                   </TouchableOpacity>
                 </View>
 
-                {/* Right: visual */}
-                <View style={{ flex: isDesktop ? 1.4 : 1, alignItems: isDesktop ? 'flex-start' : 'center' }}>
-                  {PRODUCT_TABS[activeTab]?.visual}
+                {/* Right: 빈 박스 플레이스홀더 */}
+                <View style={{ flex: isDesktop ? 1.4 : 1 }}>
+                  <ScreenshotPlaceholder label={PRODUCT_TABS[activeTab]?.placeholder} />
                 </View>
               </View>
             </View>
@@ -734,7 +638,7 @@ export default function IntroScreen({ navigation }) {
           {/* ── 6. TRUST SECTION ──────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
-            paddingVertical: isDesktop ? 80 : 56,
+            paddingVertical: isDesktop ? 80 : 64,
           }}>
             <View style={{ maxWidth: 720, alignSelf: 'center', width: '100%' }}>
               <SurfaceCard style={{ backgroundColor: trustCardBg, borderColor: colors.primary }}>
@@ -742,7 +646,7 @@ export default function IntroScreen({ navigation }) {
                 <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: spacing.sm }}>
                   REPORT PREVIEW
                 </Text>
-                <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.lg }}>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.lg }}>
                   What a real report looks like
                 </Text>
 
@@ -750,17 +654,16 @@ export default function IntroScreen({ navigation }) {
 
                 <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.lg }} />
 
-                <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md }}>
+                <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26, marginBottom: spacing.md }}>
                   <Text style={{ fontWeight: '700', color: colors.textPrimary }}>Lean-style interview questions </Text>
                   built on Cindy Alvarez's customer development principles. Every question is designed to reveal real problems, not validate assumptions.
                 </Text>
 
-                <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.lg }}>
+                <Text style={{ fontSize: 16, color: colors.textSecondary, lineHeight: 26, marginBottom: spacing.lg }}>
                   <Text style={{ fontWeight: '700', color: colors.textPrimary }}>Built by a non-native founder, </Text>
                   for non-native founders. The language barrier is real. Nitor8 removes it entirely.
                 </Text>
 
-                {/* Beta trust pill */}
                 <View style={Platform.OS === 'web' ? {
                   backgroundColor: `${colors.primary}33`,
                   borderRadius: radius.md,
@@ -786,14 +689,22 @@ export default function IntroScreen({ navigation }) {
           {/* ── 7. PRICING ────────────────────────────────────── */}
           <AnimatedSection delay={0.1} style={{
             paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
-            paddingVertical: isDesktop ? 80 : 56,
+            paddingVertical: isDesktop ? 80 : 64,
             backgroundColor: colors.surface,
           }}>
             <View style={{ maxWidth: MAX_W, alignSelf: 'center', width: '100%', alignItems: 'center' }}>
-              <Text style={{ fontSize: isDesktop ? 48 : 36, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm }}>
+              <Text style={{
+                fontSize: isDesktop ? 80 : 48,
+                fontWeight: '900',
+                color: colors.textPrimary,
+                textAlign: 'center',
+                letterSpacing: -2,
+                lineHeight: isDesktop ? 88 : 56,
+                marginBottom: spacing.sm,
+              }}>
                 FREE during beta
               </Text>
-              <Text style={{ fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xxl }}>
+              <Text style={{ fontSize: 18, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xxl }}>
                 Join the first 100 founders.
               </Text>
 
@@ -810,8 +721,8 @@ export default function IntroScreen({ navigation }) {
                     'Text-based (async)',
                   ].map((feat, i) => (
                     <View key={i} style={{ width: '47%', flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                      <Text style={{ fontSize: 14, fontWeight: '700', color: colors.primaryEnd }}>✓</Text>
-                      <Text style={{ fontSize: 13, color: colors.textSecondary, flex: 1, lineHeight: 20 }}>{feat}</Text>
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: colors.primaryEnd }}>✓</Text>
+                      <Text style={{ fontSize: 16, color: colors.textSecondary, flex: 1, lineHeight: 24 }}>{feat}</Text>
                     </View>
                   ))}
                 </View>
@@ -840,18 +751,25 @@ export default function IntroScreen({ navigation }) {
           {/* ── 8. FINAL CTA ──────────────────────────────────── */}
           <AnimatedSection delay={0.1}>
             <View style={{
-              backgroundColor: colors.surface,
-              borderRadius: radius.xl,
-              margin: isDesktop ? spacing.xxl : spacing.md,
-              padding: isDesktop ? spacing.xxl : spacing.xl,
+              backgroundColor: colors.textPrimary,
+              paddingVertical: 80,
+              paddingHorizontal: isDesktop ? spacing.xxl : spacing.md,
               alignItems: 'center',
             }}>
-              <Text style={{ fontSize: isDesktop ? 28 : 22, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm }}>
+              <Text style={{
+                fontSize: isDesktop ? 36 : 26,
+                fontWeight: '700',
+                color: colors.white,
+                textAlign: 'center',
+                marginBottom: spacing.sm,
+              }}>
                 Ready to talk to your customers?
               </Text>
-              <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl }}>
-                No account needed. Free during beta.
-              </Text>
+              <View style={{ opacity: 0.6 }}>
+                <Text style={{ fontSize: 16, color: colors.white, textAlign: 'center', marginBottom: spacing.xl }}>
+                  No account needed. Free during beta.
+                </Text>
+              </View>
               <GradientButton label="Start for Free →" onPress={handleCTA} />
             </View>
           </AnimatedSection>
