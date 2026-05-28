@@ -40,7 +40,7 @@ const linking = {
 };
 
 // NavBar를 숨길 라우트
-const HIDDEN_NAVBAR_ROUTES = new Set(['Interview', 'Report', 'AggregateReport', 'Admin']);
+const HIDDEN_NAVBAR_ROUTES = new Set(['Intro', 'Interview', 'Report', 'AggregateReport', 'Admin']);
 
 // Vercel Analytics 초기화 (웹 전용)
 if (typeof document !== 'undefined') {
