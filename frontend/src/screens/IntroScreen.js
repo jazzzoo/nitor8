@@ -560,7 +560,7 @@ export default function IntroScreen({ navigation }) {
                 <View style={{
                   flex: 1,
                   minHeight: 520,
-                  backgroundColor: colors.background,
+                  backgroundColor: colors.white,
                   borderRadius: radius.xl,
                   borderWidth: 1,
                   borderColor: colors.border,
