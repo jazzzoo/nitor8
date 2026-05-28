@@ -416,9 +416,7 @@ export default function IntroScreen({ navigation }) {
 
           {/* ── 1. HERO ───────────────────────────────────────── */}
           <AnimatedSection style={{
-            paddingHorizontal: isDesktop ? spacing.md : spacing.sm,
-            paddingTop: isDesktop ? 96 : 64,
-            paddingBottom: isDesktop ? 96 : 64,
+            paddingHorizontal: 0,
             maxWidth: MAX_W + 200,
             alignSelf: 'center',
             width: '100%',
@@ -429,7 +427,12 @@ export default function IntroScreen({ navigation }) {
               gap: isDesktop ? 8 : spacing.xl,
             }}>
               {/* Copy */}
-              <View style={{ flex: isDesktop ? 1.2 : 1 }}>
+              <View style={{
+                flex: isDesktop ? 1.2 : 1,
+                paddingVertical: isDesktop ? 80 : 48,
+                paddingLeft: spacing.xl,
+                paddingRight: spacing.md,
+              }}>
                 <Text style={{
                   fontSize: 11, fontWeight: '600', letterSpacing: 1.5,
                   color: colors.primary, textTransform: 'uppercase',
@@ -492,10 +495,12 @@ export default function IntroScreen({ navigation }) {
               <View style={{
                 flex: isDesktop ? 0.8 : undefined,
                 width: isDesktop ? undefined : '100%',
+                alignSelf: 'stretch',
+                paddingRight: spacing.xl,
               }}>
                 <View style={{
-                  width: '100%',
-                  minHeight: 480,
+                  flex: 1,
+                  minHeight: 520,
                   backgroundColor: colors.surface,
                   borderRadius: radius.xl,
                   borderWidth: 1,
