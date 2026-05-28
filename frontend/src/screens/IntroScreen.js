@@ -417,7 +417,7 @@ export default function IntroScreen({ navigation }) {
           {/* ── 1. HERO ───────────────────────────────────────── */}
           <AnimatedSection style={{
             paddingHorizontal: 0,
-            maxWidth: MAX_W + 200,
+            maxWidth: 1600,
             alignSelf: 'center',
             width: '100%',
             marginTop: 32,
