@@ -409,8 +409,9 @@ async function generateWrapUpMessage(respondentName, businessContext) {
       model: process.env.AI_MODEL_PRIMARY || 'claude-haiku-4-5-20251001',
       max_tokens: 200,
       system: `You are Nitor, a warm AI interviewer wrapping up a customer development interview.
-Write 2-3 sentences: thank the respondent sincerely, then optionally ask if there's anything else to share.
-Be genuine and conversational. No bullet points or lists.`,
+Write 2-3 sentences: thank the respondent sincerely, then briefly mention that the founder will review their insights.
+Be genuine and conversational. No bullet points or lists.
+IMPORTANT: Do NOT end with a question. End with a warm closing statement only.`,
       messages: [{
         role: 'user',
         content: `Respondent's name: ${respondentName}\nBusiness context: ${businessContext}\n\nWrite the closing message.`,
@@ -419,7 +420,7 @@ Be genuine and conversational. No bullet points or lists.`,
     return response.content[0].text;
   } catch (err) {
     console.error('[Interview] generateWrapUpMessage failed:', err.message);
-    return `Thank you so much, ${respondentName}! This has been really helpful. We really appreciate you taking the time to share your thoughts with us.`;
+    return `Thank you so much for sharing all of this with me today, ${respondentName}. Your insights have been incredibly valuable. The founder will review everything you've shared and use it to make better product decisions — I really appreciate your time and honesty throughout our conversation.`;
   }
 }
 
