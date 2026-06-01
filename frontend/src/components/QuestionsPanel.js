@@ -100,7 +100,21 @@ export default function QuestionsPanel({ scrollRef, style }) {
   const pollRef = useRef(null);
   useEffect(() => {
     if (interviewPanelOpen) {
-      pollRef.current = setInterval(loadSessions, 10000);
+      pollRef.current = setInterval(async () => {
+        await loadSessions();
+        setInterviewSessions((current) => {
+          const allDone =
+            current.length > 0 &&
+            current.every(
+              (s) =>
+                s.status === 'completed' ||
+                s.status === 'failed' ||
+                s.status === 'abandoned'
+            );
+          if (allDone) clearInterval(pollRef.current);
+          return current;
+        });
+      }, 10000);
     } else {
       clearInterval(pollRef.current);
     }
