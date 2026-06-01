@@ -16,6 +16,7 @@ import { interviewApi } from '../api/client';
 
 // ── 상수 ──────────────────────────────────────────────────────────
 const MAX_INPUT_LENGTH = 1000;
+const MAX_RETRIES = 3;
 
 // ── 채팅 버블 컴포넌트 ────────────────────────────────────────────
 function ChatBubble({ role, content }) {
@@ -141,11 +142,20 @@ export default function InterviewScreen({ route }) {
   const [isClosed, setIsClosed] = useState(false);
 
   const scrollRef = useRef(null);
+  const retryCountRef = useRef(0);
+  const retryTimerRef = useRef(null);
+  const handleSendRef = useRef(null);
+  const [retryMessage, setRetryMessage] = useState(null);
+  const [showRefreshButton, setShowRefreshButton] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
       scrollRef.current?.scrollToEnd({ animated: true });
     }, 100);
+  }, []);
+
+  useEffect(() => {
+    return () => { if (retryTimerRef.current) clearTimeout(retryTimerRef.current); };
   }, []);
 
   // /start 호출 후 공통 상태 업데이트
@@ -213,15 +223,22 @@ export default function InterviewScreen({ route }) {
     }
   }, [token]);
 
-  // 메시지 전송
-  const handleSend = useCallback(async () => {
-    const text = inputText.trim();
+  // 메시지 전송 (신규 전송 + 자동/수동 재시도 공용)
+  const handleSend = useCallback(async (overrideText) => {
+    const text = typeof overrideText === 'string' ? overrideText : inputText.trim();
     if (!text || isSending || isCompleted) return;
 
-    setInputText('');
-    setIsSending(true);
+    if (typeof overrideText !== 'string') {
+      setInputText('');
+      retryCountRef.current = 0;
+      setRetryMessage(text);
+      setShowRefreshButton(false);
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    }
 
-    // 유저 메시지 즉시 추가 (optimistic)
+    setIsSending(true);
+    setError(null);
+
     const userTurn = { role: 'user', content: text };
     setTurns((prev) => [...prev, userTurn]);
     scrollToBottom();
@@ -231,16 +248,62 @@ export default function InterviewScreen({ route }) {
       const assistantTurn = res.data.message;
       setTurns((prev) => [...prev, assistantTurn]);
       setIsCompleted(res.data.is_completed);
+      setError(null);
+      setRetryMessage(null);
+      retryCountRef.current = 0;
+      setShowRefreshButton(false);
       scrollToBottom();
     } catch (err) {
-      // 전송 실패 시 유저 메시지 제거 + 에러 표시
       setTurns((prev) => prev.filter((t) => t !== userTurn));
-      setInputText(text);
       setError(err.message || 'Failed to send message. Please try again.');
+
+      const newCount = retryCountRef.current + 1;
+      retryCountRef.current = newCount;
+
+      if (newCount < MAX_RETRIES) {
+        retryTimerRef.current = setTimeout(() => {
+          handleSendRef.current?.(text);
+        }, 3000);
+      } else {
+        setShowRefreshButton(true);
+      }
     } finally {
       setIsSending(false);
     }
-  }, [inputText, isSending, isCompleted, token]);
+  }, [inputText, isSending, isCompleted, token, scrollToBottom]);
+
+  handleSendRef.current = handleSend;
+
+  const handleManualRetry = useCallback(() => {
+    if (!retryMessage || isSending) return;
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    retryCountRef.current = 0;
+    setError(null);
+    setShowRefreshButton(false);
+    handleSendRef.current?.(retryMessage);
+  }, [retryMessage, isSending]);
+
+  const handleRefreshSession = useCallback(async () => {
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    setIsLoading(true);
+    setError(null);
+    setShowRefreshButton(false);
+    retryCountRef.current = 0;
+    setRetryMessage(null);
+
+    try {
+      const res = await interviewApi.getSession(token);
+      const data = res.data;
+      setSessionInfo(data);
+      setTurns(data.turns || []);
+      setIsCompleted(data.status === 'completed');
+      scrollToBottom();
+    } catch (err) {
+      setError('Failed to reload. Please refresh the page.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token, scrollToBottom]);
 
   // 비활성화된 링크
   if (isClosed) {
@@ -323,9 +386,25 @@ export default function InterviewScreen({ route }) {
           {error && (
             <View style={styles.errorBanner}>
               <Text style={styles.errorBannerText}>{error}</Text>
-              <TouchableOpacity onPress={() => setError(null)}>
-                <Text style={styles.errorBannerDismiss}>✕</Text>
-              </TouchableOpacity>
+              <View style={styles.errorBannerActions}>
+                {showRefreshButton ? (
+                  <TouchableOpacity onPress={handleRefreshSession} style={styles.errorActionBtn}>
+                    <Text style={styles.errorActionBtnText}>Resume</Text>
+                  </TouchableOpacity>
+                ) : retryMessage && !isSending ? (
+                  <TouchableOpacity onPress={handleManualRetry} style={styles.errorActionBtn}>
+                    <Text style={styles.errorActionBtnText}>Retry</Text>
+                  </TouchableOpacity>
+                ) : null}
+                <TouchableOpacity onPress={() => {
+                  setError(null);
+                  setRetryMessage(null);
+                  setShowRefreshButton(false);
+                  if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+                }}>
+                  <Text style={styles.errorBannerDismiss}>✕</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         </ScrollView>
@@ -575,6 +654,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   errorBannerText: { flex: 1, fontSize: 13, color: colors.error },
+  errorBannerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  errorActionBtn: {
+    backgroundColor: colors.error + '33',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  errorActionBtnText: { fontSize: 12, color: colors.error, fontWeight: '600' },
   errorBannerDismiss: { fontSize: 14, color: colors.error, fontWeight: '700' },
 
   // 로딩

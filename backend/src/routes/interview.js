@@ -195,15 +195,20 @@ function buildSystemPrompt({ section, businessContext, keyTopics, completedSecti
     const probeLines = hints.length > 0
       ? hints.map((h) => `- ${h}`).join('\n')
       : '- Could you tell me a bit more about that?\n- What happened next?';
-    return `[YOUR ONLY JOB THIS TURN]
-Ask this question naturally (do NOT invent a new one):
-"${currentQ.text || String(currentQ)}"
+    return `[MANDATORY QUESTION — DO NOT DEVIATE]
+You MUST ask the following question EXACTLY as written. Do NOT generate a new question. Do NOT skip it.
+Current question index: Q${questionIndex + 1} of ${totalQuestions}
+Current question to ask: "${currentQ.text || String(currentQ)}"
 
-If the answer is too short or vague, use ONE of these probes:
+STRICT RULES:
+- Do NOT generate a new question
+- Do NOT skip this question
+- Do NOT ask about any other topic
+
+If the answer is too short or vague, use ONE of these follow-up probes:
 ${probeLines}
 
-When the question is sufficiently answered, output answered_current_question=true.
-DO NOT generate any other question.`;
+When this question is sufficiently answered, output answered_current_question=true.`;
   })();
 
   const session1Rules = sessionType === 1 ? `
@@ -228,7 +233,7 @@ ${topicsText}
 Goal: ${SECTION_GOALS[section] || ''}
 ${session1Rules}
 [RULES]
-- Follow the guide question above — do NOT invent a different question
+- You MUST ask ONLY the question in [MANDATORY QUESTION] above — never invent, substitute, or skip it
 - Use natural, conversational English; adapt the phrasing but keep the intent
 - Briefly acknowledge the respondent's last answer (1 short sentence max)
 - Avoid hollow affirmations: no "Great!", "Interesting!", "Awesome!"
