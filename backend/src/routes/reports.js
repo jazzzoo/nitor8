@@ -240,7 +240,7 @@ Generate aggregate synthesis report.`;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const response = await anthropic.messages.create({
-          model: process.env.AI_MODEL_FALLBACK || 'claude-sonnet-4-6',
+          model: process.env.AI_MODEL_FALLBACK || 'claude-sonnet-4-6-20250514',
           max_tokens: 3000,
           system: systemPrompt,
           messages: [{ role: 'user', content: userContent }],
