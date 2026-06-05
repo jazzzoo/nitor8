@@ -407,7 +407,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
                           reportStatus={report?.status}
                           onRegenerate={async () => {
                             try {
-                              await reportsApi.generateAggregate(listId);
+                              await reportsApi.regenerateIndividual(s.id);
                               await loadSessions();
                             } catch (err) {
                               Alert.alert('Error', err.message || 'Failed to regenerate report.');

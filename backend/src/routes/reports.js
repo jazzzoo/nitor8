@@ -130,6 +130,54 @@ router.get('/aggregate/:questionListId', async (req, res) => {
   }
 });
 
+// POST /api/reports/regenerate/:sessionId — 개별 리포트 재생성
+router.post('/regenerate/:sessionId', async (req, res) => {
+  const { sessionId } = req.params;
+  try {
+    const sessionRow = await withRLS(req.guestId, async (client) => {
+      const { rows } = await client.query(
+        `SELECT is2.id, is2.status, s.input_context
+         FROM interview_sessions is2
+         JOIN question_lists ql ON is2.question_list_id = ql.id
+         JOIN sessions s ON ql.session_id = s.id
+         WHERE is2.id = $1 AND is2.guest_id = $2`,
+        [sessionId, req.guestId]
+      );
+      return rows[0];
+    });
+
+    if (!sessionRow) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: '인터뷰 세션을 찾을 수 없습니다.' },
+      });
+    }
+
+    if (sessionRow.status !== 'completed') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INTERVIEW_NOT_COMPLETED', message: '완료된 인터뷰만 리포트를 재생성할 수 있습니다.' },
+      });
+    }
+
+    await withRLS(req.guestId, async (client) => {
+      await client.query(
+        `UPDATE reports SET status = 'generating', result = NULL, completed_at = NULL
+         WHERE interview_session_id = $1 AND guest_id = $2`,
+        [sessionId, req.guestId]
+      );
+    });
+
+    res.json({ success: true, data: { status: 'generating' } });
+
+    const businessContext = sessionRow.input_context?.business_summary || '';
+    generateIndividualReport(sessionId, businessContext).catch(console.error);
+  } catch (err) {
+    console.error('[reports] regenerate POST error:', err.message);
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다.' } });
+  }
+});
+
 // GET /api/reports/:id/status — polling endpoint
 router.get('/:id/status', async (req, res) => {
   try {
@@ -172,6 +220,144 @@ router.get('/:id', async (req, res) => {
 });
 
 export default router;
+
+// ── 개별 리포트 생성 (백그라운드) ────────────────────────────────
+async function generateIndividualReport(interviewSessionId, businessContext) {
+  try {
+    await query(
+      `UPDATE reports SET status = 'generating' WHERE interview_session_id = $1`,
+      [interviewSessionId]
+    );
+
+    const turns = await query(
+      `SELECT role, content, section FROM interview_turns
+       WHERE interview_session_id = $1
+       ORDER BY turn_index ASC`,
+      [interviewSessionId]
+    );
+
+    const transcript = turns.rows
+      .map((t) => `${t.role === 'assistant' ? 'Nitor' : 'Respondent'} [${t.section}]: ${t.content}`)
+      .join('\n\n');
+
+    const systemPrompt = `You are an expert Lean Customer Development analyst trained in the Mom Test and Jobs-to-be-Done frameworks.
+This is a Session 1 Problem Interview transcript. Your job is to extract only what is evidenced in the transcript.
+
+LANGUAGE RULE: Detect the language of the business_context field. Output the entire report in that same language. Never mix languages.
+
+OUTPUT: Respond with ONLY valid JSON. No markdown, no explanation, no text outside the JSON.
+
+JSON SCHEMA:
+{
+  "problem_verdict": {
+    "status": "confirmed" | "mixed" | "rejected",
+    "evidence_level": "strong" | "medium" | "weak",
+    "reason": "1-2 sentence justification citing specific transcript evidence"
+  },
+  "respondent_context": {
+    "role": "respondent's role or job title as described in transcript",
+    "segment_fit": "high" | "medium" | "low",
+    "context_summary": "2-3 sentences describing the context in which they experience this problem"
+  },
+  "problem_situations": [
+    {
+      "trigger": "the specific situation or event that triggers the problem",
+      "job_context": "what the respondent was trying to accomplish at that moment",
+      "quote": "exact quote if available, otherwise empty string"
+    }
+  ],
+  "top_pains": [
+    {
+      "title": "pain label",
+      "description": "what exactly goes wrong",
+      "impact": "concrete cost: time / money / stress / delay",
+      "frequency": "how often this occurs, based on what they said",
+      "quote": "exact words from respondent, or empty string if none"
+    }
+  ],
+  "current_workarounds": [
+    {
+      "method": "what they currently do to cope",
+      "why_used": "why they chose this approach",
+      "complaint": "limitation or frustration with this approach"
+    }
+  ],
+  "consequences": [
+    {
+      "type": "time" | "stress" | "quality" | "money" | "delay",
+      "detail": "specific loss or consequence described",
+      "quote": "exact quote if available, otherwise empty string"
+    }
+  ],
+  "evidence_quotes": [
+    "most revealing quote 1",
+    "most revealing quote 2",
+    "most revealing quote 3"
+  ],
+  "next_actions": ["action 1", "action 2", "action 3"],
+  "next_questions": ["question 1", "question 2", "question 3"],
+  "decision_block": {
+    "verdict": "confirmed" | "mixed" | "rejected",
+    "confidence": "high" | "medium" | "low",
+    "recommended_move": "continue" | "narrow_icp" | "pivot" | "move_to_solution"
+  }
+}
+
+RULES:
+1. SESSION SCOPE: This is a Problem Interview only. Do NOT extract or infer anything about solutions, features, pricing, willingness-to-pay, or product ideas.
+2. EVIDENCE ONLY: Extract only past behaviors, recent specific events, actual workarounds, and concrete losses described by the respondent.
+3. QUOTES: Every key judgment must be backed by an exact quote. If no quote exists for a field, use empty string "".
+4. evidence_level: strong = specific incident + workaround + measurable consequence all present; medium = some elements; weak = only vague mentions.
+5. segment_fit: high = problem is frequent, severe, respondent has already tried to solve it; medium = problem exists but severity/frequency low; low = problem absent or minor.
+6. top_pains: max 3. current_workarounds: max 3. consequences: max 3. evidence_quotes: max 3. problem_situations: max 3.
+7. HALLUCINATION PREVENTION: If the transcript does not contain evidence for a field, output empty string "" or empty array [].`;
+
+    let result = null;
+    let lastError = null;
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const response = await anthropic.messages.create({
+          model: process.env.AI_MODEL_FALLBACK || 'claude-sonnet-4-6-20250514',
+          max_tokens: 2000,
+          system: systemPrompt,
+          messages: [{
+            role: 'user',
+            content: `Business context: ${businessContext}\n\nInterview transcript:\n${transcript}`,
+          }],
+        });
+
+        const rawText = response.content[0].text;
+        const cleaned = rawText
+          .replace(/^```json\s*/i, '')
+          .replace(/^```\s*/i, '')
+          .replace(/\s*```$/i, '')
+          .trim();
+
+        result = JSON.parse(cleaned);
+        break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`[reports] individual attempt ${attempt + 1} failed:`, err.message);
+      }
+    }
+
+    if (result) {
+      await query(
+        `UPDATE reports SET status = 'completed', result = $1, completed_at = NOW()
+         WHERE interview_session_id = $2`,
+        [JSON.stringify(result), interviewSessionId]
+      );
+      console.log(`[reports] individual report regenerated: ${interviewSessionId}`);
+    } else {
+      await query(`UPDATE reports SET status = 'failed' WHERE interview_session_id = $1`, [interviewSessionId]);
+      console.error(`[reports] individual failed after 3 attempts:`, lastError?.message);
+    }
+  } catch (err) {
+    console.error(`[reports] individual unexpected error:`, err.message);
+    await query(`UPDATE reports SET status = 'failed' WHERE interview_session_id = $1`, [interviewSessionId]).catch(() => {});
+  }
+}
 
 // ── 종합 리포트 생성 (백그라운드) ────────────────────────────────
 export async function generateAggregateReport(reportId, individualReports, businessContext) {

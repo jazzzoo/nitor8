@@ -254,6 +254,7 @@ export const reportsApi = {
   status: (reportId) => apiGet(`/api/reports/${reportId}/status`),
   generateAggregate: (questionListId) => apiPost(`/api/reports/aggregate/${questionListId}`, {}),
   getAggregate: (questionListId) => apiGet(`/api/reports/aggregate/${questionListId}`),
+  regenerateIndividual: (sessionId) => apiPost(`/api/reports/regenerate/${sessionId}`, {}),
 };
 
 // 피드백 인터뷰 (공개 - 인증 불필요)
