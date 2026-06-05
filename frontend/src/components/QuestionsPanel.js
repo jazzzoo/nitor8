@@ -402,7 +402,18 @@ export default function QuestionsPanel({ scrollRef, style }) {
                         )}
                       </View>
                       <View style={styles.sessionRight}>
-                        <ReportBadge status={s.status} reportStatus={report?.status} />
+                        <ReportBadge
+                          status={s.status}
+                          reportStatus={report?.status}
+                          onRegenerate={async () => {
+                            try {
+                              await reportsApi.generateAggregate(listId);
+                              await loadSessions();
+                            } catch (err) {
+                              Alert.alert('Error', err.message || 'Failed to regenerate report.');
+                            }
+                          }}
+                        />
                         {isActive && (
                           <TouchableOpacity
                             style={styles.closeLinkBtn}
@@ -585,7 +596,7 @@ export default function QuestionsPanel({ scrollRef, style }) {
 }
 
 // ── 리포트 상태 배지 ───────────────────────────────────────────
-function ReportBadge({ status, reportStatus }) {
+function ReportBadge({ status, reportStatus, onRegenerate }) {
   if (status !== 'completed') {
     const isActive = status === 'active' || status === 'in_progress';
     if (isActive) {
@@ -610,8 +621,15 @@ function ReportBadge({ status, reportStatus }) {
   }
   if (reportStatus === 'failed') {
     return (
-      <View style={[styles.badge, { backgroundColor: colors.error }]}>
-        <Text style={[styles.badgeText, { color: colors.white }]}>Failed</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+        <View style={[styles.badge, { backgroundColor: colors.error }]}>
+          <Text style={[styles.badgeText, { color: colors.white }]}>Failed</Text>
+        </View>
+        {onRegenerate && (
+          <TouchableOpacity onPress={onRegenerate} style={styles.regenerateBtn}>
+            <Text style={styles.regenerateBtnText}>Regenerate</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -986,5 +1004,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
+  regenerateBtn: {
+    backgroundColor: colors.error,
+    borderRadius: radius.sm,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  regenerateBtnText: { fontSize: 11, fontWeight: '600', color: colors.white },
   closeLinkText: { fontSize: 11, fontWeight: '600', color: colors.white },
 });
