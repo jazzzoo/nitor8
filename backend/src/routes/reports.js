@@ -319,7 +319,7 @@ RULES:
       try {
         const response = await anthropic.messages.create({
           model: process.env.AI_MODEL_FALLBACK || 'claude-sonnet-4-6-20250514',
-          max_tokens: 2000,
+          max_tokens: 4000,
           system: systemPrompt,
           messages: [{
             role: 'user',
@@ -427,7 +427,7 @@ Generate aggregate synthesis report.`;
       try {
         const response = await anthropic.messages.create({
           model: process.env.AI_MODEL_FALLBACK || 'claude-sonnet-4-6-20250514',
-          max_tokens: 3000,
+          max_tokens: 4000,
           system: systemPrompt,
           messages: [{ role: 'user', content: userContent }],
         });
